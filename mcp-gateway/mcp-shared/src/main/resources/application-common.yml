@@ -1,0 +1,117 @@
+# ============================================================
+# 公共配置（mcp-shared）：数据面与控制面共用的连接、序列化、日志与业务默认值
+#
+# 由各服务的 application.yml 通过 spring.config.import 引入：
+#   spring.config.import: classpath:application-common.yml
+# 服务的 application.yml 优先级更高，可覆盖这里任何一项。
+# ============================================================
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force-response: true
+      enabled: true
+
+spring:
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-date-keys-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.mcp.transfer.entity
+
+logging:
+  level:
+    root: INFO
+    com.mcp.transfer: INFO
+    com.mcp.transfer.mapper: INFO
+    org.springframework.web: INFO
+
+# 接口文档开关：默认关闭，生产必须保持关闭；本地/测试按需设 MCP_SWAGGER_ENABLED=true
+springdoc:
+  api-docs:
+    enabled: ${MCP_SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${MCP_SWAGGER_ENABLED:false}
+
+# 安全相关默认值（可被 profile / 环境变量覆盖）
+mcp:
+  security:
+    allow-private-network: ${MCP_SECURITY_ALLOW_PRIVATE_NETWORK:false}
+    secretkey: ${MCP_SECURITY_SECRETKEY:}
+  admin:
+    jwt-secret: ${MCP_ADMIN_JWT_SECRET:}
+    init-password: ${MCP_ADMIN_INIT_PASSWORD:}
+  # 对外网关地址：discovery 返回给 DSH 等客户端的绝对 URL
+  public-base-url: ${MCP_PUBLIC_BASE_URL:http://127.0.0.1:8081}
+  auth:
+    # 用户 token 认证（唯一认证方式）：只认 x-dsh-auth-token
+    user-token:
+      header: ${MCP_AUTH_USER_TOKEN_HEADER:x-dsh-auth-token}
+      cache-ttl-seconds: ${MCP_AUTH_USER_TOKEN_CACHE_TTL_SECONDS:30}
+  session:
+    max-count: ${MCP_SESSION_MAX_COUNT:20000}
+  sse:
+    max-connections: ${MCP_SSE_MAX_CONNECTIONS:1000}
+  # 下游调用熔断（与健康探测互补）
+  health:
+    circuit:
+      failure-threshold: ${MCP_HEALTH_CIRCUIT_FAILURE_THRESHOLD:5}
+      open-seconds: ${MCP_HEALTH_CIRCUIT_OPEN_SECONDS:30}
+  identity:
+    enabled: ${MCP_IDENTITY_ENABLED:false}
+    token-format: ${MCP_IDENTITY_TOKEN_FORMAT:JWE}
+    issuer: ${MCP_IDENTITY_ISSUER:mcp-gateway}
+    signing-private-key: ${MCP_IDENTITY_SIGNING_KEY:}
+    signing-kid: ${MCP_IDENTITY_SIGNING_KID:gw-1}
+    ttl-seconds: ${MCP_IDENTITY_TTL_SECONDS:60}
+    user-token-header: ${MCP_IDENTITY_USER_TOKEN_HEADER:x-dsh-auth-token}
+    forward-user-token: ${MCP_IDENTITY_FORWARD_USER_TOKEN:false}
+    propagate-to-rest-tools: ${MCP_IDENTITY_PROPAGATE_REST:false}
+    customer-arg-names: ${MCP_IDENTITY_CUSTOMER_ARG_NAMES:customerId,customer_id,custId}
+  # 工具规模治理：访问模式 / 暴露模式 / 分页 / 预算告警 / Schema 瘦身
+  tools:
+    page-size: ${MCP_TOOLS_PAGE_SIZE:200}
+    pagination-min-tools: ${MCP_TOOLS_PAGINATION_MIN_TOOLS:500}
+    pagination-clients: ${MCP_TOOLS_PAGINATION_CLIENTS:codex,claude,dsh,cursor,workbuddy}
+    pagination-unknown-policy: ${MCP_TOOLS_PAGINATION_UNKNOWN_POLICY:PAGINATE}
+    asset-pagination-min: ${MCP_ASSET_PAGINATION_MIN:500}
+    warn-threshold: ${MCP_TOOLS_WARN_THRESHOLD:100}
+    max-threshold: ${MCP_TOOLS_MAX_THRESHOLD:500}
+    search-limit: ${MCP_TOOLS_SEARCH_LIMIT:10}
+    max-search-limit: ${MCP_TOOLS_MAX_SEARCH_LIMIT:50}
+    hot-tool-limit: ${MCP_TOOLS_HOT_LIMIT:50}
+    max-description-length: ${MCP_TOOLS_MAX_DESCRIPTION_LENGTH:1200}
+    search-description-length: ${MCP_TOOLS_SEARCH_DESCRIPTION_LENGTH:300}
+    trim-schema: ${MCP_TOOLS_TRIM_SCHEMA:true}
+    include-server-meta: ${MCP_TOOLS_INCLUDE_SERVER_META:false}
+    warn-throttle-seconds: ${MCP_TOOLS_WARN_THROTTLE_SECONDS:600}
+    # 应急回退开关：false 时所有 server 按 DIRECT 处理
+    meta-enabled: ${MCP_TOOLS_META_ENABLED:true}
+    # 对外工具名最大长度（含 namespace 前缀），超长截断 + 短哈希；0=不限制
+    max-exposed-name-length: ${MCP_TOOLS_MAX_EXPOSED_NAME_LENGTH:64}
+    # search_tools 检索策略：AUTO / CATALOG / KEYWORD / BM25 / VECTOR / HYBRID
+    search-mode: ${MCP_TOOLS_SEARCH_MODE:AUTO}
+    # 超长工具结果：截断暂存 + read_result_chunk 分片读取
+    result-spill-threshold: ${MCP_TOOLS_RESULT_SPILL_THRESHOLD:4000}
+    result-spill-max-chars: ${MCP_TOOLS_RESULT_SPILL_MAX_CHARS:4000000}
+    chunk-limit: ${MCP_TOOLS_CHUNK_LIMIT:3000}
+    chunk-ttl-seconds: ${MCP_TOOLS_CHUNK_TTL_SECONDS:1800}
+    chunk-cache-size: ${MCP_TOOLS_CHUNK_CACHE_SIZE:200}
+    # read_result_chunk 暂存载体：memory（默认）/ redis（多副本共享）
+    chunk-store: ${MCP_TOOLS_CHUNK_STORE:memory}
+    redis-uri: ${MCP_TOOLS_REDIS_URI:redis://127.0.0.1:6379/0}
+    # 确定性离线元数据增强：code/name 拆词 + 中英同义词补描述/标签
+    metadata-enrich: ${MCP_TOOLS_METADATA_ENRICH:true}
+
+  # Prompt / Resource / Tool 结果内容上限
+  assets:
+    prompt-max-bytes: ${MCP_PROMPT_MAX_BYTES:262144}
+    resource-max-bytes: ${MCP_RESOURCE_MAX_BYTES:1048576}
+    tool-result-max-bytes: ${MCP_TOOL_RESULT_MAX_BYTES:1048576}

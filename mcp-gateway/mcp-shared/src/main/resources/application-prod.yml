@@ -1,0 +1,59 @@
+spring:
+  # 数据源配置：所有敏感项必须通过环境变量注入，禁止在仓库中保存明文
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: ${MCP_DB_URL:jdbc:mysql://127.0.0.1:3306/xaxsproddb?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectTimeout=5000&socketTimeout=30000}
+    username: ${MCP_DB_USERNAME:}
+    password: ${MCP_DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 50
+      max-wait: 10000
+      time-between-eviction-runs-millis: 30000
+      min-evictable-idle-time-millis: 60000
+      max-evictable-idle-time-millis: 180000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      validation-query-timeout: 3000
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      remove-abandoned: true
+      remove-abandoned-timeout: 120
+      log-abandoned: true
+      filters: stat,wall
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=1000
+
+# 生产日志：只保留 INFO，禁止打印 SQL 参数与响应体
+logging:
+  level:
+    root: INFO
+    com.mcp.transfer: INFO
+    com.mcp.transfer.mapper: INFO
+    org.apache.ibatis: INFO
+    com.alibaba.druid: WARN
+
+mcp:
+  security:
+    # 是否允许访问内网地址（下游均为内网服务时按需开启；开启即关闭 SSRF 防护）
+    allow-private-network: ${MCP_SECURITY_ALLOW_PRIVATE_NETWORK:false}
+    secretkey: ${MCP_SECURITY_SECRETKEY:}
+  admin:
+    jwt-secret: ${MCP_ADMIN_JWT_SECRET:}
+    init-password: ${MCP_ADMIN_INIT_PASSWORD:}
+  session:
+    max-count: ${MCP_SESSION_MAX_COUNT:20000}
+  sse:
+    max-connections: ${MCP_SSE_MAX_CONNECTIONS:1000}
+
+
+# 生产默认关闭接口文档
+springdoc:
+  api-docs:
+    enabled: ${MCP_SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${MCP_SWAGGER_ENABLED:false}

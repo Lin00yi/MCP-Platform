@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcp.transfer.mapper.McpRequestLogMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpRequestLog">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="mcp_method" jdbcType="VARCHAR" property="mcpMethod" />
+    <result column="method_name" jdbcType="VARCHAR" property="methodName" />
+    <result column="authorization" jdbcType="LONGVARCHAR" property="authorization" />
+    <result column="sk_hash" jdbcType="VARCHAR" property="skHash" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
+    <result column="request_params" jdbcType="LONGVARCHAR" property="requestParams" />
+    <result column="response_result" jdbcType="LONGVARCHAR" property="responseResult" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, mcp_method, method_name, authorization, sk_hash, user_id, tenant_id, request_params, response_result, create_time
+  </sql>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpRequestLog" useGeneratedKeys="true">
+    insert into mcp_request_log
+    (mcp_method, method_name, authorization, sk_hash, user_id, tenant_id, request_params, response_result, create_time)
+    values
+    (#{mcpMethod,jdbcType=VARCHAR}, #{methodName,jdbcType=VARCHAR}, #{authorization,jdbcType=LONGVARCHAR}, #{skHash,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR},
+     #{tenantId,jdbcType=INTEGER}, #{requestParams,jdbcType=LONGVARCHAR}, #{responseResult,jdbcType=LONGVARCHAR}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpRequestLog" useGeneratedKeys="true">
+    insert into mcp_request_log
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="mcpMethod != null">mcp_method,</if>
+      <if test="methodName != null">method_name,</if>
+      <if test="authorization != null">authorization,</if>
+      <if test="skHash != null">sk_hash,</if>
+      <if test="userId != null">user_id,</if>
+      <if test="tenantId != null">tenant_id,</if>
+      <if test="requestParams != null">request_params,</if>
+      <if test="responseResult != null">response_result,</if>
+      <if test="createTime != null">create_time,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="mcpMethod != null">#{mcpMethod,jdbcType=VARCHAR},</if>
+      <if test="methodName != null">#{methodName,jdbcType=VARCHAR},</if>
+      <if test="authorization != null">#{authorization,jdbcType=LONGVARCHAR},</if>
+      <if test="skHash != null">#{skHash,jdbcType=VARCHAR},</if>
+      <if test="userId != null">#{userId,jdbcType=VARCHAR},</if>
+      <if test="tenantId != null">#{tenantId,jdbcType=INTEGER},</if>
+      <if test="requestParams != null">#{requestParams,jdbcType=LONGVARCHAR},</if>
+      <if test="responseResult != null">#{responseResult,jdbcType=LONGVARCHAR},</if>
+      <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
+    </trim>
+  </insert>
+  <delete id="deleteOlderThan">
+    delete from mcp_request_log where create_time &lt; #{before,jdbcType=TIMESTAMP}
+  </delete>
+</mapper>

@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="980" viewBox="0 0 1680 980" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif">
+<defs>
+<filter id="softShadow" x="-8%" y="-8%" width="116%" height="120%"><feDropShadow dx="0" dy="2.5" stdDeviation="3.2" flood-color="#0f172a" flood-opacity="0.10"/></filter>
+<marker id="ah1" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#475569"/></marker>
+<marker id="ah2" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#1d4ed8"/></marker>
+<marker id="ah3" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#64748b"/></marker>
+<marker id="ah4" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#b45309"/></marker>
+<marker id="ah5" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#6d28d9"/></marker>
+<marker id="ah6" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#b91c1c"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="50" y="46" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="23" font-weight="700" fill="#0f172a" text-anchor="start" opacity="1">部署拓扑与运行时</text>
+<text x="50" y="70" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="13" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">Docker Compose 双容器（backend + MySQL）；控制台独立托管；上游可为 REST、MCP 或聚合 MCP</text>
+<rect x="40" y="110" width="400" height="640" rx="14" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.3" opacity="1" stroke-dasharray="7 5" />
+<text x="58" y="136" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#475569" text-anchor="start" opacity="1" letter-spacing="0.5">客户端 / 工具主机（macOS）</text>
+<rect x="58" y="158" width="364" height="62" rx="10" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 58 170 L 58 168 Q 58 158 68 158 L 62 158 Z" fill="#4338ca" opacity="0.9"/>
+<text x="240.0" y="182.19" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#4338ca" text-anchor="middle" opacity="1">DSH Desktop</text>
+<text x="240.0" y="199.99" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">Streamable HTTP · 配置自动同步</text>
+<rect x="58" y="238" width="364" height="62" rx="10" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 58 250 L 58 248 Q 58 238 68 238 L 62 238 Z" fill="#4338ca" opacity="0.9"/>
+<text x="240.0" y="262.19" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#4338ca" text-anchor="middle" opacity="1">Codex CLI</text>
+<text x="240.0" y="279.99" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">stdio → bridge.sh → HTTP</text>
+<rect x="58" y="318" width="364" height="58" rx="10" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 58 330 L 58 328 Q 58 318 68 318 L 62 318 Z" fill="#4338ca" opacity="0.9"/>
+<text x="240.0" y="340.19" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#4338ca" text-anchor="middle" opacity="1">浏览器</text>
+<text x="240.0" y="357.99" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">打开控制台页面</text>
+<rect x="58" y="394" width="364" height="66" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 58 406 L 58 404 Q 58 394 68 394 L 62 394 Z" fill="#b45309" opacity="0.9"/>
+<text x="240.0" y="412.53999999999996" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">mcp-console :5173</text>
+<text x="240.0" y="430.34" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">Vite dev / node server.cjs</text>
+<text x="240.0" y="445.64" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">/api 反向代理 → 8081</text>
+<rect x="58" y="478" width="364" height="80" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 58 490 L 58 488 Q 58 478 68 478 L 62 478 Z" fill="#b91c1c" opacity="0.9"/>
+<text x="240.0" y="503.53999999999996" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle" opacity="1">tools/ 脚本</text>
+<text x="240.0" y="521.3399999999999" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">dsh-mcp-sync.py · gen-mcp-app-token.py</text>
+<text x="240.0" y="536.6399999999999" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">codex-pcb-bridge.sh</text>
+<rect x="58" y="576" width="364" height="62" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 58 588 L 58 586 Q 58 576 68 576 L 62 576 Z" fill="#475569" opacity="0.9"/>
+<text x="240.0" y="600.19" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#475569" text-anchor="middle" opacity="1">launchd 定时任务</text>
+<text x="240.0" y="617.99" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">按 interval 拉取发现接口</text>
+<rect x="470" y="110" width="690" height="790" rx="16" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" opacity="1" />
+<text x="490" y="137" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start" opacity="1">Docker Engine  ·  docker compose</text>
+<text x="1140" y="137" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">bridge 网络</text>
+<rect x="492" y="162" width="646" height="330" rx="12" fill="#f0fdf4" stroke="#a7f3d0" stroke-width="1.4" opacity="1" />
+<text x="510" y="186" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="12.5" font-weight="700" fill="#047857" text-anchor="start" opacity="1">backend  ·  mcp-gateway:1.0.0</text>
+<text x="1120" y="186" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#64748b" text-anchor="end" opacity="1">非 root UID 10001 ｜ ports 8081:8081</text>
+<rect x="510" y="200" width="290" height="92" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5" opacity="1" />
+<path d="M 510 212 L 510 210 Q 510 200 520 200 L 514 200 Z" fill="#047857" opacity="0.9"/>
+<text x="655.0" y="224.18" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">Spring Boot 2.7.18 / Tomcat</text>
+<text x="655.0" y="241.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">数据面 /mcp/v1/**</text>
+<text x="655.0" y="256.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">控制面 /mcp/admin/**</text>
+<text x="655.0" y="271.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">发现面 /mcp/discovery/**</text>
+<rect x="820" y="200" width="300" height="92" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5" opacity="1" />
+<path d="M 820 212 L 820 210 Q 820 200 830 200 L 824 200 Z" fill="#334155" opacity="0.9"/>
+<text x="970.0" y="224.18" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#334155" text-anchor="middle" opacity="1">JVM 与进程</text>
+<text x="970.0" y="241.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">JAVA_OPTS -Xms256m -Xmx512m</text>
+<text x="970.0" y="256.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">日志 /app/logs（logback）</text>
+<text x="970.0" y="271.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">单实例：会话在内存</text>
+<text x="510" y="314" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#475569" text-anchor="start" opacity="1">环境变量（生产必须显式提供，缺失即拒绝启动）</text>
+<rect x="510" y="326" width="135.04000000000008" height="21" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" opacity="1" />
+<text x="577.52" y="340.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">SPRING_PROFILES_ACTIVE</text>
+<rect x="653.0400000000001" y="326" width="135.21600000000007" height="21" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" opacity="1" />
+<text x="720.6480000000001" y="340.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">SPRING_DATASOURCE_URL</text>
+<rect x="796.2560000000001" y="326" width="142.43200000000007" height="21" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" opacity="1" />
+<text x="867.4720000000001" y="340.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">MCP_SECURITY_SECRETKEY</text>
+<rect x="946.6880000000001" y="326" width="132.75200000000007" height="21" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" opacity="1" />
+<text x="1013.0640000000001" y="340.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">MCP_ADMIN_JWT_SECRET</text>
+<rect x="510" y="353" width="144.19200000000006" height="21" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" opacity="1" />
+<text x="582.096" y="367.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">MCP_ADMIN_INIT_PASSWORD</text>
+<rect x="662.192" y="353" width="156.86400000000003" height="21" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" opacity="1" />
+<text x="740.624" y="367.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">MCP_SWAGGER_ENABLED=false</text>
+<rect x="827.056" y="353" width="237.648" height="21" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" opacity="1" />
+<text x="945.88" y="367.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">MCP_SECURITY_ALLOW_PRIVATE_NETWORK=false</text>
+<rect x="510" y="380" width="155.28000000000006" height="21" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" opacity="1" />
+<text x="587.64" y="394.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">MCP_IDENTITY_ENABLED=false</text>
+<text x="510" y="424" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">健康检查：/mcp/admin/health/** · 五态健康度（定时探活 30s）</text>
+<text x="510" y="444" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">启动引导：AdminBootstrap 首次创建 admin；LogCleanupScheduler 清理过期日志</text>
+<path d="M 470 330 L 492 330" fill="none" stroke="#475569" stroke-width="1.6" opacity="1" marker-end="url(#ah1)"/>
+<rect x="492" y="516" width="646" height="214" rx="12" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.4" opacity="1" />
+<text x="510" y="540" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="start" opacity="1">mysql  ·  mysql:8.0</text>
+<text x="1120" y="540" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#64748b" text-anchor="end" opacity="1">healthcheck: mysqladmin ping</text>
+<rect x="510" y="554" width="290" height="92" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" />
+<path d="M 510 566 L 510 564 Q 510 554 520 554 L 514 554 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="655.0" y="578.18" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">数据库 mcp_gateway</text>
+<text x="655.0" y="595.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">utf8mb4 / utf8mb4_unicode_ci</text>
+<text x="655.0" y="610.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">默认时区 +08:00</text>
+<text x="655.0" y="625.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">18 张表</text>
+<rect x="820" y="554" width="300" height="92" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" />
+<path d="M 820 566 L 820 564 Q 820 554 830 554 L 824 554 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="970.0" y="578.18" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">初始化与迁移</text>
+<text x="970.0" y="595.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">docker/mysql/init.sql（首次启动）</text>
+<text x="970.0" y="610.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">docs/sql/migration.sql（存量升级）</text>
+<text x="970.0" y="625.68" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">不预置默认管理员</text>
+<text x="510" y="672" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#1d4ed8" text-anchor="start" opacity="1">端口仅绑定本机：127.0.0.1:3307 → 容器 3306</text>
+<text x="510" y="694" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">backed by named volume，目录改名不会丢数据</text>
+<path d="M 815 492 L 815 516" fill="none" stroke="#1d4ed8" stroke-width="1.8" opacity="1" marker-end="url(#ah2)"/>
+<rect x="785.3" y="494.25" width="59.4" height="17.5" rx="4" fill="#ffffff" stroke="none" stroke-width="0" opacity="1" />
+<text x="815" y="507.325" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="500" fill="#1d4ed8" text-anchor="middle" opacity="1">JDBC 3306</text>
+<text x="510" y="508" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">depends_on: service_healthy</text>
+<rect x="492" y="748" width="300" height="70" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5" opacity="1" />
+<path d="M 492 760 L 492 758 Q 492 748 502 748 L 496 748 Z" fill="#334155" opacity="0.9"/>
+<text x="642.0" y="769.02" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="700" fill="#334155" text-anchor="middle" opacity="1">volume：mysql-data</text>
+<text x="642.0" y="786.02" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">固定卷名 mcp-gateway-mysql-data</text>
+<text x="642.0" y="800.52" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">/var/lib/mysql</text>
+<rect x="820" y="748" width="318" height="70" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5" opacity="1" />
+<path d="M 820 760 L 820 758 Q 820 748 830 748 L 824 748 Z" fill="#334155" opacity="0.9"/>
+<text x="979.0" y="769.02" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="700" fill="#334155" text-anchor="middle" opacity="1">日志</text>
+<text x="979.0" y="786.02" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">/app/logs（logback）</text>
+<text x="979.0" y="800.52" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">容器内非 root 可写</text>
+<path d="M 640 730 L 640 748" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" stroke-dasharray="5 4" marker-end="url(#ah3)"/>
+<rect x="1190" y="110" width="450" height="700" rx="14" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1.3" opacity="1" stroke-dasharray="7 5" />
+<text x="1208" y="136" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#6d28d9" text-anchor="start" opacity="1" letter-spacing="0.5">上游系统 / 外部依赖</text>
+<rect x="1210" y="170" width="410" height="88" rx="10" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 1210 182 L 1210 180 Q 1210 170 1220 170 L 1214 170 Z" fill="#6d28d9" opacity="0.9"/>
+<text x="1415.0" y="199.54" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#6d28d9" text-anchor="middle" opacity="1">REST API</text>
+<text x="1415.0" y="217.34" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">HTTP / HTTPS · GET / POST</text>
+<text x="1415.0" y="232.64000000000001" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">SSRF 默认拒绝内网</text>
+<rect x="1210" y="278" width="410" height="88" rx="10" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 1210 290 L 1210 288 Q 1210 278 1220 278 L 1214 278 Z" fill="#6d28d9" opacity="0.9"/>
+<text x="1415.0" y="307.53999999999996" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#6d28d9" text-anchor="middle" opacity="1">MCP Server</text>
+<text x="1415.0" y="325.34" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">Streamable HTTP</text>
+<text x="1415.0" y="340.64" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">initialize + 透传</text>
+<rect x="1210" y="386" width="410" height="88" rx="10" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 1210 398 L 1210 396 Q 1210 386 1220 386 L 1214 386 Z" fill="#6d28d9" opacity="0.9"/>
+<text x="1415.0" y="415.53999999999996" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#6d28d9" text-anchor="middle" opacity="1">聚合上游 A / B</text>
+<text x="1415.0" y="433.34" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">AGGREGATE 多下游</text>
+<text x="1415.0" y="448.64" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">{name}__{tool} 前缀</text>
+<rect x="1210" y="494" width="410" height="96" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 1210 506 L 1210 504 Q 1210 494 1220 494 L 1214 494 Z" fill="#b91c1c" opacity="0.9"/>
+<text x="1415.0" y="527.5400000000001" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle" opacity="1">用户信息服务（可选）</text>
+<text x="1415.0" y="545.34" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">GET /internal/userinfo</text>
+<text x="1415.0" y="560.64" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">MCP_IDENTITY_ENABLED=true 才启用</text>
+<rect x="1210" y="610" width="410" height="84" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 1210 622 L 1210 620 Q 1210 610 1220 610 L 1214 610 Z" fill="#475569" opacity="0.9"/>
+<text x="1415.0" y="637.5400000000001" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#475569" text-anchor="middle" opacity="1">鉴权 / 凭证</text>
+<text x="1415.0" y="655.34" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">SK_EXCHANGE auth_url</text>
+<text x="1415.0" y="670.64" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">API_KEY / BEARER</text>
+<path d="M 422 189 L 446 189 L 446 260 L 470 260" fill="none" stroke="#475569" stroke-width="1.6" opacity="1" marker-end="url(#ah1)"/>
+<path d="M 422 269 L 446 269 L 446 260" fill="none" stroke="#475569" stroke-width="1.6" opacity="1" marker-end="url(#ah1)"/>
+<rect x="418.05" y="230.5" width="55.9" height="17" rx="4" fill="#ffffff" stroke="none" stroke-width="0" opacity="1" />
+<text x="446" y="243.15" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="500" fill="#334155" text-anchor="middle" opacity="1">MCP HTTP</text>
+<path d="M 240 376 L 240 394" fill="none" stroke="#b45309" stroke-width="1.4" opacity="1" marker-end="url(#ah4)"/>
+<path d="M 422 424 L 470 424" fill="none" stroke="#b45309" stroke-width="1.6" opacity="1" marker-end="url(#ah4)"/>
+<rect x="432.0" y="400.5" width="28.000000000000004" height="17" rx="4" fill="#ffffff" stroke="none" stroke-width="0" opacity="1" />
+<text x="446" y="413.15" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="500" fill="#334155" text-anchor="middle" opacity="1">/api</text>
+<path d="M 1138 250 L 1210 214" fill="none" stroke="#6d28d9" stroke-width="1.6" opacity="1" marker-end="url(#ah5)"/>
+<path d="M 1138 280 L 1210 322" fill="none" stroke="#6d28d9" stroke-width="1.6" opacity="1" marker-end="url(#ah5)"/>
+<path d="M 1138 310 L 1210 430" fill="none" stroke="#6d28d9" stroke-width="1.4" opacity="1" stroke-dasharray="5 4" marker-end="url(#ah5)"/>
+<path d="M 1138 360 L 1210 542" fill="none" stroke="#b91c1c" stroke-width="1.4" opacity="1" stroke-dasharray="5 4" marker-end="url(#ah6)"/>
+<rect x="40" y="846" width="1600" height="92" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<text x="58" y="870" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="700" fill="#475569" text-anchor="start" opacity="1">上线前检查</text>
+<rect x="58" y="884" width="166.49999999999997" height="21" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" opacity="1" />
+<text x="141.25" y="898.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="700" fill="#b91c1c" text-anchor="middle" opacity="1">轮换 MCP_SECURITY_SECRETKEY</text>
+<rect x="234.49999999999997" y="884" width="160.01999999999998" height="21" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" opacity="1" />
+<text x="314.51" y="898.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">MCP_SWAGGER_ENABLED=false</text>
+<rect x="404.52" y="884" width="145.62" height="21" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" opacity="1" />
+<text x="477.33" y="898.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="700" fill="#b91c1c" text-anchor="middle" opacity="1">内网访问显式开启并评估 SSRF</text>
+<rect x="560.14" y="884" width="118.98000000000002" height="21" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" opacity="1" />
+<text x="619.63" y="898.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">数据库端口不对公网暴露</text>
+<rect x="689.12" y="884" width="130.32000000000002" height="21" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" opacity="1" />
+<text x="754.28" y="898.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="700" fill="#6d28d9" text-anchor="middle" opacity="1">多实例前先做 Redis 会话化</text>
+<text x="58" y="924" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">当前形态：单实例、会话与 SSE 注册表在 JVM 内存；横向扩容需要 Redis / 粘性会话，见 docs/待办清单.md。</text>
+<text x="50" y="964" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#94a3b8" text-anchor="start" opacity="1">来源：docker-compose.yml · Dockerfile · mcp-console/vite.config.js · mcp-console/server.cjs · application.yml / application-prod.yml</text>
+</svg>

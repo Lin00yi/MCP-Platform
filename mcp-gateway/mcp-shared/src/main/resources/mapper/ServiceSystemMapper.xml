@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcp.transfer.mapper.ServiceSystemMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.ServiceSystem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="auth_url" jdbcType="VARCHAR" property="authUrl" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, `name`, auth_url, `status`, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from service_system
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectAllByStatus" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from service_system
+    where `status` = #{status,jdbcType=INTEGER}
+  </select>
+
+  <!--管理后台：查询全部系统服务-->
+  <select id="selectAll" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from service_system
+    order by id asc
+  </select>
+
+  <!--管理后台：选择性更新-->
+  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.entity.ServiceSystem">
+    update service_system
+    <set>
+      <if test="name != null and name != ''">`name` = #{name,jdbcType=VARCHAR},</if>
+      <if test="authUrl != null and authUrl != ''">auth_url = #{authUrl,jdbcType=VARCHAR},</if>
+      <if test="status != null">`status` = #{status,jdbcType=INTEGER},</if>
+      <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

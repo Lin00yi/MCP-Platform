@@ -1,0 +1,13 @@
+{
+  "name": "MCP Gateway 控制台",
+  "short_name": "MCP Gateway",
+  "description": "多租户 MCP Server 与 Tool/Prompt/Resource 管理、应用授权、调用日志与运行监控",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#22c55e",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -1,0 +1,47 @@
+spring:
+  # 测试环境数据源：通过环境变量注入
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: ${MCP_DB_URL:jdbc:mysql://127.0.0.1:3306/xaxsuatdb-test?useSSL=false&serverTimezone=Asia/Shanghai}
+    username: ${MCP_DB_USERNAME:}
+    password: ${MCP_DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 50
+      max-wait: 10000
+      time-between-eviction-runs-millis: 30000
+      min-evictable-idle-time-millis: 60000
+      max-evictable-idle-time-millis: 180000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: true
+      test-on-return: false
+      validation-query-timeout: 3000
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      remove-abandoned: true
+      remove-abandoned-timeout: 20
+      log-abandoned: true
+      filters: stat,wall,slf4j
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+
+logging:
+  level:
+    com.mcp.transfer.mapper: INFO
+    org.apache.ibatis: INFO
+
+springdoc:
+  api-docs:
+    enabled: ${MCP_SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${MCP_SWAGGER_ENABLED:false}
+
+mcp:
+  security:
+    allow-private-network: ${MCP_SECURITY_ALLOW_PRIVATE_NETWORK:false}
+  admin:
+    init-password: ${MCP_ADMIN_INIT_PASSWORD:}
+

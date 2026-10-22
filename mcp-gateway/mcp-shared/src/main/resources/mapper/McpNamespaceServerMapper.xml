@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcp.transfer.mapper.McpNamespaceServerMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpNamespaceServer">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="namespace_id" jdbcType="INTEGER" property="namespaceId" />
+    <result column="server_id" jdbcType="INTEGER" property="serverId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+
+  <select id="selectByNamespaceId" resultMap="BaseResultMap">
+    select id, namespace_id, server_id, create_time from mcp_namespace_server
+    where namespace_id = #{namespaceId,jdbcType=INTEGER} order by server_id asc
+  </select>
+
+  <select id="selectByServerId" resultMap="BaseResultMap">
+    select id, namespace_id, server_id, create_time from mcp_namespace_server
+    where server_id = #{serverId,jdbcType=INTEGER} order by namespace_id asc
+  </select>
+
+  <insert id="insert" parameterType="com.mcp.transfer.entity.McpNamespaceServer" useGeneratedKeys="true" keyProperty="id">
+    insert into mcp_namespace_server (namespace_id, server_id, create_time)
+    values (#{namespaceId,jdbcType=INTEGER}, #{serverId,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <delete id="deleteByNamespaceId">
+    delete from mcp_namespace_server where namespace_id = #{namespaceId,jdbcType=INTEGER}
+  </delete>
+</mapper>

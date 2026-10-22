@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.mcp</groupId>
+        <artifactId>mcp-gateway</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>mcp-dataplane</artifactId>
+    <name>MCP Gateway :: Dataplane</name>
+    <description>S1 数据面：MCP 协议接入/会话/SSE、工具目录与暴露、上游转发、发现、调用日志写入。</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.mcp</groupId>
+            <artifactId>mcp-shared</artifactId>
+        </dependency>
+        <!-- tools/call 参数校验（JSON Schema Draft-07） -->
+        <dependency>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>${networknt.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>mcp-dataplane</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.7.18</version>
+                <configuration>
+                    <mainClass>com.mcp.transfer.McpTransferApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

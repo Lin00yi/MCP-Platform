@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="720" viewBox="0 0 1680 720" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif">
+<defs>
+<filter id="softShadow" x="-8%" y="-8%" width="116%" height="120%"><feDropShadow dx="0" dy="2.5" stdDeviation="3.2" flood-color="#0f172a" flood-opacity="0.10"/></filter>
+<marker id="ah1" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#64748b"/></marker>
+<marker id="ah2" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#b91c1c"/></marker>
+<marker id="ah3" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#b45309"/></marker>
+<marker id="ah4" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#047857"/></marker>
+<marker id="ah5" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#475569"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="50" y="46" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="23" font-weight="700" fill="#0f172a" text-anchor="start" opacity="1">健康度判定（五态）</text>
+<text x="50" y="70" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="13" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">配置状态 + 主动探测 + 近 5 分钟调用成功率 → DISABLED / DOWN / DEGRADED / UP / UNKNOWN，按顺序首个命中生效</text>
+<rect x="60" y="116" width="760" height="66" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<circle cx="84" cy="140" r="5" fill="#64748b" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="98" y="144" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#1e293b" text-anchor="start" opacity="1">status != 1（Server 已下线）</text>
+<text x="98" y="164" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#94a3b8" text-anchor="start" opacity="1">不探测；直接短路</text>
+<path d="M 820 149 L 880 149" fill="none" stroke="#64748b" stroke-width="1.6" opacity="1" marker-end="url(#ah1)"/>
+<rect x="880" y="116" width="740" height="66" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.3" opacity="1" />
+<text x="904" y="143" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="14" font-weight="700" fill="#64748b" text-anchor="start" opacity="1">DISABLED</text>
+<text x="904" y="163" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="start" opacity="1">已下线，路由已移除</text>
+<rect x="1470" y="136" width="59.480000000000004" height="21" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" opacity="1" />
+<text x="1499.74" y="150.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#64748b" text-anchor="middle" opacity="1">ok = false</text>
+<text x="1610" y="143" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.5" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">优先命中</text>
+<rect x="60" y="194" width="760" height="66" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<circle cx="84" cy="218" r="5" fill="#b91c1c" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="98" y="222" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#1e293b" text-anchor="start" opacity="1">主动探测失败（超时 / 非合法 MCP 响应）</text>
+<text x="98" y="242" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#94a3b8" text-anchor="start" opacity="1">SSRF 校验 → 探活，缓存 30s</text>
+<path d="M 820 227 L 880 227" fill="none" stroke="#b91c1c" stroke-width="1.6" opacity="1" marker-end="url(#ah2)"/>
+<rect x="880" y="194" width="740" height="66" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1.3" opacity="1" />
+<text x="904" y="221" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="14" font-weight="700" fill="#b91c1c" text-anchor="start" opacity="1">DOWN</text>
+<text x="904" y="241" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="start" opacity="1">下游不可达或协议不兼容</text>
+<rect x="1470" y="214" width="59.480000000000004" height="21" rx="10" fill="#ffffff" stroke="#fecaca" stroke-width="1" opacity="1" />
+<text x="1499.74" y="228.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#b91c1c" text-anchor="middle" opacity="1">ok = false</text>
+<text x="1610" y="221" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.5" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">优先命中</text>
+<rect x="60" y="272" width="760" height="66" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<circle cx="84" cy="296" r="5" fill="#b45309" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="98" y="300" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#1e293b" text-anchor="start" opacity="1">近 5 分钟样本 ≥ 5 且成功率 &lt; 0.8</text>
+<text x="98" y="320" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#94a3b8" text-anchor="start" opacity="1">调用统计来自 tool_call_record</text>
+<path d="M 820 305 L 880 305" fill="none" stroke="#b45309" stroke-width="1.6" opacity="1" marker-end="url(#ah3)"/>
+<rect x="880" y="272" width="740" height="66" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.3" opacity="1" />
+<text x="904" y="299" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="14" font-weight="700" fill="#b45309" text-anchor="start" opacity="1">DEGRADED</text>
+<text x="904" y="319" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="start" opacity="1">可用但错误率偏高</text>
+<rect x="1470" y="292" width="56.760000000000005" height="21" rx="10" fill="#ffffff" stroke="#fde68a" stroke-width="1" opacity="1" />
+<text x="1498.38" y="306.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">ok = true</text>
+<text x="1610" y="299" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.5" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">优先命中</text>
+<rect x="60" y="350" width="760" height="66" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<circle cx="84" cy="374" r="5" fill="#047857" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="98" y="378" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#1e293b" text-anchor="start" opacity="1">主动探测成功（且未命中降级）</text>
+<text x="98" y="398" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#94a3b8" text-anchor="start" opacity="1">MCP initialize / 本地类方法存在</text>
+<path d="M 820 383 L 880 383" fill="none" stroke="#047857" stroke-width="1.6" opacity="1" marker-end="url(#ah4)"/>
+<rect x="880" y="350" width="740" height="66" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.3" opacity="1" />
+<text x="904" y="377" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="14" font-weight="700" fill="#047857" text-anchor="start" opacity="1">UP</text>
+<text x="904" y="397" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="start" opacity="1">健康</text>
+<rect x="1470" y="370" width="56.760000000000005" height="21" rx="10" fill="#ffffff" stroke="#a7f3d0" stroke-width="1" opacity="1" />
+<text x="1498.38" y="384.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">ok = true</text>
+<text x="1610" y="377" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.5" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">优先命中</text>
+<rect x="60" y="428" width="760" height="66" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<circle cx="84" cy="452" r="5" fill="#475569" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="98" y="456" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#1e293b" text-anchor="start" opacity="1">无探测结果且无调用样本</text>
+<text x="98" y="476" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#94a3b8" text-anchor="start" opacity="1">刚注册 / 长时间无流量</text>
+<path d="M 820 461 L 880 461" fill="none" stroke="#475569" stroke-width="1.6" opacity="1" marker-end="url(#ah5)"/>
+<rect x="880" y="428" width="740" height="66" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.3" opacity="1" />
+<text x="904" y="455" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="14" font-weight="700" fill="#475569" text-anchor="start" opacity="1">UNKNOWN</text>
+<text x="904" y="475" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="start" opacity="1">信息不足</text>
+<rect x="1470" y="448" width="59.480000000000004" height="21" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" opacity="1" />
+<text x="1499.74" y="462.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#475569" text-anchor="middle" opacity="1">ok = false</text>
+<text x="1610" y="455" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.5" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">优先命中</text>
+<rect x="60" y="530" width="760" height="130" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<text x="78" y="554" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#475569" text-anchor="start" opacity="1">探活方式与缓存</text>
+<text x="78" y="578" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#475569" text-anchor="start" opacity="1">NONE（本地 / REST）</text>
+<text x="250" y="578" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">只校验本地工具类.方法是否存在，不主动打 REST，避免副作用</text>
+<text x="78" y="598" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#475569" text-anchor="start" opacity="1">MCP（单下游）</text>
+<text x="250" y="598" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">POST initialize，校验返回合法 JSON-RPC result；超时 2s</text>
+<text x="78" y="618" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#475569" text-anchor="start" opacity="1">AGGREGATE（多下游）</text>
+<text x="250" y="618" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">逐个上游探活：全通过 UP、部分通过 DEGRADED、全失败 DOWN</text>
+<text x="78" y="638" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#475569" text-anchor="start" opacity="1">调度</text>
+<text x="250" y="638" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">定时 30s（可配）+ 结果缓存 30s；手动 probe 立即执行</text>
+<rect x="880" y="530" width="740" height="130" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<text x="898" y="554" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#475569" text-anchor="start" opacity="1">返回字段（控制台 / 发现接口）</text>
+<text x="898" y="584" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="9.5" font-weight="700" fill="#1d4ed8" text-anchor="start" opacity="1">status / ok</text>
+<text x="898" y="601" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">五态枚举 + 布尔</text>
+<text x="1080" y="584" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="9.5" font-weight="700" fill="#1d4ed8" text-anchor="start" opacity="1">latencyMs / message</text>
+<text x="1080" y="601" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">探测耗时与说明</text>
+<text x="1290" y="584" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="9.5" font-weight="700" fill="#1d4ed8" text-anchor="start" opacity="1">totalCalls / successRate</text>
+<text x="1290" y="601" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">窗口内调用量与成功率</text>
+<text x="898" y="622" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="9.5" font-weight="700" fill="#1d4ed8" text-anchor="start" opacity="1">checkedAt</text>
+<text x="898" y="639" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">探测时间</text>
+<text x="1080" y="622" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="9.5" font-weight="700" fill="#1d4ed8" text-anchor="start" opacity="1">upstreamType</text>
+<text x="1080" y="639" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">NONE / MCP / AGGREGATE</text>
+<text x="50" y="704" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#94a3b8" text-anchor="start" opacity="1">对应实现：McpServerHealthService · McpServerHealthProbe · McpServerHealthScheduler · McpHealthStatus</text>
+</svg>

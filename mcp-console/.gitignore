@@ -1,0 +1,11 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.vite/
+.DS_Store
+*.log
+
+# 构建时由 scripts/version.mjs 生成
+public/version.json

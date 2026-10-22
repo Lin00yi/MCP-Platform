@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcp.transfer.mapper.McpPromptMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpPrompt">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="server_id" jdbcType="INTEGER" property="serverId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="res_json" jdbcType="LONGVARCHAR" property="resJson" />
+    <result column="tags" jdbcType="VARCHAR" property="tags" />
+    <result column="version" jdbcType="VARCHAR" property="version" />
+    <result column="token_estimate" jdbcType="INTEGER" property="tokenEstimate" />
+    <result column="tokenizer" jdbcType="VARCHAR" property="tokenizer" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, server_id, `name`, `status`, res_json, tags, version, token_estimate, tokenizer, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_prompt
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from mcp_prompt
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpPrompt" useGeneratedKeys="true">
+    insert into mcp_prompt (server_id, `name`, `status`, res_json, tags, version, token_estimate, tokenizer, create_time, update_time)
+    values (#{serverId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER},
+      #{resJson,jdbcType=LONGVARCHAR}, #{tags,jdbcType=VARCHAR}, #{version,jdbcType=VARCHAR},
+      #{tokenEstimate,jdbcType=INTEGER}, #{tokenizer,jdbcType=VARCHAR},
+      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpPrompt" useGeneratedKeys="true">
+    insert into mcp_prompt
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="serverId != null">server_id,</if>
+      <if test="name != null and name != ''">`name`,</if>
+      <if test="status != null">`status`,</if>
+      <if test="resJson != null and resJson != ''">res_json,</if>
+      <if test="tags != null and tags != ''">tags,</if>
+      <if test="version != null and version != ''">version,</if>
+      <if test="tokenEstimate != null">token_estimate,</if>
+      <if test="tokenizer != null and tokenizer != ''">tokenizer,</if>
+      <if test="createTime != null">create_time,</if>
+      <if test="updateTime != null">update_time,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="serverId != null">#{serverId,jdbcType=INTEGER},</if>
+      <if test="name != null and name != ''">#{name,jdbcType=VARCHAR},</if>
+      <if test="status != null">#{status,jdbcType=INTEGER},</if>
+      <if test="resJson != null and resJson != ''">#{resJson,jdbcType=LONGVARCHAR},</if>
+      <if test="tags != null and tags != ''">#{tags,jdbcType=VARCHAR},</if>
+      <if test="version != null and version != ''">#{version,jdbcType=VARCHAR},</if>
+      <if test="tokenEstimate != null">#{tokenEstimate,jdbcType=INTEGER},</if>
+      <if test="tokenizer != null and tokenizer != ''">#{tokenizer,jdbcType=VARCHAR},</if>
+      <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
+      <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.entity.McpPrompt">
+    update mcp_prompt
+    <set>
+      <if test="serverId != null">server_id = #{serverId,jdbcType=INTEGER},</if>
+      <if test="name != null and name != ''">`name` = #{name,jdbcType=VARCHAR},</if>
+      <if test="status != null">`status` = #{status,jdbcType=INTEGER},</if>
+      <if test="resJson != null and resJson != ''">res_json = #{resJson,jdbcType=LONGVARCHAR},</if>
+      <if test="tags != null">tags = #{tags,jdbcType=VARCHAR},</if>
+      <if test="version != null and version != ''">version = #{version,jdbcType=VARCHAR},</if>
+      <if test="tokenEstimate != null">token_estimate = #{tokenEstimate,jdbcType=INTEGER},</if>
+      <if test="tokenizer != null and tokenizer != ''">tokenizer = #{tokenizer,jdbcType=VARCHAR},</if>
+      <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.entity.McpPrompt">
+    update mcp_prompt
+    set server_id = #{serverId,jdbcType=INTEGER},
+      `name` = #{name,jdbcType=VARCHAR},
+      `status` = #{status,jdbcType=INTEGER},
+      res_json = #{resJson,jdbcType=LONGVARCHAR},
+      tags = #{tags,jdbcType=VARCHAR},
+      version = #{version,jdbcType=VARCHAR},
+      token_estimate = #{tokenEstimate,jdbcType=INTEGER},
+      tokenizer = #{tokenizer,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectAllByServerId" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_prompt
+    where server_id = #{serverId,jdbcType=INTEGER}
+      and `status` = 1
+    order by id asc
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_prompt
+    order by id desc
+  </select>
+  <select id="selectByServerIds" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_prompt
+    where server_id in
+    <foreach collection="serverIds" item="sid" open="(" separator="," close=")">#{sid,jdbcType=INTEGER}</foreach>
+    order by id desc
+  </select>
+  <select id="selectOneByServerIdAndName" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_prompt
+    where server_id = #{serverId,jdbcType=INTEGER}
+      and `name` = #{name,jdbcType=VARCHAR}
+      and `status` = 1
+    limit 1
+  </select>
+  <delete id="deleteByServerId">
+    delete from mcp_prompt where server_id = #{serverId,jdbcType=INTEGER}
+  </delete>
+</mapper>

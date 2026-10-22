@@ -1,0 +1,72 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif","fontSize":"14px","primaryColor":"#eef2ff","primaryBorderColor":"#94a3b8","lineColor":"#475569","noteBkgColor":"#fffbeb","noteBorderColor":"#fcd34d","noteTextColor":"#78350f","actorBkg":"#eef2ff","actorBorder":"#818cf8","actorTextColor":"#1e1b4b","signalColor":"#334155","signalTextColor":"#0f172a","labelBoxBkgColor":"#e0e7ff","labelBoxBorderColor":"#a5b4fc","labelTextColor":"#1e1b4b","loopTextColor":"#1e1b4b"}}}%%
+sequenceDiagram
+    autonumber
+    participant U as 用户 / 浏览器
+    participant C as MCP 客户端<br/>DSH Desktop
+    participant CAS as 集团 CAS
+    participant P as user-center<br/>IdP + 业务 API
+    participant SR as 会话 Redis
+    participant BR as 业务 Redis<br/>dsh:auth:token
+    participant G as MCP Gateway
+    participant DB as Gateway MySQL
+    participant UP as 其它业务 /<br/>下游 MCP Server
+
+    rect rgb(255,251,235)
+    Note over U,BR: 阶段 0 · 用户登录（只发生一次；网关完全不参与 CAS）
+    C->>P: 打开授权页 /dsh/authorize<br/>PKCE S256 + state + loopback redirect
+    P->>CAS: 无 SSO → 302 /login?appId=..., redirectUrl=...
+    CAS-->>P: 回跳 ?code=AC-xxx
+    P->>P: LoginFilter 用 code 换 AT，建立局部会话
+    P->>SR: 写 Spring Session（8h，调用时 15min 节流保活）
+    P-->>C: 授权确认页 → loopback callback?code&state
+    C->>P: POST /dsh/auth_exchange {code, code_verifier}
+    P->>BR: SETEX dsh:auth:token:{dsh_x} 86400s<br/>user 快照 + absoluteExpiresAt
+    P-->>C: {token: dsh_x, user}
+    Note over C: 客户端安全保存 dsh_x（DSH 凭据库 / 本地文件）
+    end
+
+    rect rgb(238,242,255)
+    Note over C,UP: 阶段 1 · initialize：建立网关会话（应用 + 用户双凭据）
+    C->>G: POST /mcp/v1/{serverKey}<br/>Authorization: Bearer [app JWT]<br/>x-dsh-auth-token: dsh_x
+    G->>G: 验 app JWT（HS256/app_secret + iss + exp）→ appId
+    G->>DB: 查 app_server_rel（应用 → Server 授权）
+    G->>G: DshTokenVerifier.verify(dsh_x)
+    alt 共享 Redis 只读（首期，低延迟）
+        G->>BR: GET dsh:auth:token:{dsh_x}
+        BR-->>G: {user, absoluteExpiresAt}
+    else user-center introspection（目标态，解耦）
+        G->>P: GET /internal/mcp/userinfo<br/>Authorization: Bearer dsh_x
+        P->>BR: GET dsh:auth:token:{dsh_x}
+        P-->>G: {userId, customerCode, expiresAt}
+    end
+    Note over G: 校验绝对过期 + 用户快照/客编<br/>本地缓存 30–60s（key=SHA256(token)）
+    G->>G: 绑定 Session：appId + userId + customer + tokenHash
+    G-->>C: initialize result + Mcp-Session-Id
+    end
+
+    rect rgb(236,253,245)
+    Note over C,UP: 阶段 2 · tools/call：每次调用都鉴权
+    C->>G: POST /mcp/v1/{serverKey}<br/>app JWT + dsh_x + Mcp-Session-Id
+    G->>G: 查缓存 / 重新校验；会话身份必须与 initialize 一致
+    G->>DB: app_tool_rel 鉴权 + 读取工具配置
+    G->>G: 覆盖模型传入的客编参数（网关拥有客编时）
+    alt 工具上游 = user-center /v1/**
+        G->>P: GET /api/user-center/v1/ai-smart-pricing/raw/order-contacts<br/>x-dsh-auth-token: dsh_x + X-MCP-*（仅内网）
+        P->>P: DshTokenAuthFilter / 内部断言过滤器 → LoginUserAccessor
+        P-->>G: 业务数据（按 token 上下文 + 客编隔离）
+    else 其它业务系统 / 下游 MCP Server
+        G->>UP: Authorization: Bearer [60s JWS/JWE]<br/>默认不透传 dsh_x
+        UP->>UP: 验签 iss/aud/exp/jti，按 cust 隔离
+        UP-->>G: 结果
+    end
+    G->>DB: tool_call_record（app/user/tenant/tool/耗时，脱敏）
+    G-->>C: JSON-RPC result
+    end
+
+    rect rgb(255,241,242)
+    Note over C,BR: 阶段 3 · 失效与撤销：网关只读，不签发、不续期
+    P->>BR: DEL dsh:auth:token:{dsh_x}（登出 / 绝对到期）
+    C->>G: tools/call（旧 dsh_x）
+    G->>G: 本地缓存 ≤60s 后失效 → 校验失败
+    G-->>C: 401 invalid_token<br/>客户端清 token，回到阶段 0
+    end

@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1060" viewBox="0 0 1680 1060" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif">
+<defs>
+<filter id="softShadow" x="-8%" y="-8%" width="116%" height="120%"><feDropShadow dx="0" dy="2.5" stdDeviation="3.2" flood-color="#0f172a" flood-opacity="0.10"/></filter>
+<marker id="ah1" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#047857"/></marker>
+<marker id="ah2" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#b45309"/></marker>
+<marker id="ah3" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#1d4ed8"/></marker>
+<marker id="ah4" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#475569"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="50" y="46" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="23" font-weight="700" fill="#0f172a" text-anchor="start" opacity="1">OpenAPI 批量导入流程</text>
+<text x="50" y="70" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="13" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">把整份 OpenAPI 3.x 文档转换为多条 MCP Tool：预览（不落库）→ 勾选确认 → 批量导入并通知数据面</text>
+<rect x="40" y="96" width="520" height="520" rx="14" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.4" opacity="1" />
+<text x="56" y="122" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#047857" text-anchor="start" opacity="1" letter-spacing="0.5">① 预览  PREVIEW</text>
+<rect x="590" y="96" width="520" height="520" rx="14" fill="#fffbeb" stroke="#fde68a" stroke-width="1.4" opacity="1" />
+<text x="606" y="122" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#b45309" text-anchor="start" opacity="1" letter-spacing="0.5">② 勾选与确认  REVIEW</text>
+<rect x="1140" y="96" width="500" height="520" rx="14" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.4" opacity="1" />
+<text x="1156" y="122" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="start" opacity="1" letter-spacing="0.5">③ 导入  IMPORT</text>
+<rect x="60" y="150" width="480" height="58" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5" opacity="1" />
+<path d="M 60 162 L 60 160 Q 60 150 70 150 L 64 150 Z" fill="#047857" opacity="0.9"/>
+<text x="300.0" y="164.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">1. 选择 Server 并提交文档</text>
+<text x="300.0" y="182.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">POST /mcp/admin/tools/openapi/preview</text>
+<text x="300.0" y="197.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">document 为 JSON 字符串（≤ 5MB）</text>
+<rect x="60" y="228" width="480" height="62" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5" opacity="1" />
+<path d="M 60 240 L 60 238 Q 60 228 70 228 L 64 228 Z" fill="#047857" opacity="0.9"/>
+<text x="300.0" y="244.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">2. 文档级前置校验</text>
+<text x="300.0" y="262.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">OpenAPI 3.x（Swagger 2.0 直接拒绝）</text>
+<text x="300.0" y="277.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">paths 非空；baseUrl 必须是 http(s) 绝对地址</text>
+<rect x="60" y="310" width="480" height="62" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5" opacity="1" />
+<path d="M 60 322 L 60 320 Q 60 310 70 310 L 64 310 Z" fill="#047857" opacity="0.9"/>
+<text x="300.0" y="326.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">3. 权限校验</text>
+<text x="300.0" y="344.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">canManageServer(serverId)</text>
+<text x="300.0" y="359.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">只允许操作自己可见业务方的 Server</text>
+<rect x="60" y="394" width="480" height="82" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5" opacity="1" />
+<path d="M 60 406 L 60 404 Q 60 394 70 394 L 64 394 Z" fill="#047857" opacity="0.9"/>
+<text x="300.0" y="413.05" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">4. OpenApiToolParser.parse</text>
+<text x="300.0" y="430.85" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">纯函数、无 Spring 依赖、可单测</text>
+<text x="300.0" y="446.15000000000003" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">$ref 解析 / allOf 合并 / code 归一</text>
+<text x="300.0" y="461.45000000000005" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">同时返回文档级 + 字段级 issues</text>
+<rect x="60" y="494" width="480" height="86" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5" opacity="1" />
+<path d="M 60 506 L 60 504 Q 60 494 70 494 L 64 494 Z" fill="#047857" opacity="0.9"/>
+<text x="300.0" y="515.05" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">5. 返回导入计划</text>
+<text x="300.0" y="532.8499999999999" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">每个 operation 一条草稿：code / method</text>
+<text x="300.0" y="548.1499999999999" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">serviceUrl / paramMapping / authType</text>
+<text x="300.0" y="563.4499999999998" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">统计 ready · conflicts · errors · warnings</text>
+<path d="M 300 208 L 300 228" fill="none" stroke="#047857" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<path d="M 300 290 L 300 310" fill="none" stroke="#047857" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<path d="M 300 372 L 300 394" fill="none" stroke="#047857" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<path d="M 300 476 L 300 494" fill="none" stroke="#047857" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="610" y="150" width="480" height="64" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 610 162 L 610 160 Q 610 150 620 150 L 614 150 Z" fill="#b45309" opacity="0.9"/>
+<text x="850.0" y="167.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">草稿表</text>
+<text x="850.0" y="185.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">code · name · method · path · tags</text>
+<text x="850.0" y="200.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">参数映射与 inputSchema 可展开查看</text>
+<rect x="610" y="236" width="480" height="74" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 610 248 L 610 246 Q 610 236 620 236 L 614 236 Z" fill="#b45309" opacity="0.9"/>
+<text x="850.0" y="251.05" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">状态徽标</text>
+<text x="850.0" y="268.85" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">READY：可导入</text>
+<text x="850.0" y="284.15000000000003" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">CONFLICT：同 code 已存在（可选覆盖）</text>
+<text x="850.0" y="299.45000000000005" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">ERROR：存在阻塞问题</text>
+<rect x="610" y="330" width="480" height="66" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 610 342 L 610 340 Q 610 330 620 330 L 614 330 Z" fill="#b45309" opacity="0.9"/>
+<text x="850.0" y="348.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">问题清单</text>
+<text x="850.0" y="366.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">ERROR / WARN 分级</text>
+<text x="850.0" y="381.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">服务器地址、外部 $ref、cookie 参数等</text>
+<rect x="610" y="416" width="480" height="76" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 610 428 L 610 426 Q 610 416 620 416 L 614 416 Z" fill="#b45309" opacity="0.9"/>
+<text x="850.0" y="439.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">勾选要导入的 operation</text>
+<text x="850.0" y="457.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">codes 为空 = 全量导入</text>
+<text x="850.0" y="472.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">便于只导入本次需要的接口</text>
+<rect x="610" y="516" width="480" height="70" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 610 528 L 610 526 Q 610 516 620 516 L 614 516 Z" fill="#b45309" opacity="0.9"/>
+<text x="850.0" y="536.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">冲突策略</text>
+<text x="850.0" y="554.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">SKIP（默认）：已存在同 code 跳过</text>
+<text x="850.0" y="569.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">OVERWRITE：覆盖已有工具</text>
+<path d="M 850 214 L 850 236" fill="none" stroke="#b45309" stroke-width="1.4" opacity="1" marker-end="url(#ah2)"/>
+<path d="M 850 310 L 850 330" fill="none" stroke="#b45309" stroke-width="1.4" opacity="1" marker-end="url(#ah2)"/>
+<path d="M 850 396 L 850 416" fill="none" stroke="#b45309" stroke-width="1.4" opacity="1" marker-end="url(#ah2)"/>
+<path d="M 850 492 L 850 516" fill="none" stroke="#b45309" stroke-width="1.4" opacity="1" marker-end="url(#ah2)"/>
+<rect x="1160" y="150" width="460" height="62" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" />
+<path d="M 1160 162 L 1160 160 Q 1160 150 1170 150 L 1164 150 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="1390.0" y="166.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">1. POST /tools/openapi/import</text>
+<text x="1390.0" y="184.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">重新解析同一份文档</text>
+<text x="1390.0" y="199.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">不信任前端回传的草稿内容</text>
+<rect x="1160" y="232" width="460" height="84" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" />
+<path d="M 1160 244 L 1160 242 Q 1160 232 1170 232 L 1164 232 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="1390.0" y="252.05" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">2. 逐条处理</text>
+<text x="1390.0" y="269.85" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">ERROR → failures（带首条错误信息）</text>
+<text x="1390.0" y="285.15000000000003" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">已存在 + SKIP → skipped</text>
+<text x="1390.0" y="300.45000000000005" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">凭证变更且无权限 → 走 TOOL_CREDENTIAL_UPDATE 审批</text>
+<rect x="1160" y="336" width="460" height="78" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" />
+<path d="M 1160 348 L 1160 346 Q 1160 336 1170 336 L 1164 336 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="1390.0" y="353.05" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">3. 校验与落库</text>
+<text x="1390.0" y="370.85" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">validateToolForSave（code / URL / 参数映射）</text>
+<text x="1390.0" y="386.15000000000003" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">auth_config 用 AES-256-GCM 加密</text>
+<text x="1390.0" y="401.45000000000005" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">版本递增：内容变化 → patch + 1</text>
+<rect x="1160" y="434" width="460" height="70" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" />
+<path d="M 1160 446 L 1160 444 Q 1160 434 1170 434 L 1164 434 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="1390.0" y="454.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">4. 通知数据面</text>
+<text x="1390.0" y="472.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">ToolChangeNotifier.notifyToolChanged(serverId)</text>
+<text x="1390.0" y="487.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">失效 tools/list 缓存 + SSE 广播</text>
+<rect x="1160" y="524" width="460" height="70" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" />
+<path d="M 1160 536 L 1160 534 Q 1160 524 1170 524 L 1164 524 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="1390.0" y="544.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">5. 返回结果</text>
+<text x="1390.0" y="562.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">{ created, updated, skipped, failed, failures }</text>
+<text x="1390.0" y="577.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">任一条失败不影响其他条目</text>
+<path d="M 1390 212 L 1390 232" fill="none" stroke="#1d4ed8" stroke-width="1.4" opacity="1" marker-end="url(#ah3)"/>
+<path d="M 1390 316 L 1390 336" fill="none" stroke="#1d4ed8" stroke-width="1.4" opacity="1" marker-end="url(#ah3)"/>
+<path d="M 1390 414 L 1390 434" fill="none" stroke="#1d4ed8" stroke-width="1.4" opacity="1" marker-end="url(#ah3)"/>
+<path d="M 1390 504 L 1390 524" fill="none" stroke="#1d4ed8" stroke-width="1.4" opacity="1" marker-end="url(#ah3)"/>
+<path d="M 560 300 L 590 300" fill="none" stroke="#475569" stroke-width="2" opacity="1" marker-end="url(#ah4)"/>
+<rect x="560.31" y="278.25" width="29.38" height="17.5" rx="4" fill="#ffffff" stroke="none" stroke-width="0" opacity="1" />
+<text x="575" y="291.325" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="500" fill="#334155" text-anchor="middle" opacity="1">草稿</text>
+<path d="M 1110 300 L 1140 300" fill="none" stroke="#475569" stroke-width="2" opacity="1" marker-end="url(#ah4)"/>
+<rect x="1106.7" y="278.25" width="36.6" height="17.5" rx="4" fill="#ffffff" stroke="none" stroke-width="0" opacity="1" />
+<text x="1125" y="291.325" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="500" fill="#334155" text-anchor="middle" opacity="1">codes</text>
+<text x="50" y="648" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#475569" text-anchor="start" opacity="1">解析与校验规则（OpenApiToolParser）</text>
+<rect x="50" y="664" width="500" height="140" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<text x="66" y="688" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#047857" text-anchor="start" opacity="1">文档级</text>
+<circle cx="70" cy="706" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="80" y="710" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">只接受 OpenAPI 3.x；Swagger 2.0 直接拒绝</text>
+<circle cx="70" cy="725" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="80" y="729" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">paths 必须非空；servers[0].url 或入参 baseUrl 二选一</text>
+<circle cx="70" cy="744" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="80" y="748" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">baseUrl 必须是 http(s) 绝对地址；变量需有默认值</text>
+<circle cx="70" cy="763" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="80" y="767" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">命中 SSRF 策略只 WARN，不阻塞导入</text>
+<rect x="590" y="664" width="500" height="140" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<text x="606" y="688" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#b45309" text-anchor="start" opacity="1">方法、路径与参数</text>
+<circle cx="610" cy="706" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="620" y="710" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">运行时只实现 GET / POST，其余方法标记 ERROR</text>
+<circle cx="610" cy="725" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="620" y="729" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">path / query / header 参数生成 paramMapping</text>
+<circle cx="610" cy="744" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="620" y="748" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">path 参数强制必填；未声明时补 string</text>
+<circle cx="610" cy="763" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="620" y="767" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">cookie 参数不支持；query 数组/对象序列化给出警告</text>
+<rect x="1130" y="664" width="500" height="140" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<text x="1146" y="688" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="start" opacity="1">标识、冲突与安全</text>
+<circle cx="1150" cy="706" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="1160" y="710" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">operationId → code，非法字符替换、超长截断 64</text>
+<circle cx="1150" cy="725" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="1160" y="729" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">同文档重名自动加后缀；与已有 code 冲突 → CONFLICT</text>
+<circle cx="1150" cy="744" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="1160" y="748" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">apiKey(header) → API_KEY；http bearer → BEARER</text>
+<circle cx="1150" cy="763" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="1160" y="767" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">凭证仍需人工填写，不在文档里读取明文</text>
+<rect x="50" y="820" width="500" height="140" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<text x="66" y="844" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#6d28d9" text-anchor="start" opacity="1">请求体与 Schema</text>
+<circle cx="70" cy="862" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="80" y="866" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">只支持 application/json；multipart 明确报错</text>
+<circle cx="70" cy="881" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="80" y="885" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">顶层 properties 展开为入参，required 合并到顶层</text>
+<circle cx="70" cy="900" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="80" y="904" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">无 properties 的自由格式仅在没有其他映射时透传</text>
+<circle cx="70" cy="919" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="80" y="923" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">oneOf / anyOf 原样保留，不做降级</text>
+<rect x="590" y="820" width="500" height="140" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<text x="606" y="844" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#6d28d9" text-anchor="start" opacity="1">$ref 与组合</text>
+<circle cx="610" cy="862" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="620" y="866" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">仅解析本地引用 #/components/**</text>
+<circle cx="610" cy="881" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="620" y="885" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">外部引用直接报错，避免隐式网络依赖</text>
+<circle cx="610" cy="900" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="620" y="904" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">allOf 递归合并（深度上限 20）</text>
+<circle cx="610" cy="919" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="620" y="923" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">循环引用与超深结构给出 ERROR / WARN</text>
+<rect x="1130" y="820" width="500" height="140" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" opacity="1" />
+<text x="1146" y="844" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="700" fill="#047857" text-anchor="start" opacity="1">导入一致性</text>
+<circle cx="1150" cy="862" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="1160" y="866" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">预览与导入使用同一解析器，避免结果漂移</text>
+<circle cx="1150" cy="881" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="1160" y="885" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">失败条目收集进 failures，其他条目继续导入</text>
+<circle cx="1150" cy="900" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="1160" y="904" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">已有工具凭证变化触发审批矩阵（L2）</text>
+<circle cx="1150" cy="919" r="2.2" fill="#94a3b8" stroke="none" stroke-width="1.4" opacity="1"/>
+<text x="1160" y="923" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.6" font-weight="400" fill="#475569" text-anchor="start" opacity="1">只有实际新增/更新时才广播工具变更</text>
+<text x="50" y="996" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">典型用法：把上游系统的 openapi.json 一次性导入为 20–100 个工具，再按应用做 Server 级授权与 Tool 级白名单。</text>
+<text x="50" y="1044" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#94a3b8" text-anchor="start" opacity="1">对应实现：McpAdminController#previewOpenApiTools / importOpenApiTools · OpenApiToolParser · OpenApiToolDraft（READY / CONFLICT / ERROR）· ToolChangeNotifier</text>
+</svg>

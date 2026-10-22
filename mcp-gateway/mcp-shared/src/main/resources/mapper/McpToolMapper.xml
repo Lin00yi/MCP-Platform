@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcp.transfer.mapper.McpToolMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpTool">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="server_id" jdbcType="INTEGER" property="serverId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="system_id" jdbcType="INTEGER" property="systemId" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="service_url" jdbcType="VARCHAR" property="serviceUrl" />
+    <result column="request_type" jdbcType="VARCHAR" property="requestType" />
+    <result column="need_token" jdbcType="INTEGER" property="needToken" />
+    <result column="body_type" jdbcType="INTEGER" property="bodyType" />
+    <result column="auth_type" jdbcType="VARCHAR" property="authType" />
+    <result column="auth_config" jdbcType="LONGVARCHAR" property="authConfig" />
+    <result column="param_mapping" jdbcType="LONGVARCHAR" property="paramMapping" />
+    <result column="res_json" jdbcType="LONGVARCHAR" property="resJson" />
+    <result column="tags" jdbcType="VARCHAR" property="tags" />
+    <result column="version" jdbcType="VARCHAR" property="version" />
+    <result column="token_estimate" jdbcType="INTEGER" property="tokenEstimate" />
+    <result column="tokenizer" jdbcType="VARCHAR" property="tokenizer" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, server_id, `name`, code, `type`, system_id, `status`, service_url, request_type,
+    need_token, body_type, auth_type, auth_config, param_mapping, res_json, tags, version,
+    token_estimate, tokenizer, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_tool
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from mcp_tool
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpTool" useGeneratedKeys="true">
+    insert into mcp_tool (server_id, `name`, code, `type`, system_id, `status`, service_url, request_type,
+      need_token, body_type, auth_type, auth_config, param_mapping, res_json, tags, version,
+    token_estimate, tokenizer, create_time, update_time)
+    values (#{serverId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR},
+      #{type,jdbcType=INTEGER}, #{systemId,jdbcType=INTEGER}, #{status,jdbcType=INTEGER},
+      #{serviceUrl,jdbcType=VARCHAR}, #{requestType,jdbcType=VARCHAR},
+      #{needToken,jdbcType=INTEGER}, #{bodyType,jdbcType=INTEGER},
+      #{authType,jdbcType=VARCHAR}, #{authConfig,jdbcType=LONGVARCHAR},
+      #{paramMapping,jdbcType=LONGVARCHAR}, #{resJson,jdbcType=LONGVARCHAR},
+      #{tags,jdbcType=VARCHAR}, #{version,jdbcType=VARCHAR},
+      #{tokenEstimate,jdbcType=INTEGER}, #{tokenizer,jdbcType=VARCHAR},
+      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpTool" useGeneratedKeys="true">
+    insert into mcp_tool
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="serverId != null">server_id,</if>
+      <if test="name != null and name != ''">`name`,</if>
+      <if test="code != null and code != ''">code,</if>
+      <if test="type != null">`type`,</if>
+      <if test="systemId != null">system_id,</if>
+      <if test="status != null">`status`,</if>
+      <if test="serviceUrl != null and serviceUrl != ''">service_url,</if>
+      <if test="requestType != null and requestType != ''">request_type,</if>
+      <if test="needToken != null">need_token,</if>
+      <if test="bodyType != null">body_type,</if>
+      <if test="authType != null and authType != ''">auth_type,</if>
+      <if test="authConfig != null and authConfig != ''">auth_config,</if>
+      <if test="paramMapping != null and paramMapping != ''">param_mapping,</if>
+      <if test="resJson != null and resJson != ''">res_json,</if>
+      <if test="tags != null and tags != ''">tags,</if>
+      <if test="version != null and version != ''">version,</if>
+      <if test="tokenEstimate != null">token_estimate,</if>
+      <if test="tokenizer != null and tokenizer != ''">tokenizer,</if>
+      <if test="createTime != null">create_time,</if>
+      <if test="updateTime != null">update_time,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="serverId != null">#{serverId,jdbcType=INTEGER},</if>
+      <if test="name != null and name != ''">#{name,jdbcType=VARCHAR},</if>
+      <if test="code != null and code != ''">#{code,jdbcType=VARCHAR},</if>
+      <if test="type != null">#{type,jdbcType=INTEGER},</if>
+      <if test="systemId != null">#{systemId,jdbcType=INTEGER},</if>
+      <if test="status != null">#{status,jdbcType=INTEGER},</if>
+      <if test="serviceUrl != null and serviceUrl != ''">#{serviceUrl,jdbcType=VARCHAR},</if>
+      <if test="requestType != null and requestType != ''">#{requestType,jdbcType=VARCHAR},</if>
+      <if test="needToken != null">#{needToken,jdbcType=INTEGER},</if>
+      <if test="bodyType != null">#{bodyType,jdbcType=INTEGER},</if>
+      <if test="authType != null and authType != ''">#{authType,jdbcType=VARCHAR},</if>
+      <if test="authConfig != null and authConfig != ''">#{authConfig,jdbcType=LONGVARCHAR},</if>
+      <if test="paramMapping != null and paramMapping != ''">#{paramMapping,jdbcType=LONGVARCHAR},</if>
+      <if test="resJson != null and resJson != ''">#{resJson,jdbcType=LONGVARCHAR},</if>
+      <if test="tags != null and tags != ''">#{tags,jdbcType=VARCHAR},</if>
+      <if test="version != null and version != ''">#{version,jdbcType=VARCHAR},</if>
+      <if test="tokenEstimate != null">#{tokenEstimate,jdbcType=INTEGER},</if>
+      <if test="tokenizer != null and tokenizer != ''">#{tokenizer,jdbcType=VARCHAR},</if>
+      <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
+      <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.entity.McpTool">
+    update mcp_tool
+    <set>
+      <if test="serverId != null">server_id = #{serverId,jdbcType=INTEGER},</if>
+      <if test="name != null and name != ''">`name` = #{name,jdbcType=VARCHAR},</if>
+      <if test="code != null and code != ''">code = #{code,jdbcType=VARCHAR},</if>
+      <if test="type != null">`type` = #{type,jdbcType=INTEGER},</if>
+      <if test="systemId != null">system_id = #{systemId,jdbcType=INTEGER},</if>
+      <if test="status != null">`status` = #{status,jdbcType=INTEGER},</if>
+      <if test="serviceUrl != null and serviceUrl != ''">service_url = #{serviceUrl,jdbcType=VARCHAR},</if>
+      <if test="requestType != null and requestType != ''">request_type = #{requestType,jdbcType=VARCHAR},</if>
+      <if test="needToken != null">need_token = #{needToken,jdbcType=INTEGER},</if>
+      <if test="bodyType != null">body_type = #{bodyType,jdbcType=INTEGER},</if>
+      <if test="authType != null and authType != ''">auth_type = #{authType,jdbcType=VARCHAR},</if>
+      <if test="authConfig != null and authConfig != ''">auth_config = #{authConfig,jdbcType=LONGVARCHAR},</if>
+      <if test="paramMapping != null and paramMapping != ''">param_mapping = #{paramMapping,jdbcType=LONGVARCHAR},</if>
+      <if test="resJson != null and resJson != ''">res_json = #{resJson,jdbcType=LONGVARCHAR},</if>
+      <if test="tags != null and tags != ''">tags = #{tags,jdbcType=VARCHAR},</if>
+      <if test="version != null and version != ''">version = #{version,jdbcType=VARCHAR},</if>
+      <if test="tokenEstimate != null">token_estimate = #{tokenEstimate,jdbcType=INTEGER},</if>
+      <if test="tokenizer != null and tokenizer != ''">tokenizer = #{tokenizer,jdbcType=VARCHAR},</if>
+      <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.entity.McpTool">
+    update mcp_tool
+    set server_id = #{serverId,jdbcType=INTEGER},
+      `name` = #{name,jdbcType=VARCHAR},
+      code = #{code,jdbcType=VARCHAR},
+      `type` = #{type,jdbcType=INTEGER},
+      system_id = #{systemId,jdbcType=INTEGER},
+      `status` = #{status,jdbcType=INTEGER},
+      service_url = #{serviceUrl,jdbcType=VARCHAR},
+      request_type = #{requestType,jdbcType=VARCHAR},
+      need_token = #{needToken,jdbcType=INTEGER},
+      body_type = #{bodyType,jdbcType=INTEGER},
+      auth_type = #{authType,jdbcType=VARCHAR},
+      auth_config = #{authConfig,jdbcType=LONGVARCHAR},
+      param_mapping = #{paramMapping,jdbcType=LONGVARCHAR},
+      res_json = #{resJson,jdbcType=LONGVARCHAR},
+      tags = #{tags,jdbcType=VARCHAR},
+      version = #{version,jdbcType=VARCHAR},
+      token_estimate = #{tokenEstimate,jdbcType=INTEGER},
+      tokenizer = #{tokenizer,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByCode" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_tool
+    where code = #{code,jdbcType=VARCHAR}
+    limit 1
+  </select>
+  <select id="selectAllByServerId" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_tool
+    where server_id = #{serverId,jdbcType=INTEGER}
+      and `status` = 1
+    order by id asc
+  </select>
+  <select id="selectOneByServerIdAndCode" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_tool
+    where server_id = #{serverId,jdbcType=INTEGER}
+      and code = #{code,jdbcType=VARCHAR}
+      and `status` = 1
+    limit 1
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_tool
+    order by id desc
+  </select>
+  <select id="selectByServerIds" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_tool
+    where server_id in
+    <foreach collection="serverIds" item="sid" open="(" separator="," close=")">#{sid,jdbcType=INTEGER}</foreach>
+    order by id desc
+  </select>
+  <delete id="deleteByServerId">
+    delete from mcp_tool where server_id = #{serverId,jdbcType=INTEGER}
+  </delete>
+</mapper>

@@ -1,0 +1,56 @@
+%%{init: {"theme":"base","htmlLabels":false,"flowchart":{"nodeSpacing":42,"rankSpacing":85,"padding":24},"themeVariables":{"fontFamily":"Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif","fontSize":"13px","primaryColor":"#eef2ff","primaryBorderColor":"#94a3b8","lineColor":"#475569","clusterBkg":"#f8fafc","clusterBorder":"#cbd5e1","edgeLabelBackground":"#ffffff"}}}%%
+flowchart LR
+    subgraph CL["客户端域"]
+        C1["DSH Desktop<br/>app JWT + dsh_x"]
+        C2["Codex / Cursor<br/>app JWT"]
+        C3["浏览器<br/>CAS 登录"]
+    end
+
+    subgraph IDP["身份域 · 已有，网关复用"]
+        CAS["集团 CAS<br/>OAuth code"]
+        P["user-center<br/>登录 / 会话 / dsh token"]
+        SR["会话 Redis"]
+        BR["业务 Redis<br/>dsh:auth:token"]
+    end
+
+    subgraph GW["MCP Gateway · 本次要补的鉴权层"]
+        F["McpAuthInterceptor<br/>① app JWT 验签"]
+        V["DshTokenVerifier<br/>② 用户 token 校验"]
+        AUTHZ["③ 授权<br/>app → server / tool"]
+        SESS["④ Session 绑定"]
+        EXEC["⑤ Tool Executor"]
+        ASSERT["内部断言<br/>60s JWS / JWE"]
+    end
+
+    subgraph UP["上游域"]
+        API1["user-center /v1/**"]
+        API2["其它业务系统"]
+        MCP["下游 MCP Server"]
+    end
+
+    C1 -->|"双凭据 + Mcp-Session-Id"| F
+    C2 -->|"app JWT"| F
+    C3 -->|"整页跳转 / 回跳 code"| CAS
+    CAS -->|"code 换 AT"| P
+    P -->|"写会话"| SR
+    P -->|"签发 dsh_x"| BR
+    P -.->|"返回 dsh_x"| C1
+
+    F --> V
+    V -.->|"只读 GET"| BR
+    V -.->|"内网 introspection"| P
+    F --> AUTHZ
+    V --> SESS
+    AUTHZ --> EXEC
+    SESS --> EXEC
+    EXEC -->|"dsh_x 透传"| API1
+    EXEC -->|"网关断言"| API2
+    EXEC -->|"网关断言"| MCP
+    ASSERT -.->|"签发"| EXEC
+
+    classDef existing fill:#ecfdf5,stroke:#34d399,color:#065f46;
+    classDef added fill:#eef2ff,stroke:#818cf8,color:#1e1b4b;
+    classDef ext fill:#f8fafc,stroke:#cbd5e1,color:#334155;
+    class CAS,P,SR,BR existing;
+    class F,V,AUTHZ,SESS,EXEC,ASSERT added;
+    class C1,C2,C3,API1,API2,MCP ext;

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcp.transfer.mapper.AdminUserTenantMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.AdminUserTenant">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+
+  <select id="selectTenantIdsByUserId" resultType="java.lang.Integer">
+    select tenant_id
+    from admin_user_tenant
+    where user_id = #{userId,jdbcType=BIGINT}
+  </select>
+
+  <insert id="insert" parameterType="com.mcp.transfer.entity.AdminUserTenant">
+    insert into admin_user_tenant (user_id, tenant_id, create_time)
+    values (#{userId,jdbcType=BIGINT}, #{tenantId,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <delete id="deleteByUserId">
+    delete from admin_user_tenant where user_id = #{userId,jdbcType=BIGINT}
+  </delete>
+
+  <delete id="deleteByUserIdAndTenantId">
+    delete from admin_user_tenant
+    where user_id = #{userId,jdbcType=BIGINT} and tenant_id = #{tenantId,jdbcType=INTEGER}
+  </delete>
+
+  <delete id="deleteByTenantId">
+    delete from admin_user_tenant where tenant_id = #{tenantId,jdbcType=INTEGER}
+  </delete>
+</mapper>

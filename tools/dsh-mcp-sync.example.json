@@ -1,0 +1,14 @@
+{
+  "gatewayBaseUrl": "http://127.0.0.1:8081",
+  "tokenFile": "~/.dsh/mcp-gateway/token",
+  "profilePath": "~/.dsh/profiles/desktop/cordis.patch.yml",
+  "intervalSeconds": 30,
+  "namespace": "mcp-gateway",
+  "serverNamePrefix": "",
+  "entryIdPrefix": "mcp-gw-",
+  "mcpClientName": "@deepseek-ai/dsh-mcp-client",
+  "stateFile": "~/.dsh/mcp-gateway/state.json",
+  "lockFile": "~/.dsh/mcp-gateway/sync.lock",
+  "toolCallTimeoutMs": 60000,
+  "failOnStartupError": false
+}

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcp.transfer.mapper.ApprovalRequestMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.ApprovalRequest">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
+    <result column="action" jdbcType="VARCHAR" property="action" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+    <result column="app_id" jdbcType="VARCHAR" property="appId" />
+    <result column="server_id" jdbcType="INTEGER" property="serverId" />
+    <result column="tool_id" jdbcType="INTEGER" property="toolId" />
+    <result column="prompt_id" jdbcType="INTEGER" property="promptId" />
+    <result column="resource_id" jdbcType="INTEGER" property="resourceId" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="payload" jdbcType="LONGVARCHAR" property="payload" />
+    <result column="reason" jdbcType="VARCHAR" property="reason" />
+    <result column="requester" jdbcType="VARCHAR" property="requester" />
+    <result column="requester_role" jdbcType="VARCHAR" property="requesterRole" />
+    <result column="approver" jdbcType="VARCHAR" property="approver" />
+    <result column="approver_role" jdbcType="VARCHAR" property="approverRole" />
+    <result column="comment" jdbcType="VARCHAR" property="comment" />
+    <result column="result_secret" jdbcType="LONGVARCHAR" property="resultSecret" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, tenant_id, action, status, app_id, server_id, tool_id, prompt_id, resource_id, user_id,
+    payload, reason, requester, requester_role, approver, approver_role, comment, result_secret,
+    create_time, update_time
+  </sql>
+
+  <sql id="TenantFilter">
+    <choose>
+      <when test="tenantIds != null and tenantIds.size() > 0">
+        and tenant_id in
+        <foreach collection="tenantIds" item="tid" open="(" separator="," close=")">#{tid,jdbcType=INTEGER}</foreach>
+      </when>
+      <when test="tenantIds != null">
+        and 1 = 0
+      </when>
+    </choose>
+  </sql>
+
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.ApprovalRequest" useGeneratedKeys="true">
+    insert into approval_request
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="tenantId != null">tenant_id,</if>
+      <if test="action != null and action != ''">action,</if>
+      <if test="status != null and status != ''">status,</if>
+      <if test="appId != null and appId != ''">app_id,</if>
+      <if test="serverId != null">server_id,</if>
+      <if test="toolId != null">tool_id,</if>
+      <if test="promptId != null">prompt_id,</if>
+      <if test="resourceId != null">resource_id,</if>
+      <if test="userId != null">user_id,</if>
+      <if test="payload != null and payload != ''">payload,</if>
+      <if test="reason != null and reason != ''">reason,</if>
+      <if test="requester != null and requester != ''">requester,</if>
+      <if test="requesterRole != null and requesterRole != ''">requester_role,</if>
+      <if test="approver != null and approver != ''">approver,</if>
+      <if test="approverRole != null and approverRole != ''">approver_role,</if>
+      <if test="comment != null and comment != ''">comment,</if>
+      <if test="resultSecret != null and resultSecret != ''">result_secret,</if>
+      <if test="createTime != null">create_time,</if>
+      <if test="updateTime != null">update_time,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="tenantId != null">#{tenantId,jdbcType=INTEGER},</if>
+      <if test="action != null and action != ''">#{action,jdbcType=VARCHAR},</if>
+      <if test="status != null and status != ''">#{status,jdbcType=VARCHAR},</if>
+      <if test="appId != null and appId != ''">#{appId,jdbcType=VARCHAR},</if>
+      <if test="serverId != null">#{serverId,jdbcType=INTEGER},</if>
+      <if test="toolId != null">#{toolId,jdbcType=INTEGER},</if>
+      <if test="promptId != null">#{promptId,jdbcType=INTEGER},</if>
+      <if test="resourceId != null">#{resourceId,jdbcType=INTEGER},</if>
+      <if test="userId != null">#{userId,jdbcType=BIGINT},</if>
+      <if test="payload != null and payload != ''">#{payload,jdbcType=LONGVARCHAR},</if>
+      <if test="reason != null and reason != ''">#{reason,jdbcType=VARCHAR},</if>
+      <if test="requester != null and requester != ''">#{requester,jdbcType=VARCHAR},</if>
+      <if test="requesterRole != null and requesterRole != ''">#{requesterRole,jdbcType=VARCHAR},</if>
+      <if test="approver != null and approver != ''">#{approver,jdbcType=VARCHAR},</if>
+      <if test="approverRole != null and approverRole != ''">#{approverRole,jdbcType=VARCHAR},</if>
+      <if test="comment != null and comment != ''">#{comment,jdbcType=VARCHAR},</if>
+      <if test="resultSecret != null and resultSecret != ''">#{resultSecret,jdbcType=LONGVARCHAR},</if>
+      <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
+      <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
+    </trim>
+  </insert>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from approval_request
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectByPrimaryKeyForUpdate" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from approval_request
+    where id = #{id,jdbcType=BIGINT}
+    for update
+  </select>
+
+  <select id="selectWithPage" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from approval_request
+    <where>
+      <if test="status != null and status != ''">and status = #{status,jdbcType=VARCHAR}</if>
+      <if test="requester != null and requester != ''">and requester = #{requester,jdbcType=VARCHAR}</if>
+      <if test="excludeRequester != null and excludeRequester != ''">and requester &lt;&gt; #{excludeRequester,jdbcType=VARCHAR}</if>
+      <choose>
+        <when test="actions != null and actions.size() > 0">
+          and action in
+          <foreach collection="actions" item="act" open="(" separator="," close=")">#{act,jdbcType=VARCHAR}</foreach>
+        </when>
+        <when test="actions != null">
+          and 1 = 0
+        </when>
+      </choose>
+      <include refid="TenantFilter" />
+    </where>
+    order by id desc
+    limit #{start}, #{limit}
+  </select>
+
+  <select id="count" resultType="java.lang.Long">
+    select count(*)
+    from approval_request
+    <where>
+      <if test="status != null and status != ''">and status = #{status,jdbcType=VARCHAR}</if>
+      <if test="requester != null and requester != ''">and requester = #{requester,jdbcType=VARCHAR}</if>
+      <if test="excludeRequester != null and excludeRequester != ''">and requester &lt;&gt; #{excludeRequester,jdbcType=VARCHAR}</if>
+      <choose>
+        <when test="actions != null and actions.size() > 0">
+          and action in
+          <foreach collection="actions" item="act" open="(" separator="," close=")">#{act,jdbcType=VARCHAR}</foreach>
+        </when>
+        <when test="actions != null">
+          and 1 = 0
+        </when>
+      </choose>
+      <include refid="TenantFilter" />
+    </where>
+  </select>
+
+  <select id="countPendingSame" resultType="java.lang.Integer">
+    select count(*)
+    from approval_request
+    where status = 'PENDING'
+      and action = #{action,jdbcType=VARCHAR}
+      and requester = #{requester,jdbcType=VARCHAR}
+      <if test="appId != null and appId != ''">and app_id = #{appId,jdbcType=VARCHAR}</if>
+      <if test="serverId != null">and server_id = #{serverId,jdbcType=INTEGER}</if>
+      <if test="toolId != null">and tool_id = #{toolId,jdbcType=INTEGER}</if>
+      <if test="promptId != null">and prompt_id = #{promptId,jdbcType=INTEGER}</if>
+      <if test="resourceId != null">and resource_id = #{resourceId,jdbcType=INTEGER}</if>
+      <if test="userId != null">and user_id = #{userId,jdbcType=BIGINT}</if>
+  </select>
+
+  <update id="updateStatusIfPending">
+    update approval_request
+    set status = #{status,jdbcType=VARCHAR},
+        approver = #{approver,jdbcType=VARCHAR},
+        approver_role = #{approverRole,jdbcType=VARCHAR},
+        comment = #{comment,jdbcType=VARCHAR},
+        result_secret = #{resultSecret,jdbcType=LONGVARCHAR},
+        update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+      and status = 'PENDING'
+  </update>
+
+  <update id="updateResultSecret">
+    update approval_request
+    set result_secret = #{resultSecret,jdbcType=LONGVARCHAR},
+        update_time = NOW()
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <update id="cancelPendingByRequester">
+    update approval_request
+    set status = 'CANCELLED',
+        comment = '申请人已删除',
+        update_time = NOW()
+    where requester = #{requester,jdbcType=VARCHAR}
+      and status = 'PENDING'
+  </update>
+
+  <delete id="deleteByServerId">
+    delete from approval_request
+    where server_id = #{serverId,jdbcType=INTEGER}
+       or tool_id in (select id from mcp_tool where server_id = #{serverId,jdbcType=INTEGER})
+       or prompt_id in (select id from mcp_prompt where server_id = #{serverId,jdbcType=INTEGER})
+       or resource_id in (select id from mcp_resource where server_id = #{serverId,jdbcType=INTEGER})
+  </delete>
+
+  <delete id="deleteByToolId">
+    delete from approval_request where tool_id = #{toolId,jdbcType=INTEGER}
+  </delete>
+
+  <delete id="deleteByPromptId">
+    delete from approval_request where prompt_id = #{promptId,jdbcType=INTEGER}
+  </delete>
+
+  <delete id="deleteByResourceId">
+    delete from approval_request where resource_id = #{resourceId,jdbcType=INTEGER}
+  </delete>
+
+  <delete id="deleteByAppId">
+    delete from approval_request where app_id = #{appId,jdbcType=VARCHAR}
+  </delete>
+
+  <delete id="deleteByUserId">
+    delete from approval_request where user_id = #{userId,jdbcType=BIGINT}
+  </delete>
+</mapper>

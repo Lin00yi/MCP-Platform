@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1010" viewBox="0 0 1680 1010" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif">
+<defs>
+<filter id="softShadow" x="-8%" y="-8%" width="116%" height="120%"><feDropShadow dx="0" dy="2.5" stdDeviation="3.2" flood-color="#0f172a" flood-opacity="0.10"/></filter>
+<marker id="ah1" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#b45309"/></marker>
+<marker id="ah2" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#334155"/></marker>
+<marker id="ah3" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#1d4ed8"/></marker>
+<marker id="ah4" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#047857"/></marker>
+<marker id="ah5" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#64748b"/></marker>
+<marker id="ah6" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#6d28d9"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="50" y="46" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="23" font-weight="700" fill="#0f172a" text-anchor="start" opacity="1">DSH 客户端自动接入时序</text>
+<text x="50" y="70" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="13" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">discovery + ETag 增量同步：同步器把可见 Server 写成 DSH 的 cordis.patch.yml managed block，工具名自动带命名空间</text>
+<text x="1120" y="42" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="700" fill="#64748b" text-anchor="start" opacity="1">图例</text>
+<rect x="1120" y="52" width="13" height="13" rx="3" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2" opacity="1" />
+<text x="1139" y="63" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start" opacity="1">客户端 / 文件</text>
+<rect x="1227.15" y="52" width="13" height="13" rx="3" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2" opacity="1" />
+<text x="1246.15" y="63" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start" opacity="1">同步器</text>
+<rect x="1300.2800000000002" y="52" width="13" height="13" rx="3" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.2" opacity="1" />
+<text x="1319.2800000000002" y="63" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start" opacity="1">网关</text>
+<rect x="1362.7000000000003" y="52" width="13" height="13" rx="3" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.2" opacity="1" />
+<text x="1381.7000000000003" y="63" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start" opacity="1">MCP 调用</text>
+<rect x="50" y="160" width="1580" height="175" rx="10" fill="#f8fafc" stroke="#eef2f7" stroke-width="1" opacity="1" />
+<text x="1610" y="177" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8" text-anchor="end" opacity="1" letter-spacing="0.6">阶段一 · 触发与读取配置</text>
+<rect x="50" y="345" width="1580" height="265" rx="10" fill="#f8fafc" stroke="#eef2f7" stroke-width="1" opacity="1" />
+<text x="1610" y="362" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8" text-anchor="end" opacity="1" letter-spacing="0.6">阶段二 · 拉取发现目录（ETag）</text>
+<rect x="50" y="620" width="1580" height="230" rx="10" fill="#f8fafc" stroke="#eef2f7" stroke-width="1" opacity="1" />
+<text x="1610" y="637" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8" text-anchor="end" opacity="1" letter-spacing="0.6">阶段三 · 生成配置并触发重载</text>
+<rect x="50" y="860" width="1580" height="125" rx="10" fill="#f8fafc" stroke="#eef2f7" stroke-width="1" opacity="1" />
+<text x="1610" y="877" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8" text-anchor="end" opacity="1" letter-spacing="0.6">阶段四 · 连接与调用</text>
+<rect x="65.0" y="94" width="210" height="52" rx="10" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 65.0 106 L 65.0 104 Q 65.0 94 75.0 94 L 69.0 94 Z" fill="#4338ca" opacity="0.9"/>
+<text x="170.0" y="113.32" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="13.5" font-weight="700" fill="#4338ca" text-anchor="middle" opacity="1">DSH Desktop</text>
+<text x="170.0" y="131.82" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">cordis.patch.yml</text>
+<line x1="170" y1="146" x2="170" y2="992" stroke="#cbd5e1" stroke-width="1.2" opacity="1" stroke-dasharray="5 5"/>
+<rect x="370.0" y="94" width="220" height="52" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 370.0 106 L 370.0 104 Q 370.0 94 380.0 94 L 374.0 94 Z" fill="#b45309" opacity="0.9"/>
+<text x="480.0" y="113.32" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="13.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">dsh-mcp-sync.py</text>
+<text x="480.0" y="131.82" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">launchd / --once</text>
+<line x1="480" y1="146" x2="480" y2="992" stroke="#cbd5e1" stroke-width="1.2" opacity="1" stroke-dasharray="5 5"/>
+<rect x="690.0" y="94" width="220" height="52" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 690.0 106 L 690.0 104 Q 690.0 94 700.0 94 L 694.0 94 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="800.0" y="113.32" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="13.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">发现 API</text>
+<text x="800.0" y="131.82" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">GET /mcp/discovery</text>
+<line x1="800" y1="146" x2="800" y2="992" stroke="#cbd5e1" stroke-width="1.2" opacity="1" stroke-dasharray="5 5"/>
+<rect x="1010.0" y="94" width="220" height="52" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 1010.0 106 L 1010.0 104 Q 1010.0 94 1020.0 94 L 1014.0 94 Z" fill="#047857" opacity="0.9"/>
+<text x="1120.0" y="113.32" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="13.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">MCP 端点</text>
+<text x="1120.0" y="131.82" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">/mcp/v1/{serverKey}</text>
+<line x1="1120" y1="146" x2="1120" y2="992" stroke="#cbd5e1" stroke-width="1.2" opacity="1" stroke-dasharray="5 5"/>
+<rect x="1345.0" y="94" width="210" height="52" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5" opacity="1" filter="url(#softShadow)" />
+<path d="M 1345.0 106 L 1345.0 104 Q 1345.0 94 1355.0 94 L 1349.0 94 Z" fill="#334155" opacity="0.9"/>
+<text x="1450.0" y="113.32" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="13.5" font-weight="700" fill="#334155" text-anchor="middle" opacity="1">本地文件</text>
+<text x="1450.0" y="131.82" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">配置 / token / state</text>
+<line x1="1450" y1="146" x2="1450" y2="992" stroke="#cbd5e1" stroke-width="1.2" opacity="1" stroke-dasharray="5 5"/>
+<rect x="474.5" y="180" width="11" height="660" rx="2" fill="#fde68a" stroke="none" stroke-width="0" opacity="1" />
+<rect x="794.5" y="370" width="11" height="130" rx="2" fill="#bfdbfe" stroke="none" stroke-width="0" opacity="1" />
+<rect x="1114.5" y="875" width="11" height="100" rx="2" fill="#a7f3d0" stroke="none" stroke-width="0" opacity="1" />
+<path d="M 170 190 L 480 190" fill="none" stroke="#b45309" stroke-width="1.6" opacity="1" marker-end="url(#ah1)"/>
+<text x="325.0" y="182.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#b45309" text-anchor="middle" opacity="1">launchd 每 30s 触发 / 手动 --once</text>
+<path d="M 480 222 L 1450 222" fill="none" stroke="#334155" stroke-width="1.6" opacity="1" stroke-dasharray="5 4" marker-end="url(#ah2)"/>
+<text x="965.0" y="214.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#334155" text-anchor="middle" opacity="1">读取 config.json 与 token（0600）</text>
+<rect x="280" y="242" width="400" height="79" rx="8" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2" opacity="1" />
+<text x="290" y="260" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#92400e" text-anchor="start" opacity="1">配置</text>
+<text x="290" y="278" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">gatewayBaseUrl · tokenFile · profilePath · namespace ·</text>
+<text x="290" y="293" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">intervalSeconds；</text>
+<text x="290" y="308" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">启动加文件锁，避免多项目并发写同一 profile。</text>
+<path d="M 480 366 L 800 366" fill="none" stroke="#1d4ed8" stroke-width="1.6" opacity="1" marker-end="url(#ah3)"/>
+<text x="640.0" y="358.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#1d4ed8" text-anchor="middle" opacity="1">GET /mcp/discovery/servers</text>
+<path d="M 480 404 L 800 404" fill="none" stroke="#1d4ed8" stroke-width="1.6" opacity="1" marker-end="url(#ah3)"/>
+<text x="640.0" y="382.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#1d4ed8" text-anchor="middle" opacity="1">Authorization: Bearer &lt;app JWT&gt; ·</text>
+<text x="640.0" y="396.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#1d4ed8" text-anchor="middle" opacity="1">If-None-Match: &lt;revision&gt;</text>
+<rect x="680" y="420" width="400" height="64" rx="8" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2" opacity="1" />
+<text x="690" y="438" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#92400e" text-anchor="start" opacity="1">服务端</text>
+<text x="690" y="456" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">verifyToken → appId → 可见 Server（app_server_rel）</text>
+<text x="690" y="471" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">→ revision = updatedAt + 授权 + 工具集的哈希</text>
+<path d="M 800 500 L 480 500" fill="none" stroke="#047857" stroke-width="1.6" opacity="1" stroke-dasharray="5 4" marker-end="url(#ah4)"/>
+<text x="640.0" y="492.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#047857" text-anchor="middle" opacity="1">200 { servers[], revision } ／ 304 Not Modified</text>
+<rect x="250" y="520" width="430" height="64" rx="8" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2" opacity="1" />
+<text x="260" y="538" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#92400e" text-anchor="start" opacity="1">增量判定</text>
+<text x="260" y="556" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">304 或 revision 未变化：不重写文件，直接退出。</text>
+<text x="260" y="571" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">这样定时任务不会反复触发 DSH 重载。</text>
+<path d="M 480 640 L 170 640" fill="none" stroke="#b45309" stroke-width="1.6" opacity="1" marker-end="url(#ah1)"/>
+<text x="325.0" y="632.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#b45309" text-anchor="middle" opacity="1">原子写入 cordis.patch.yml 的 managed block</text>
+<rect x="186" y="658" width="270" height="64" rx="8" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2" opacity="1" />
+<text x="196" y="676" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#92400e" text-anchor="start" opacity="1">写入方式</text>
+<text x="196" y="694" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">BEGIN / END 标记之间由同步器维护，</text>
+<text x="196" y="709" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">marker 外内容保持原样；写 tmp 再 rename。</text>
+<line x1="170" y1="742" x2="206" y2="742" stroke="#64748b" stroke-width="1.3" opacity="1"/>
+<line x1="206" y1="742" x2="206" y2="764" stroke="#64748b" stroke-width="1.3" opacity="1"/>
+<path d="M 206 764 L 170 764" fill="none" stroke="#64748b" stroke-width="1.3" opacity="1" marker-end="url(#ah5)"/>
+<text x="216" y="748" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="start" opacity="1">DSH 检测文件变化</text>
+<text x="216" y="763" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="400" fill="#475569" text-anchor="start" opacity="1">→ 重载 profile（或提示重启）</text>
+<rect x="500" y="770" width="400" height="64" rx="8" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2" opacity="1" />
+<text x="510" y="788" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#92400e" text-anchor="start" opacity="1">生成的条目</text>
+<text x="510" y="806" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">serverName = serverKey（可加前缀）· url = 绝对地址</text>
+<text x="510" y="821" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">Authorization 头写 token 文件引用 · toolCallTimeoutMs</text>
+<path d="M 170 882 L 1120 882" fill="none" stroke="#047857" stroke-width="1.6" opacity="1" marker-end="url(#ah4)"/>
+<text x="645.0" y="874.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#047857" text-anchor="middle" opacity="1">initialize · tools/list（Mcp-Session-Id）</text>
+<path d="M 1120 908 L 170 908" fill="none" stroke="#047857" stroke-width="1.6" opacity="1" stroke-dasharray="5 4" marker-end="url(#ah4)"/>
+<text x="645.0" y="900.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#047857" text-anchor="middle" opacity="1">tools[]：mcp__&lt;serverKey&gt;__&lt;tool&gt;</text>
+<path d="M 170 934 L 1120 934" fill="none" stroke="#6d28d9" stroke-width="1.6" opacity="1" marker-end="url(#ah6)"/>
+<text x="645.0" y="926.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#6d28d9" text-anchor="middle" opacity="1">tools/call { name, arguments }</text>
+<path d="M 1120 960 L 170 960" fill="none" stroke="#6d28d9" stroke-width="1.6" opacity="1" stroke-dasharray="5 4" marker-end="url(#ah6)"/>
+<text x="645.0" y="952.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#6d28d9" text-anchor="middle" opacity="1">result.content[0].text</text>
+<rect x="1180" y="898" width="400" height="79" rx="8" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2" opacity="1" />
+<text x="1190" y="916" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#92400e" text-anchor="start" opacity="1">凭证续期</text>
+<text x="1190" y="934" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">token 过期：网关返回 401 → 重新执行</text>
+<text x="1190" y="949" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">gen-mcp-app-token.py 或由启动脚本现场签发，</text>
+<text x="1190" y="964" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">下一轮同步自动生效。</text>
+<text x="50" y="994" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#94a3b8" text-anchor="start" opacity="1">对应实现：tools/dsh-mcp-sync.py · tools/dsh-mcp-sync.example.json · docs/DSH接入.md · 网关 /mcp/discovery/servers（ETag / X-MCP-Revision）</text>
+</svg>

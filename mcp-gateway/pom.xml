@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      聚合 POM：MCP Gateway 按「数据面 / 控制面 / 共享内核」拆成三个 Maven 模块。
+
+        mcp-shared     共享内核（实体、Mapper、DTO、暴露治理、身份、拓扑读侧、配置）
+        mcp-dataplane  数据面 S1：/mcp/e/**、/mcp/v1/**、/mcp/discovery/**
+        mcp-admin      控制面 S2：/mcp/admin/**、/mcp/log/**
+
+      编译期强制边界：mcp-shared 不得依赖任何一方；mcp-dataplane 与 mcp-admin 互不依赖。
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.18</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.mcp</groupId>
+    <artifactId>mcp-gateway</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>MCP Gateway</name>
+    <description>MCP 网关：数据面（S1）+ 控制面（S2）+ 共享内核</description>
+
+    <modules>
+        <module>mcp-shared</module>
+        <module>mcp-dataplane</module>
+        <module>mcp-admin</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <fastjson.version>1.2.83_noneautotype</fastjson.version>
+        <lombok.version>1.18.30</lombok.version>
+        <mybatis.version>1.2.0</mybatis.version>
+        <lettuce.version>6.1.10.RELEASE</lettuce.version>
+        <springdoc.version>1.7.0</springdoc.version>
+        <nimbus.version>9.37.3</nimbus.version>
+        <networknt.version>1.0.73</networknt.version>
+        <hutool.version>5.8.22</hutool.version>
+        <poi.version>5.2.5</poi.version>
+        <bouncycastle.version>1.70</bouncycastle.version>
+        <druid.version>1.2.23</druid.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.mcp</groupId>
+                <artifactId>mcp-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>test</id>
+        </profile>
+        <profile>
+            <id>prod</id>
+        </profile>
+    </profiles>
+</project>

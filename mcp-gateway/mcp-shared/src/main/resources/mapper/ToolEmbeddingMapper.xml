@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcp.transfer.mapper.ToolEmbeddingMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.ToolEmbedding">
+    <id column="tool_id" jdbcType="INTEGER" property="toolId" />
+    <result column="server_id" jdbcType="INTEGER" property="serverId" />
+    <result column="model" jdbcType="VARCHAR" property="model" />
+    <result column="dim" jdbcType="INTEGER" property="dim" />
+    <result column="vector" jdbcType="LONGVARCHAR" property="vector" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    tool_id, server_id, model, dim, vector, update_time
+  </sql>
+
+  <select id="selectByToolId" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_tool_embedding
+    where tool_id = #{toolId,jdbcType=INTEGER}
+  </select>
+
+  <select id="selectByServerId" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_tool_embedding
+    where server_id = #{serverId,jdbcType=INTEGER}
+  </select>
+
+  <insert id="upsert" parameterType="com.mcp.transfer.entity.ToolEmbedding">
+    insert into mcp_tool_embedding (tool_id, server_id, model, dim, vector, update_time)
+    values (#{toolId,jdbcType=INTEGER}, #{serverId,jdbcType=INTEGER}, #{model,jdbcType=VARCHAR},
+            #{dim,jdbcType=INTEGER}, #{vector,jdbcType=LONGVARCHAR}, #{updateTime,jdbcType=TIMESTAMP})
+    on duplicate key update
+      server_id = values(server_id),
+      model = values(model),
+      dim = values(dim),
+      vector = values(vector),
+      update_time = values(update_time)
+  </insert>
+
+  <delete id="deleteByToolId">
+    delete from mcp_tool_embedding where tool_id = #{toolId,jdbcType=INTEGER}
+  </delete>
+
+  <delete id="deleteByServerId">
+    delete from mcp_tool_embedding where server_id = #{serverId,jdbcType=INTEGER}
+  </delete>
+</mapper>

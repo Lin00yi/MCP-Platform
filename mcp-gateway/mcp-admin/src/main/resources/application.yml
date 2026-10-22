@@ -1,0 +1,26 @@
+# ============================================================
+# S2 控制面（mcp-admin）
+#   入口：/mcp/admin/**、/mcp/log/**
+#   不出：/mcp/e/**、/mcp/v1/**、/mcp/discovery/**（属于数据面）
+#
+# 公共配置见 mcp-shared 的 application-common.yml；profile 见 application-{dev,test,prod}.yml
+# ============================================================
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  config:
+    import: classpath:application-common.yml
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+mcp:
+  # 控制面不主动探活下游（探活属于数据面，避免按副本放大上游压力）
+  health:
+    enabled: false
+  admin:
+    # 数据面内部地址：用于「测试连通性」与配置变更通知
+    dataplane-url: ${MCP_DATAPLANE_URL:http://127.0.0.1:8081}
+  internal:
+    # 与数据面 mcp.internal.token 保持一致
+    token: ${MCP_INTERNAL_TOKEN:}

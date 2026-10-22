@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcp.transfer.mapper.ToolCallRecordMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.ToolCallRecord">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
+    <result column="tenant_name" jdbcType="VARCHAR" property="tenantName" />
+    <result column="server_id" jdbcType="INTEGER" property="serverId" />
+    <result column="server_name" jdbcType="VARCHAR" property="serverName" />
+    <result column="app_id" jdbcType="VARCHAR" property="appId" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="method_def_id" jdbcType="INTEGER" property="methodDefId" />
+    <result column="method_code" jdbcType="VARCHAR" property="methodCode" />
+    <result column="method_name" jdbcType="VARCHAR" property="methodName" />
+    <result column="request_args" jdbcType="LONGVARCHAR" property="requestArgs" />
+    <result column="response_result" jdbcType="LONGVARCHAR" property="responseResult" />
+    <result column="call_type" jdbcType="VARCHAR" property="callType" />
+    <result column="http_method" jdbcType="VARCHAR" property="httpMethod" />
+    <result column="target_url" jdbcType="VARCHAR" property="targetUrl" />
+    <result column="success" jdbcType="INTEGER" property="success" />
+    <result column="error_msg" jdbcType="LONGVARCHAR" property="errorMsg" />
+    <result column="duration" jdbcType="BIGINT" property="duration" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, tenant_id, tenant_name, server_id, server_name, app_id, user_id, user_name, method_def_id, method_code, method_name,
+    request_args, response_result, call_type, http_method, target_url,
+    success, error_msg, duration, create_time
+  </sql>
+
+  <!-- 租户数据隔离过滤片段：null=超管不过滤；空集合=无可见租户，返回空 -->
+  <sql id="TenantFilter">
+    <choose>
+      <when test="tenantIds != null and tenantIds.size() &gt; 0">
+        and tenant_id in
+        <foreach collection="tenantIds" item="tid" open="(" separator="," close=")">#{tid,jdbcType=INTEGER}</foreach>
+      </when>
+      <when test="tenantIds != null">
+        and 1 = 0
+      </when>
+    </choose>
+  </sql>
+
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.ToolCallRecord" useGeneratedKeys="true">
+    insert into tool_call_record
+    (tenant_id, tenant_name, server_id, server_name, app_id, user_id, user_name, method_def_id, method_code, method_name,
+     request_args, response_result, call_type, http_method, target_url,
+     success, error_msg, duration, create_time)
+    values
+    (#{tenantId,jdbcType=INTEGER}, #{tenantName,jdbcType=VARCHAR}, #{serverId,jdbcType=INTEGER}, #{serverName,jdbcType=VARCHAR},
+     #{appId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{userName,jdbcType=VARCHAR}, #{methodDefId,jdbcType=INTEGER},
+     #{methodCode,jdbcType=VARCHAR}, #{methodName,jdbcType=VARCHAR},
+     #{requestArgs,jdbcType=LONGVARCHAR}, #{responseResult,jdbcType=LONGVARCHAR},
+     #{callType,jdbcType=VARCHAR}, #{httpMethod,jdbcType=VARCHAR}, #{targetUrl,jdbcType=VARCHAR},
+     #{success,jdbcType=INTEGER}, #{errorMsg,jdbcType=LONGVARCHAR}, #{duration,jdbcType=BIGINT},
+     #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.ToolCallRecord" useGeneratedKeys="true">
+    insert into tool_call_record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="tenantId != null">tenant_id,</if>
+      <if test="tenantName != null">tenant_name,</if>
+      <if test="serverId != null">server_id,</if>
+      <if test="serverName != null">server_name,</if>
+      <if test="appId != null">app_id,</if>
+      <if test="userId != null">user_id,</if>
+      <if test="userName != null">user_name,</if>
+      <if test="methodDefId != null">method_def_id,</if>
+      <if test="methodCode != null">method_code,</if>
+      <if test="methodName != null">method_name,</if>
+      <if test="requestArgs != null">request_args,</if>
+      <if test="responseResult != null">response_result,</if>
+      <if test="callType != null">call_type,</if>
+      <if test="httpMethod != null">http_method,</if>
+      <if test="targetUrl != null">target_url,</if>
+      <if test="success != null">success,</if>
+      <if test="errorMsg != null">error_msg,</if>
+      <if test="duration != null">duration,</if>
+      <if test="createTime != null">create_time,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="tenantId != null">#{tenantId,jdbcType=INTEGER},</if>
+      <if test="tenantName != null">#{tenantName,jdbcType=VARCHAR},</if>
+      <if test="serverId != null">#{serverId,jdbcType=INTEGER},</if>
+      <if test="serverName != null">#{serverName,jdbcType=VARCHAR},</if>
+      <if test="appId != null">#{appId,jdbcType=VARCHAR},</if>
+      <if test="userId != null">#{userId,jdbcType=VARCHAR},</if>
+      <if test="userName != null">#{userName,jdbcType=VARCHAR},</if>
+      <if test="methodDefId != null">#{methodDefId,jdbcType=INTEGER},</if>
+      <if test="methodCode != null">#{methodCode,jdbcType=VARCHAR},</if>
+      <if test="methodName != null">#{methodName,jdbcType=VARCHAR},</if>
+      <if test="requestArgs != null">#{requestArgs,jdbcType=LONGVARCHAR},</if>
+      <if test="responseResult != null">#{responseResult,jdbcType=LONGVARCHAR},</if>
+      <if test="callType != null">#{callType,jdbcType=VARCHAR},</if>
+      <if test="httpMethod != null">#{httpMethod,jdbcType=VARCHAR},</if>
+      <if test="targetUrl != null">#{targetUrl,jdbcType=VARCHAR},</if>
+      <if test="success != null">#{success,jdbcType=INTEGER},</if>
+      <if test="errorMsg != null">#{errorMsg,jdbcType=LONGVARCHAR},</if>
+      <if test="duration != null">#{duration,jdbcType=BIGINT},</if>
+      <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
+    </trim>
+  </insert>
+
+  <!--管理后台：分页查询工具调用记录（success / tenantIds 可选过滤）-->
+  <select id="selectAllWithPage" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from tool_call_record
+    <where>
+      <if test="success != null">
+        and success = #{success,jdbcType=INTEGER}
+      </if>
+      <include refid="TenantFilter" />
+    </where>
+    order by id desc
+    limit #{start}, #{limit}
+  </select>
+
+  <!--管理后台：工具调用记录总数（success / tenantIds 可选过滤）-->
+  <select id="countAll" resultType="java.lang.Long">
+    select count(*)
+    from tool_call_record
+    <where>
+      <if test="success != null">
+        and success = #{success,jdbcType=INTEGER}
+      </if>
+      <include refid="TenantFilter" />
+    </where>
+  </select>
+
+  <!--管理后台：自某时间点以来的调用数（tenantIds 可选过滤）-->
+  <select id="countSince" resultType="java.lang.Long">
+    select count(*)
+    from tool_call_record
+    <where>
+      create_time &gt;= #{start,jdbcType=TIMESTAMP}
+      <include refid="TenantFilter" />
+    </where>
+  </select>
+
+  <!--管理后台：分页查询（时间范围 + success + serverId + tenantIds 过滤）-->
+  <select id="selectWithFilter" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from tool_call_record
+    <where>
+      <if test="begin != null">and create_time &gt;= #{begin,jdbcType=TIMESTAMP}</if>
+      <if test="end != null">and create_time &lt;= #{end,jdbcType=TIMESTAMP}</if>
+      <if test="success != null">and success = #{success,jdbcType=INTEGER}</if>
+      <if test="serverId != null">and server_id = #{serverId,jdbcType=INTEGER}</if>
+      <if test="appId != null and appId != ''">and app_id = #{appId,jdbcType=VARCHAR}</if>
+      <if test="userId != null and userId != ''">
+        and (user_id like concat('%', #{userId,jdbcType=VARCHAR}, '%')
+             or user_name like concat('%', #{userId,jdbcType=VARCHAR}, '%'))
+      </if>
+      <include refid="TenantFilter" />
+    </where>
+    order by id desc
+    limit #{start}, #{limit}
+  </select>
+
+  <select id="countWithFilter" resultType="java.lang.Long">
+    select count(*)
+    from tool_call_record
+    <where>
+      <if test="begin != null">and create_time &gt;= #{begin,jdbcType=TIMESTAMP}</if>
+      <if test="end != null">and create_time &lt;= #{end,jdbcType=TIMESTAMP}</if>
+      <if test="success != null">and success = #{success,jdbcType=INTEGER}</if>
+      <if test="serverId != null">and server_id = #{serverId,jdbcType=INTEGER}</if>
+      <if test="appId != null and appId != ''">and app_id = #{appId,jdbcType=VARCHAR}</if>
+      <if test="userId != null and userId != ''">
+        and (user_id like concat('%', #{userId,jdbcType=VARCHAR}, '%')
+             or user_name like concat('%', #{userId,jdbcType=VARCHAR}, '%'))
+      </if>
+      <include refid="TenantFilter" />
+    </where>
+  </select>
+
+  <!--管理后台：工具调用统计（tenantIds 可选过滤）-->
+  <select id="stats" resultType="java.util.HashMap">
+    select
+      count(*) as total,
+      coalesce(sum(case when success = 1 then 1 else 0 end), 0) as successCount,
+      coalesce(sum(case when success = 0 then 1 else 0 end), 0) as failCount,
+      coalesce(round(avg(duration), 0), 0) as avgDuration,
+      coalesce(sum(case when create_time &gt;= #{todayStart,jdbcType=TIMESTAMP} then 1 else 0 end), 0) as today
+    from tool_call_record
+    <where>
+      <include refid="TenantFilter" />
+    </where>
+  </select>
+
+  <!--管理后台：近 N 天按天统计趋势（tenantIds 可选过滤）-->
+  <select id="trendSince" resultType="java.util.HashMap">
+    select
+      date_format(create_time, '%m-%d') as time,
+      count(*) as requests,
+      coalesce(sum(case when success = 1 then 1 else 0 end), 0) as success,
+      coalesce(sum(case when success = 0 then 1 else 0 end), 0) as failed,
+      coalesce(round(avg(duration), 0), 0) as avgDuration
+    from tool_call_record
+    <where>
+      create_time &gt;= #{start,jdbcType=TIMESTAMP}
+      <include refid="TenantFilter" />
+    </where>
+    group by date_format(create_time, '%m-%d')
+    order by time asc
+  </select>
+
+  <!--管理后台：按方法 code 统计调用分布（tenantIds 可选过滤）-->
+  <select id="countByMethod" resultType="java.util.HashMap">
+    select method_code as name, count(*) as value
+    from tool_call_record
+    <where>
+      <include refid="TenantFilter" />
+    </where>
+    group by method_code
+    order by value desc
+    limit 10
+  </select>
+
+  <!--管理后台：按调用类型统计分布（tenantIds 可选过滤）-->
+  <select id="countByCallType" resultType="java.util.HashMap">
+    select call_type as name, count(*) as value
+    from tool_call_record
+    <where>
+      <include refid="TenantFilter" />
+    </where>
+    group by call_type
+    order by value desc
+  </select>
+
+  <!--健康检测：按 server 聚合某时间之后的调用统计-->
+  <select id="selectServerStatsSince" resultType="java.util.HashMap">
+    select server_id as serverId,
+           count(*) as total,
+           sum(case when success = 1 then 1 else 0 end) as okCount,
+           avg(duration) as avgDuration,
+           max(create_time) as lastCall
+    from tool_call_record
+    where create_time &gt;= #{since,jdbcType=TIMESTAMP}
+      and server_id is not null
+    group by server_id
+  </select>
+
+  <!--META 热工具推荐：某 server 在时间窗口内调用次数最多的工具-->
+  <select id="topToolCodes" resultType="java.util.HashMap">
+    select method_code as methodCode,
+           max(method_name) as methodName,
+           count(*) as calls
+    from tool_call_record
+    where server_id = #{serverId,jdbcType=INTEGER}
+      and success = 1
+      and method_code is not null
+      and create_time &gt;= #{since,jdbcType=TIMESTAMP}
+    group by method_code
+    order by calls desc
+    limit #{limit,jdbcType=INTEGER}
+  </select>
+</mapper>

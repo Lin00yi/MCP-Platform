@@ -1,0 +1,49 @@
+# ============================================================
+# S1 数据面（mcp-dataplane）
+#   入口：/mcp/e/**、/mcp/v1/**、/mcp/discovery/**、/internal/**
+#   不出：/mcp/admin/**、/mcp/log/**（属于控制面）
+#
+# 公共配置见 mcp-shared 的 application-common.yml；profile 见 application-{dev,test,prod}.yml
+# ============================================================
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  config:
+    import: classpath:application-common.yml
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+# 数据面自身需要、控制面不需要的开关
+mcp:
+  # 定时探活只应由数据面执行（多副本时先按本机探测，P2 再做选主）
+  health:
+    enabled: ${MCP_HEALTH_ENABLED:true}
+    probe-interval-ms: ${MCP_HEALTH_PROBE_INTERVAL_MS:30000}
+    # 探测结果缓存：90s = 3 × 间隔，避免漏探一次就让所有副本回退到自行探测
+    probe-cache-seconds: ${MCP_HEALTH_PROBE_CACHE_SECONDS:90}
+    # 选主租约：45s > 间隔 30s，leader 正常时不会丢租约，挂掉后最多 45s 接管
+    leader-ttl-seconds: ${MCP_HEALTH_LEADER_TTL_SECONDS:45}
+
+  # 控制面 → 数据面的内部调用鉴权（/internal/**）
+  internal:
+    token: ${MCP_INTERNAL_TOKEN:}
+
+  # 多副本：会话 / 上游会话 / 变更事件外置到 Redis（默认关闭，单副本无需 Redis）
+  redis:
+    enabled: ${MCP_REDIS_ENABLED:false}
+    uri: ${MCP_REDIS_URI:redis://127.0.0.1:6379/0}
+    key-prefix: ${MCP_REDIS_KEY_PREFIX:mcp:}
+
+  # 变更兜底轮询：Redis 事件丢失时也能发现资产变更
+  cache:
+    revision-poll-enabled: ${MCP_REVISION_POLL_ENABLED:true}
+    revision-poll-ms: ${MCP_REVISION_POLL_MS:30000}
+
+# embedding 凭证只存在于数据面：控制面不再持有 host/key
+embedding:
+  host: ${MCP_EMBEDDING_HOST:}
+  model: ${MCP_EMBEDDING_MODEL:text-embedding-v4-fast}
+  size: ${MCP_EMBEDDING_SIZE:1024}
+  key: ${MCP_EMBEDDING_KEY:}
+  maxTokenLimit: ${MCP_EMBEDDING_MAX_TOKENS:8150}

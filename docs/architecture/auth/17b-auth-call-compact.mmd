@@ -1,0 +1,39 @@
+%%{init: {"theme":"base","sequence":{"actorMargin":36,"width":110,"height":38,"boxMargin":8,"messageMargin":32,"noteMargin":8,"mirrorActors":false},"themeVariables":{"fontFamily":"PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif","fontSize":"17px","primaryColor":"#eef2ff","primaryBorderColor":"#94a3b8","lineColor":"#475569","noteBkgColor":"#fffbeb","noteBorderColor":"#fcd34d","noteTextColor":"#78350f","actorBkg":"#eef2ff","actorBorder":"#818cf8","actorTextColor":"#1e1b4b","signalColor":"#334155","signalTextColor":"#0f172a","labelBoxBkgColor":"#e0e7ff","labelBoxBorderColor":"#a5b4fc","labelTextColor":"#1e1b4b"}}}%%
+sequenceDiagram
+    autonumber
+    participant C as 客户端
+    participant G as MCP Gateway
+    participant P as user-center
+    participant R as Redis
+    participant U as 其它上游
+
+    Note over C,R: 阶段 0（一次性）：浏览器 → CAS → user-center，写入 dsh:auth:token；网关不参与
+    C->>G: initialize：app JWT + dsh_x
+    G->>G: ① 验 app JWT → appId
+    G->>G: ② 查应用授权
+    alt 共享 Redis（首期）
+        G->>R: GET dsh:auth:token:{dsh_x}
+        R-->>G: user 快照 + 绝对期
+    else introspection（目标态）
+        G->>P: GET /internal/mcp/userinfo
+        P->>R: GET dsh:auth:token:{dsh_x}
+        P-->>G: userId / customerCode
+    end
+    G->>G: ③ 校验 + 缓存 30–60s
+    G->>G: ④ 绑定 Session
+    G-->>C: 200 + Mcp-Session-Id
+
+    C->>G: tools/call：app JWT + dsh_x + Session
+    G->>G: ⑤ 会话一致 + 工具授权
+    alt 上游是 user-center
+        G->>P: GET /v1/.../order-contacts<br/>x-dsh-auth-token: dsh_x
+        P->>P: 过滤器 → 用户上下文
+        P-->>G: 业务数据（按客编隔离）
+    else 其它上游
+        G->>U: Bearer [60s JWS/JWE]
+        U-->>G: 结果
+    end
+    G->>G: ⑥ 审计（脱敏）
+    G-->>C: JSON-RPC result
+
+    Note over P,R: 登出/到期：DEL token；网关缓存 ≤60s 后返回 401

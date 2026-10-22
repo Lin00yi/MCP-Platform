@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%M:%L  traceId:[%X{traceId}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="rollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH:-/tmp/mcp-logs}/mcp_transfer-info.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH:-/tmp/mcp-logs}/mcp_transfer-info.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%M:%L traceId:[%X{traceId}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <property name="logPattern"
+              value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger traceId:%X{traceId} - %msg%n"/>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder charset="UTF-8">
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender>
+
+
+    <logger name="org.hibernate.SQL" level="debug" additivity="false">
+        <appender-ref ref="console" />
+    </logger>
+    <!-- project default level -->
+    <logger name="com.mcp.transfer" level="INFO" >
+        <appender-ref ref="rollingFile" />
+    </logger>
+
+    <!--log4jdbc -->
+    <logger name="jdbc.sqltiming" level="INFO" />
+
+    <root level="INFO">
+        <appender-ref ref="console" />
+<!--        <appender-ref ref="LOGSTASH" />-->
+    </root>
+</configuration>

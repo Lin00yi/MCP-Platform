@@ -1,0 +1,42 @@
+%%{init: {"theme":"base","htmlLabels":false,"flowchart":{"htmlLabels":false,"nodeSpacing":45,"rankSpacing":80},"themeVariables":{"fontFamily":"PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif","fontSize":"15px","primaryColor":"#eef2ff","primaryBorderColor":"#94a3b8","lineColor":"#475569","clusterBkg":"#f8fafc","clusterBorder":"#cbd5e1","edgeLabelBackground":"#ffffff"}}}%%
+flowchart LR
+    A["客户端请求<br/>/mcp/v1/{serverKey} 或 /mcp/e/{endpointKey}"] --> B{"JSON-RPC method"}
+    B -->|"ping / notifications/*"| Z["匿名放行"]
+    B -->|"initialize / tools/* / prompts/* / resources/*"| C{"app JWT 有效?<br/>HS256 · iss · exp · 应用启用"}
+    C -->|"否"| C1["401 -32001<br/>invalid_token"]
+    C -->|"是"| D["appId<br/>加载 Server / Endpoint → tenant"]
+    D --> E{"MCP_IDENTITY_ENABLED?"}
+    E -->|"否（兼容模式）"| H
+    E -->|"是"| F{"携带 x-dsh-auth-token?"}
+    F -->|"否"| F1["401 -32001<br/>identity_required"]
+    F -->|"是"| G{"DshTokenVerifier<br/>本地缓存命中?"}
+    G -->|"是"| I["ResolvedIdentity<br/>userId / customer / tokenHash"]
+    G -->|"否"| G1{"Redis GET 或<br/>user-center introspection"}
+    G1 -->|"token 不存在 / 已绝对过期"| G2["401 -32001<br/>invalid_token"]
+    G1 -->|"token 有效"| I
+    G1 -->|"存储 / 服务不可用"| G3["503 -32603<br/>identity_unavailable<br/>fail-closed，绝不放行"]
+    I --> J{"initialize?"}
+    J -->|"是"| J2["绑定 Session<br/>Mcp-Session-Id"]
+    J -->|"否"| J3{"会话身份一致?"}
+    J3 -->|"否"| J4["400 -32602<br/>请重新 initialize"]
+    J3 -->|"是"| H
+    J2 --> H{"app → server / tool<br/>授权通过?"}
+    H -->|"否"| H1["403 -32003<br/>insufficient_scope"]
+    H -->|"是"| K{"工具执行类型"}
+    K -->|"本地工具"| K1["反射调用"]
+    K -->|"REST → user-center"| K2["转发 dsh_x<br/>或网关 JWS"]
+    K -->|"REST → 其它业务"| K3["静态凭证 / 网关 JWS<br/>默认不透传 dsh_x"]
+    K -->|"MCP 下游"| K4["60s JWS/JWE<br/>aud + jti + exp"]
+    K1 --> M["审计 tool_call_record<br/>token / 客编脱敏"]
+    K2 --> M
+    K3 --> M
+    K4 --> M
+    M --> N["返回 JSON-RPC result"]
+
+    classDef ok fill:#ecfdf5,stroke:#34d399,color:#065f46;
+    classDef bad fill:#fff1f2,stroke:#fb7185,color:#9f1239;
+    classDef warn fill:#fffbeb,stroke:#fbbf24,color:#92400e;
+    classDef gate fill:#eef2ff,stroke:#818cf8,color:#1e1b4b;
+    class Z,N ok;
+    class C1,F1,G2,G3,J4,H1 bad;
+    class E,F,G,G1,J,J3,H,K gate;

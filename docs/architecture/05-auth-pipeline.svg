@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1140" viewBox="0 0 1680 1140" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif">
+<defs>
+<filter id="softShadow" x="-8%" y="-8%" width="116%" height="120%"><feDropShadow dx="0" dy="2.5" stdDeviation="3.2" flood-color="#0f172a" flood-opacity="0.10"/></filter>
+<marker id="ah1" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" fill="#64748b"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="50" y="46" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="23" font-weight="700" fill="#0f172a" text-anchor="start" opacity="1">三平面鉴权与授权流水线</text>
+<text x="50" y="70" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="13" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">管理面（后台 JWT + RBAC）、数据面（app JWT + 双层授权 + 可选身份下传）、发现面（app JWT + 可见性过滤）</text>
+<rect x="60" y="100" width="480" height="746" rx="14" fill="#fffbeb" stroke="#fde68a" stroke-width="1.4" opacity="1" />
+<text x="76" y="126" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="start" opacity="1" letter-spacing="0.4">管理面  /mcp/admin/**  ·  /mcp/log/**</text>
+<rect x="600" y="100" width="480" height="746" rx="14" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.4" opacity="1" />
+<text x="616" y="126" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#047857" text-anchor="start" opacity="1" letter-spacing="0.4">数据面  /mcp/v1/{serverKey}</text>
+<rect x="1140" y="100" width="480" height="746" rx="14" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.4" opacity="1" />
+<text x="1156" y="126" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="start" opacity="1" letter-spacing="0.4">发现面  /mcp/discovery/**</text>
+<rect x="76" y="146" width="448" height="64" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 76 158 L 76 156 Q 76 146 86 146 L 80 146 Z" fill="#b45309" opacity="0.9"/>
+<text x="300.0" y="171.35" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">1. 路径匹配</text>
+<text x="300.0" y="189.15" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">/mcp/admin/** 与 /mcp/log/** 强制登录；/error 与 OPTIONS 放行</text>
+<path d="M 300 210 L 300 224" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="76" y="224" width="448" height="64" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" opacity="1" />
+<path d="M 76 236 L 76 234 Q 76 224 86 224 L 80 224 Z" fill="#475569" opacity="0.9"/>
+<text x="300.0" y="241.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#475569" text-anchor="middle" opacity="1">2. 登录接口单独放行</text>
+<text x="300.0" y="259.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">POST /mcp/admin/auth/login：BCrypt 校验</text>
+<text x="300.0" y="274.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">签发 Admin JWT（userId / role / 用户更新时间）</text>
+<path d="M 300 288 L 300 302" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="76" y="302" width="448" height="64" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 76 314 L 76 312 Q 76 302 86 302 L 80 302 Z" fill="#b45309" opacity="0.9"/>
+<text x="300.0" y="327.35" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">3. 校验后台 JWT</text>
+<text x="300.0" y="345.15000000000003" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">AdminAuthService.verifyToken(Bearer token) → AdminAuthContext</text>
+<path d="M 300 366 L 300 380" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="76" y="380" width="448" height="64" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 76 392 L 76 390 Q 76 380 86 380 L 80 380 Z" fill="#b45309" opacity="0.9"/>
+<text x="300.0" y="405.35" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">4. 角色等级</text>
+<text x="300.0" y="423.15000000000003" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">SUPER_ADMIN 4 · ADMIN 3 · DEVELOPER 2 · OPERATOR 1 · USER 0</text>
+<path d="M 300 444 L 300 458" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="76" y="458" width="448" height="64" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 76 470 L 76 468 Q 76 458 86 458 L 80 458 Z" fill="#b45309" opacity="0.9"/>
+<text x="300.0" y="475.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">5. 权限矩阵（默认拒绝）</text>
+<text x="300.0" y="493.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">GET 按资源读权限；写操作按 canManage*；未登记写接口 403</text>
+<text x="300.0" y="508.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">app_secret / 用户 / 租户 / 审批等高危资源单独收口</text>
+<path d="M 300 522 L 300 536" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="76" y="536" width="448" height="64" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" opacity="1" />
+<path d="M 76 548 L 76 546 Q 76 536 86 536 L 80 536 Z" fill="#475569" opacity="0.9"/>
+<text x="300.0" y="561.35" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#475569" text-anchor="middle" opacity="1">6. 放行 / 拒绝</text>
+<text x="300.0" y="579.15" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">401 未登录或过期 ｜ 403 无权限 ｜ 写操作可触发 428 转审批</text>
+<rect x="76" y="632" width="448" height="64" rx="8" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2" opacity="1" />
+<text x="86" y="650" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#92400e" text-anchor="start" opacity="1">数据范围</text>
+<text x="86" y="668" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">SUPER_ADMIN 全局；ADMIN/DEVELOPER/OPERATOR/USER 仅本业务方。</text>
+<text x="86" y="683" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">用户与业务方的关系存于 admin_user_tenant，跨租户访问一律拒绝。</text>
+<rect x="76" y="730" width="448" height="64" rx="8" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2" opacity="1" />
+<text x="86" y="748" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#92400e" text-anchor="start" opacity="1">前后端一致</text>
+<text x="86" y="766" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">前端同源策略：侧栏 minLevel + 路由 RequireLevel 双重门槛，</text>
+<text x="86" y="781" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">但最终以服务端 AdminPermissionEvaluator 判定为准。</text>
+<rect x="616" y="146" width="448" height="64" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5" opacity="1" />
+<path d="M 616 158 L 616 156 Q 616 146 626 146 L 620 146 Z" fill="#047857" opacity="0.9"/>
+<text x="840.0" y="171.35" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">1. 进入 MCP 端点</text>
+<text x="840.0" y="189.15" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">POST JSON-RPC；除 initialize 外必须携带有效 Mcp-Session-Id</text>
+<path d="M 840 210 L 840 222" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="616" y="222" width="448" height="64" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5" opacity="1" />
+<path d="M 616 234 L 616 232 Q 616 222 626 222 L 620 222 Z" fill="#047857" opacity="0.9"/>
+<text x="840.0" y="239.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">2. 方法分类</text>
+<text x="840.0" y="257.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">ping / notifications/* 匿名放行</text>
+<text x="840.0" y="272.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">initialize：可选 token（带则必验）；其余方法强制 token</text>
+<path d="M 840 286 L 840 298" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="616" y="298" width="448" height="64" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" opacity="1" />
+<path d="M 616 310 L 616 308 Q 616 298 626 298 L 620 298 Z" fill="#475569" opacity="0.9"/>
+<text x="840.0" y="323.35" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#475569" text-anchor="middle" opacity="1">3. 提取 access-token</text>
+<text x="840.0" y="341.15000000000003" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">Authorization: Bearer &lt;JWT&gt; 或 access-token 头；回写 token 过期时间</text>
+<path d="M 840 362 L 840 374" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="616" y="374" width="448" height="64" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 616 386 L 616 384 Q 616 374 626 374 L 620 374 Z" fill="#b45309" opacity="0.9"/>
+<text x="840.0" y="391.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">4. 应用身份验签</text>
+<text x="840.0" y="409.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">iss=appId → 查 enn_app_info.app_secret（AES-GCM 解密）</text>
+<text x="840.0" y="424.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">HS256 验签；exp 必填且 ≤ 7 天；失败 401</text>
+<path d="M 840 438 L 840 450" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="616" y="450" width="448" height="64" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" opacity="1" />
+<path d="M 616 462 L 616 460 Q 616 450 626 450 L 620 450 Z" fill="#b91c1c" opacity="0.9"/>
+<text x="840.0" y="467.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle" opacity="1">5. 身份下传（可选，默认关闭）</text>
+<text x="840.0" y="485.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">x-dsh-auth-token → 用户信息服务 → userId / customerId</text>
+<text x="840.0" y="500.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">校验应用与 Server 同租户；绑定 session，禁止中途切换身份</text>
+<path d="M 840 514 L 840 526" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="616" y="526" width="448" height="64" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 616 538 L 616 536 Q 616 526 626 526 L 620 526 Z" fill="#b45309" opacity="0.9"/>
+<text x="840.0" y="551.35" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">6. Server 级授权</text>
+<text x="840.0" y="569.15" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">app_server_rel 必须命中：应用先被授权访问整个 Server</text>
+<path d="M 840 590 L 840 602" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="616" y="602" width="448" height="64" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 616 614 L 616 612 Q 616 602 626 602 L 620 602 Z" fill="#b45309" opacity="0.9"/>
+<text x="840.0" y="619.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">7. 资产级白名单</text>
+<text x="840.0" y="637.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">tools/call · prompts/get · resources/read</text>
+<text x="840.0" y="652.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">有 app_tool_rel 则精确匹配，无白名单则 Server 内全放行</text>
+<path d="M 840 666 L 840 678" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="616" y="678" width="448" height="64" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" opacity="1" />
+<path d="M 616 690 L 616 688 Q 616 678 626 678 L 620 678 Z" fill="#475569" opacity="0.9"/>
+<text x="840.0" y="695.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#475569" text-anchor="middle" opacity="1">8. 放行</text>
+<text x="840.0" y="713.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">写入 request attribute：appId / serverId / toolId / tenantId</text>
+<text x="840.0" y="728.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">代理型 Server 只做 Server 级授权</text>
+<rect x="1156" y="146" width="448" height="64" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" />
+<path d="M 1156 158 L 1156 156 Q 1156 146 1166 146 L 1160 146 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="1380.0" y="171.35" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">1. 进入发现接口</text>
+<text x="1380.0" y="189.15" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">GET /mcp/discovery/servers · tools · prompts · resources</text>
+<path d="M 1380 210 L 1380 224" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="1156" y="224" width="448" height="64" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" />
+<path d="M 1156 236 L 1156 234 Q 1156 224 1166 224 L 1160 224 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="1380.0" y="249.35" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">2. access-token 必填</text>
+<text x="1380.0" y="267.15000000000003" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">无 token / token 无效一律 401，不再返回匿名全量目录</text>
+<path d="M 1380 288 L 1380 302" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="1156" y="302" width="448" height="64" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5" opacity="1" />
+<path d="M 1156 314 L 1156 312 Q 1156 302 1166 302 L 1160 302 Z" fill="#b45309" opacity="0.9"/>
+<text x="1380.0" y="327.35" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b45309" text-anchor="middle" opacity="1">3. 应用身份验签</text>
+<text x="1380.0" y="345.15000000000003" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">复用 McpAuthService.verifyToken → appId</text>
+<path d="M 1380 366 L 1380 380" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="1156" y="380" width="448" height="64" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" />
+<path d="M 1156 392 L 1156 390 Q 1156 380 1166 380 L 1160 380 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="1380.0" y="397.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">4. 可见性过滤</text>
+<text x="1380.0" y="415.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">app_server_rel 授权的 Server</text>
+<text x="1380.0" y="430.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">app_tool_rel / prompt_rel / resource_rel 过滤资产</text>
+<path d="M 1380 444 L 1380 458" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="1156" y="458" width="448" height="64" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" opacity="1" />
+<path d="M 1156 470 L 1156 468 Q 1156 458 1166 458 L 1160 458 Z" fill="#1d4ed8" opacity="0.9"/>
+<text x="1380.0" y="475.7" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">5. 目录与版本</text>
+<text x="1380.0" y="493.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">servers 返回 toolCount / revision，支持 ETag / 304</text>
+<text x="1380.0" y="508.8" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">health / changes 先校验 canAccessServer</text>
+<path d="M 1380 522 L 1380 536" fill="none" stroke="#64748b" stroke-width="1.4" opacity="1" marker-end="url(#ah1)"/>
+<rect x="1156" y="536" width="448" height="64" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" opacity="1" />
+<path d="M 1156 548 L 1156 546 Q 1156 536 1166 536 L 1160 536 Z" fill="#475569" opacity="0.9"/>
+<text x="1380.0" y="561.35" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#475569" text-anchor="middle" opacity="1">6. 放行</text>
+<text x="1380.0" y="579.15" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="9.8" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">只读；供 DSH 同步器生成客户端配置</text>
+<rect x="1156" y="632" width="448" height="64" rx="8" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2" opacity="1" />
+<text x="1166" y="650" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#92400e" text-anchor="start" opacity="1">增量同步</text>
+<text x="1166" y="668" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">revision = 各 Server 的 updatedAt + 授权 + 工具集的哈希；</text>
+<text x="1166" y="683" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">ETag 命中返回 304，DSH 同步器据此跳过重写。</text>
+<rect x="1156" y="720" width="448" height="64" rx="8" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2" opacity="1" />
+<text x="1166" y="738" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#92400e" text-anchor="start" opacity="1">变更订阅</text>
+<text x="1166" y="756" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">changes 为 SSE 长连接，上限与数据面共用 SseEmitterRegistry；</text>
+<text x="1166" y="771" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#475569" text-anchor="start" opacity="1">工具变更时推送 notifications/tools/list_changed。</text>
+<rect x="60" y="872" width="740" height="196" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.3" opacity="1" />
+<text x="80" y="898" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#4338ca" text-anchor="start" opacity="1">应用令牌（app token）结构</text>
+<rect x="80" y="912" width="140" height="58" rx="8" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2" opacity="1" />
+<text x="150.0" y="934" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="11.5" font-weight="700" fill="#4338ca" text-anchor="middle" opacity="1">header</text>
+<text x="150.0" y="952" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">{ alg: HS256, typ: JWT }</text>
+<text x="225" y="946" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="18" font-weight="700" fill="#4338ca" text-anchor="middle" opacity="1">.</text>
+<rect x="230" y="912" width="160" height="58" rx="8" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2" opacity="1" />
+<text x="310.0" y="934" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="11.5" font-weight="700" fill="#4338ca" text-anchor="middle" opacity="1">payload</text>
+<text x="310.0" y="952" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">{ iss: appId, iat, exp }</text>
+<text x="395" y="946" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="18" font-weight="700" fill="#4338ca" text-anchor="middle" opacity="1">.</text>
+<rect x="400" y="912" width="150" height="58" rx="8" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2" opacity="1" />
+<text x="475.0" y="934" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="11.5" font-weight="700" fill="#4338ca" text-anchor="middle" opacity="1">signature</text>
+<text x="475.0" y="952" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="9.5" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">HMAC-SHA256(app_secret)</text>
+<text x="80" y="996" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">生成：tools/gen-mcp-app-token.py 或控制台创建应用时一次性展示 app_secret；验签密钥加密落库</text>
+<text x="80" y="1016" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">约束：exp 必填、有效期 ≤ 7 天；服务端不落明文 token，mcp_request_log 只存 SHA-256 摘要</text>
+<text x="80" y="1038" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#b91c1c" text-anchor="start" opacity="1">客户端不传客编：客编只来自用户信息服务；模型自报的 customerId 会被网关覆盖</text>
+<rect x="820" y="872" width="800" height="196" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.3" opacity="1" />
+<text x="840" y="898" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="start" opacity="1">关键失败语义</text>
+<text x="845" y="920" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="10.5" font-weight="700" fill="#b91c1c" text-anchor="start" opacity="1">401</text>
+<text x="905" y="920" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="400" fill="#334155" text-anchor="start" opacity="1">token 缺失 / 无效 / 过期</text>
+<text x="1580" y="920" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">WWW-Authenticate: Bearer realm=&quot;mcp&quot;</text>
+<text x="845" y="943" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="10.5" font-weight="700" fill="#b91c1c" text-anchor="start" opacity="1">403</text>
+<text x="905" y="943" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="400" fill="#334155" text-anchor="start" opacity="1">无 Server / 资产授权、租户不匹配</text>
+<text x="1580" y="943" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">insufficient_scope；不泄露资源是否存在</text>
+<text x="845" y="966" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="10.5" font-weight="700" fill="#b91c1c" text-anchor="start" opacity="1">404</text>
+<text x="905" y="966" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="400" fill="#334155" text-anchor="start" opacity="1">工具 / Prompt / Resource 不存在</text>
+<text x="1580" y="966" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">RESOURCE_NOT_FOUND</text>
+<text x="845" y="989" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="10.5" font-weight="700" fill="#b91c1c" text-anchor="start" opacity="1">400</text>
+<text x="905" y="989" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="400" fill="#334155" text-anchor="start" opacity="1">参数非法、Session 失效</text>
+<text x="1580" y="989" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">INVALID_PARAMS / INVALID_REQUEST</text>
+<text x="845" y="1012" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="10.5" font-weight="700" fill="#b91c1c" text-anchor="start" opacity="1">428</text>
+<text x="905" y="1012" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="400" fill="#334155" text-anchor="start" opacity="1">写操作需审批</text>
+<text x="1580" y="1012" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">控制面返回审批提示，前端跳转审批页</text>
+<text x="845" y="1035" font-family="'SF Mono','Menlo','Consolas',monospace" font-size="10.5" font-weight="700" fill="#b91c1c" text-anchor="start" opacity="1">429 / 503</text>
+<text x="905" y="1035" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="400" fill="#334155" text-anchor="start" opacity="1">SSE 连接超限 / 身份服务不可用</text>
+<text x="1580" y="1035" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="8.8" font-weight="400" fill="#94a3b8" text-anchor="end" opacity="1">拒绝新连接 / IDENTITY_UNAVAILABLE</text>
+<text x="50" y="1124" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="400" fill="#94a3b8" text-anchor="start" opacity="1">对应实现：AdminAuthInterceptor / AdminPermissionEvaluator / McpAuthInterceptor / McpDiscoveryAuthInterceptor / McpAuthServiceImpl / IdentityResolver</text>
+</svg>

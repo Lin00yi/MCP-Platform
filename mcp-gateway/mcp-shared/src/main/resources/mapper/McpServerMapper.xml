@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcp.transfer.mapper.McpServerMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpServer">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="server_key" jdbcType="VARCHAR" property="serverKey" />
+    <result column="path" jdbcType="VARCHAR" property="path" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="capabilities_json" jdbcType="LONGVARCHAR" property="capabilitiesJson" />
+    <result column="upstream_type" jdbcType="VARCHAR" property="upstreamType" />
+    <result column="upstream_url" jdbcType="VARCHAR" property="upstreamUrl" />
+    <result column="audience" jdbcType="VARCHAR" property="audience" />
+    <result column="identity_public_key" jdbcType="LONGVARCHAR" property="identityPublicKey" />
+    <result column="tool_access_mode" jdbcType="VARCHAR" property="toolAccessMode" />
+    <result column="tool_exposure_mode" jdbcType="VARCHAR" property="toolExposureMode" />
+    <result column="prompt_access_mode" jdbcType="VARCHAR" property="promptAccessMode" />
+    <result column="resource_access_mode" jdbcType="VARCHAR" property="resourceAccessMode" />
+    <result column="hot_tool_codes" jdbcType="LONGVARCHAR" property="hotToolCodes" />
+    <result column="tool_warn_threshold" jdbcType="INTEGER" property="toolWarnThreshold" />
+    <result column="tool_max_threshold" jdbcType="INTEGER" property="toolMaxThreshold" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, tenant_id, `name`, server_key, `path`, `status`, capabilities_json, upstream_type, upstream_url,
+    audience, identity_public_key, tool_access_mode, tool_exposure_mode, prompt_access_mode, resource_access_mode, hot_tool_codes,
+    tool_warn_threshold, tool_max_threshold, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_server
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from mcp_server
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpServer" useGeneratedKeys="true">
+    insert into mcp_server (tenant_id, `name`, server_key, `path`, `status`, capabilities_json, upstream_type, upstream_url, audience, identity_public_key,
+      tool_access_mode, tool_exposure_mode, prompt_access_mode, resource_access_mode,
+      hot_tool_codes, tool_warn_threshold, tool_max_threshold, create_time, update_time)
+    values (#{tenantId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{serverKey,jdbcType=VARCHAR}, #{path,jdbcType=VARCHAR},
+      #{status,jdbcType=INTEGER}, #{capabilitiesJson,jdbcType=LONGVARCHAR},
+      #{upstreamType,jdbcType=VARCHAR}, #{upstreamUrl,jdbcType=VARCHAR},
+      #{audience,jdbcType=VARCHAR}, #{identityPublicKey,jdbcType=LONGVARCHAR},
+      #{toolAccessMode,jdbcType=VARCHAR}, #{toolExposureMode,jdbcType=VARCHAR},
+      #{promptAccessMode,jdbcType=VARCHAR}, #{resourceAccessMode,jdbcType=VARCHAR},
+      #{hotToolCodes,jdbcType=LONGVARCHAR},
+      #{toolWarnThreshold,jdbcType=INTEGER}, #{toolMaxThreshold,jdbcType=INTEGER},
+      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpServer" useGeneratedKeys="true">
+    insert into mcp_server
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="tenantId != null">tenant_id,</if>
+      <if test="name != null and name != ''">`name`,</if>
+      <if test="serverKey != null and serverKey != ''">server_key,</if>
+      <if test="path != null and path != ''">`path`,</if>
+      <if test="status != null">`status`,</if>
+      <if test="capabilitiesJson != null and capabilitiesJson != ''">capabilities_json,</if>
+      <if test="upstreamType != null and upstreamType != ''">upstream_type,</if>
+      <if test="upstreamUrl != null and upstreamUrl != ''">upstream_url,</if>
+      <if test="audience != null and audience != ''">audience,</if>
+      <if test="identityPublicKey != null and identityPublicKey != ''">identity_public_key,</if>
+      <if test="toolAccessMode != null and toolAccessMode != ''">tool_access_mode,</if>
+      <if test="toolExposureMode != null and toolExposureMode != ''">tool_exposure_mode,</if>
+      <if test="promptAccessMode != null and promptAccessMode != ''">prompt_access_mode,</if>
+      <if test="resourceAccessMode != null and resourceAccessMode != ''">resource_access_mode,</if>
+      <if test="hotToolCodes != null and hotToolCodes != ''">hot_tool_codes,</if>
+      <if test="toolWarnThreshold != null">tool_warn_threshold,</if>
+      <if test="toolMaxThreshold != null">tool_max_threshold,</if>
+      <if test="createTime != null">create_time,</if>
+      <if test="updateTime != null">update_time,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="tenantId != null">#{tenantId,jdbcType=INTEGER},</if>
+      <if test="name != null and name != ''">#{name,jdbcType=VARCHAR},</if>
+      <if test="serverKey != null and serverKey != ''">#{serverKey,jdbcType=VARCHAR},</if>
+      <if test="path != null and path != ''">#{path,jdbcType=VARCHAR},</if>
+      <if test="status != null">#{status,jdbcType=INTEGER},</if>
+      <if test="capabilitiesJson != null and capabilitiesJson != ''">#{capabilitiesJson,jdbcType=LONGVARCHAR},</if>
+      <if test="upstreamType != null and upstreamType != ''">#{upstreamType,jdbcType=VARCHAR},</if>
+      <if test="upstreamUrl != null and upstreamUrl != ''">#{upstreamUrl,jdbcType=VARCHAR},</if>
+      <if test="audience != null and audience != ''">#{audience,jdbcType=VARCHAR},</if>
+      <if test="identityPublicKey != null and identityPublicKey != ''">#{identityPublicKey,jdbcType=LONGVARCHAR},</if>
+      <if test="toolAccessMode != null and toolAccessMode != ''">#{toolAccessMode,jdbcType=VARCHAR},</if>
+      <if test="toolExposureMode != null and toolExposureMode != ''">#{toolExposureMode,jdbcType=VARCHAR},</if>
+      <if test="promptAccessMode != null and promptAccessMode != ''">#{promptAccessMode,jdbcType=VARCHAR},</if>
+      <if test="resourceAccessMode != null and resourceAccessMode != ''">#{resourceAccessMode,jdbcType=VARCHAR},</if>
+      <if test="hotToolCodes != null and hotToolCodes != ''">#{hotToolCodes,jdbcType=LONGVARCHAR},</if>
+      <if test="toolWarnThreshold != null">#{toolWarnThreshold,jdbcType=INTEGER},</if>
+      <if test="toolMaxThreshold != null">#{toolMaxThreshold,jdbcType=INTEGER},</if>
+      <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
+      <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.entity.McpServer">
+    update mcp_server
+    <set>
+      <if test="tenantId != null">tenant_id = #{tenantId,jdbcType=INTEGER},</if>
+      <if test="name != null and name != ''">`name` = #{name,jdbcType=VARCHAR},</if>
+      <if test="path != null and path != ''">`path` = #{path,jdbcType=VARCHAR},</if>
+      <if test="status != null">`status` = #{status,jdbcType=INTEGER},</if>
+      <if test="capabilitiesJson != null and capabilitiesJson != ''">capabilities_json = #{capabilitiesJson,jdbcType=LONGVARCHAR},</if>
+      <if test="upstreamType != null and upstreamType != ''">upstream_type = #{upstreamType,jdbcType=VARCHAR},</if>
+      <if test="upstreamUrl != null and upstreamUrl != ''">upstream_url = #{upstreamUrl,jdbcType=VARCHAR},</if>
+      <if test="audience != null and audience != ''">audience = #{audience,jdbcType=VARCHAR},</if>
+      <if test="identityPublicKey != null and identityPublicKey != ''">identity_public_key = #{identityPublicKey,jdbcType=LONGVARCHAR},</if>
+      <if test="toolAccessMode != null and toolAccessMode != ''">tool_access_mode = #{toolAccessMode,jdbcType=VARCHAR},</if>
+      <if test="toolExposureMode != null and toolExposureMode != ''">tool_exposure_mode = #{toolExposureMode,jdbcType=VARCHAR},</if>
+      <if test="promptAccessMode != null and promptAccessMode != ''">prompt_access_mode = #{promptAccessMode,jdbcType=VARCHAR},</if>
+      <if test="resourceAccessMode != null and resourceAccessMode != ''">resource_access_mode = #{resourceAccessMode,jdbcType=VARCHAR},</if>
+      <if test="hotToolCodes != null and hotToolCodes != ''">hot_tool_codes = #{hotToolCodes,jdbcType=LONGVARCHAR},</if>
+      <if test="toolWarnThreshold != null">tool_warn_threshold = #{toolWarnThreshold,jdbcType=INTEGER},</if>
+      <if test="toolMaxThreshold != null">tool_max_threshold = #{toolMaxThreshold,jdbcType=INTEGER},</if>
+      <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.entity.McpServer">
+    update mcp_server
+    set tenant_id = #{tenantId,jdbcType=INTEGER},
+      `name` = #{name,jdbcType=VARCHAR},
+      server_key = #{serverKey,jdbcType=VARCHAR},
+      `path` = #{path,jdbcType=VARCHAR},
+      `status` = #{status,jdbcType=INTEGER},
+      capabilities_json = #{capabilitiesJson,jdbcType=LONGVARCHAR},
+      upstream_type = #{upstreamType,jdbcType=VARCHAR},
+      upstream_url = #{upstreamUrl,jdbcType=VARCHAR},
+      audience = #{audience,jdbcType=VARCHAR},
+      identity_public_key = #{identityPublicKey,jdbcType=LONGVARCHAR},
+      tool_access_mode = #{toolAccessMode,jdbcType=VARCHAR},
+      tool_exposure_mode = #{toolExposureMode,jdbcType=VARCHAR},
+      hot_tool_codes = #{hotToolCodes,jdbcType=LONGVARCHAR},
+      tool_warn_threshold = #{toolWarnThreshold,jdbcType=INTEGER},
+      tool_max_threshold = #{toolMaxThreshold,jdbcType=INTEGER},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateToolExposure">
+    update mcp_server
+    set tool_access_mode = #{toolAccessMode,jdbcType=VARCHAR},
+      tool_exposure_mode = #{toolExposureMode,jdbcType=VARCHAR},
+      prompt_access_mode = #{promptAccessMode,jdbcType=VARCHAR},
+      resource_access_mode = #{resourceAccessMode,jdbcType=VARCHAR},
+      hot_tool_codes = #{hotToolCodes,jdbcType=LONGVARCHAR},
+      tool_warn_threshold = #{toolWarnThreshold,jdbcType=INTEGER},
+      tool_max_threshold = #{toolMaxThreshold,jdbcType=INTEGER},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByServerKey" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_server
+    where server_key = #{serverKey,jdbcType=VARCHAR}
+    limit 1
+  </select>
+  <update id="updateServerKey">
+    update mcp_server set server_key = #{serverKey,jdbcType=VARCHAR} where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="getAllByStatus" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_server
+    where `status` = #{status,jdbcType=INTEGER}
+  </select>
+  <select id="selectOneByPath" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_server
+    where `path` = #{path,jdbcType=VARCHAR} and `status` = 1
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_server
+    order by id desc
+  </select>
+  <select id="selectByTenantIds" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_server
+    <choose>
+      <when test="tenantIds != null and tenantIds.size() > 0">
+        where tenant_id in
+        <foreach collection="tenantIds" item="tid" open="(" separator="," close=")">#{tid,jdbcType=INTEGER}</foreach>
+      </when>
+      <otherwise>
+        where 1 = 0
+      </otherwise>
+    </choose>
+    order by id desc
+  </select>
+  <select id="selectByTenantId" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from mcp_server
+    where tenant_id = #{tenantId,jdbcType=INTEGER}
+    order by id asc
+  </select>
+</mapper>

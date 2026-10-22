@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcp.transfer.mapper.OperationLogMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.OperationLog">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
+    <result column="action" jdbcType="VARCHAR" property="action" />
+    <result column="resource_type" jdbcType="VARCHAR" property="resourceType" />
+    <result column="resource_id" jdbcType="VARCHAR" property="resourceId" />
+    <result column="detail" jdbcType="LONGVARCHAR" property="detail" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, username, tenant_id, action, resource_type, resource_id, detail, create_time
+  </sql>
+
+  <!-- 租户过滤：tenantIds 为 null 表示超管不过滤；空集合表示“无可见租户”，返回空 -->
+  <sql id="TenantFilter">
+    <choose>
+      <when test="tenantIds != null and tenantIds.size() > 0">
+        and tenant_id in
+        <foreach collection="tenantIds" item="tid" open="(" separator="," close=")">#{tid,jdbcType=INTEGER}</foreach>
+      </when>
+      <when test="tenantIds != null">
+        and 1 = 0
+      </when>
+    </choose>
+  </sql>
+
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.OperationLog" useGeneratedKeys="true">
+    insert into operation_log (username, tenant_id, action, resource_type, resource_id, detail, create_time)
+    values (#{username,jdbcType=VARCHAR}, #{tenantId,jdbcType=INTEGER}, #{action,jdbcType=VARCHAR},
+      #{resourceType,jdbcType=VARCHAR}, #{resourceId,jdbcType=VARCHAR}, #{detail,jdbcType=LONGVARCHAR},
+      #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.OperationLog" useGeneratedKeys="true">
+    insert into operation_log
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="username != null">username,</if>
+      <if test="tenantId != null">tenant_id,</if>
+      <if test="action != null">action,</if>
+      <if test="resourceType != null">resource_type,</if>
+      <if test="resourceId != null">resource_id,</if>
+      <if test="detail != null">detail,</if>
+      <if test="createTime != null">create_time,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="username != null">#{username,jdbcType=VARCHAR},</if>
+      <if test="tenantId != null">#{tenantId,jdbcType=INTEGER},</if>
+      <if test="action != null">#{action,jdbcType=VARCHAR},</if>
+      <if test="resourceType != null">#{resourceType,jdbcType=VARCHAR},</if>
+      <if test="resourceId != null">#{resourceId,jdbcType=VARCHAR},</if>
+      <if test="detail != null">#{detail,jdbcType=LONGVARCHAR},</if>
+      <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
+    </trim>
+  </insert>
+  <select id="selectWithPage" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from operation_log
+    <where>
+      <if test="action != null and action != ''">and action = #{action,jdbcType=VARCHAR}</if>
+      <if test="username != null and username != ''">and username = #{username,jdbcType=VARCHAR}</if>
+      <include refid="TenantFilter" />
+    </where>
+    order by id desc
+    limit #{start}, #{limit}
+  </select>
+  <select id="count" resultType="java.lang.Long">
+    select count(*)
+    from operation_log
+    <where>
+      <if test="action != null and action != ''">and action = #{action,jdbcType=VARCHAR}</if>
+      <if test="username != null and username != ''">and username = #{username,jdbcType=VARCHAR}</if>
+      <include refid="TenantFilter" />
+    </where>
+  </select>
+  <delete id="deleteOlderThan">
+    delete from operation_log where create_time &lt; #{before,jdbcType=TIMESTAMP}
+  </delete>
+</mapper>
