@@ -1,6 +1,6 @@
 package com.mcp.transfer.exposure;
 
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.entity.McpTool;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

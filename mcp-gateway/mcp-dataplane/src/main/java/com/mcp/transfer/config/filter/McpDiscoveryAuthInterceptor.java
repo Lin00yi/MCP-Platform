@@ -1,13 +1,13 @@
 package com.mcp.transfer.config.filter;
 
-import com.mcp.transfer.utils.IpUtils;
+import com.mcp.transfer.shared.utils.IpUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * 客户端发现接口鉴权：/mcp/discovery/** 必须携带有效 {@code x-dsh-auth-token}。

@@ -10,15 +10,11 @@ export interface Tenant {
   updateTime: string;
 }
 
-/** Tool 访问模式：WHITELIST=仅显式授权 / ALL=全部启用 Tool */
-export type ToolAccessMode = "WHITELIST" | "ALL";
-
 /** 工具暴露模式：DIRECT=全量 tools/list / META=元工具+热工具 */
 export type ToolExposureMode = "DIRECT" | "META";
 
-/** Prompt/Resource 访问模式 */
-/** Prompt / Resource 访问模式：与 Tool 使用同一枚举 */
-export type AssetAccessMode = "WHITELIST" | "ALL";
+/** 内部身份断言模式：INHERIT=沿用全局，OFF/OPTIONAL/REQUIRED=按 Server 覆盖 */
+export type IdentityMode = "INHERIT" | "OFF" | "OPTIONAL" | "REQUIRED";
 
 /** MCP Server（归属租户） */
 export interface McpServer {
@@ -35,14 +31,20 @@ export interface McpServer {
   upstreamType?: string;
   /** 下游 MCP server 的 Streamable HTTP 地址（upstreamType=MCP 时） */
   upstreamUrl?: string;
-  /** Tool 访问模式（后端空值按 WHITELIST 处理） */
-  toolAccessMode?: ToolAccessMode;
+  /** 内部断言 audience（空=server-{id}） */
+  audience?: string;
+  /** 下游 JWE 公钥（PEM/JWK，JWE 模式必填） */
+  identityPublicKey?: string;
+  /** 身份下传模式覆盖 */
+  identityMode?: IdentityMode;
   /** 工具暴露模式 */
   toolExposureMode?: ToolExposureMode;
-  /** Prompt 访问模式 */
-  promptAccessMode?: AssetAccessMode;
-  /** Resource 访问模式 */
-  resourceAccessMode?: AssetAccessMode;
+  /** @deprecated 应用授权已移除，仅为兼容旧接口字段 */
+  toolAccessMode?: "WHITELIST" | "ALL";
+  /** @deprecated 应用授权已移除，仅为兼容旧接口字段 */
+  promptAccessMode?: "WHITELIST" | "ALL";
+  /** @deprecated 应用授权已移除，仅为兼容旧接口字段 */
+  resourceAccessMode?: "WHITELIST" | "ALL";
   /** META 模式常驻工具 code（JSON 数组字符串） */
   hotToolCodes?: string;
   /** 工具数告警阈值（空=全局默认） */
@@ -57,7 +59,8 @@ export interface McpServer {
 export interface ToolBudget {
   serverId: number;
   serverName: string;
-  accessMode: ToolAccessMode;
+  /** @deprecated 固定为 ALL */
+  accessMode?: "WHITELIST" | "ALL";
   exposureMode: ToolExposureMode;
   totalTools: number;
   visibleTools: number;
@@ -67,8 +70,10 @@ export interface ToolBudget {
   overWarn: boolean;
   overMax: boolean;
   estimatedTokens: number;
-  promptAccessMode?: AssetAccessMode;
-  resourceAccessMode?: AssetAccessMode;
+  /** @deprecated 应用授权已移除，固定为 ALL */
+  promptAccessMode?: "WHITELIST" | "ALL";
+  /** @deprecated 应用授权已移除，固定为 ALL */
+  resourceAccessMode?: "WHITELIST" | "ALL";
   totalPrompts?: number;
   visiblePrompts?: number;
   totalResources?: number;
@@ -119,7 +124,6 @@ export interface DiscoveryServer {
   upstreamUrl?: string;
   toolCount: number;
   totalToolCount?: number;
-  toolAccessMode?: ToolAccessMode;
   toolExposureMode?: ToolExposureMode;
   hotToolCount?: number;
   warnThreshold?: number;
@@ -192,8 +196,10 @@ export interface McpTool {
   bodyType: number;
   /** 鉴权方式 NONE/SK_EXCHANGE/API_KEY/BEARER */
   authType?: string;
-  /** 鉴权配置 JSON */
+  /** 鉴权配置 JSON（后端不再回传明文，列表/详情中恒为 undefined） */
   authConfig?: string;
+  /** 鉴权配置是否已配置（后端只回传标记，不回传明文，用于编辑时提示） */
+  authConfigSet?: boolean;
   /** 参数映射 JSON */
   paramMapping?: string;
   /** Tool 描述 + inputSchema */
@@ -239,61 +245,6 @@ export interface McpResource {
   version?: string;
   tokenEstimate?: number;
   tokenizer?: string;
-  createTime: string;
-  updateTime: string;
-}
-
-/** 应用-方法权限（app_server_rel：应用 × server 授权） */
-export interface AppServerRel {
-  id: number;
-  appId: string;
-  serverId: number;
-  status?: number;
-  /** INHERIT=沿用 Server 模式 / ALL=全部工具 / WHITELIST=仅工具授权 */
-  toolAccess?: "INHERIT" | "ALL" | "WHITELIST";
-  /** 应用级工具画像标签，逗号分隔 */
-  profileTags?: string;
-  createTime?: string;
-  updateTime?: string;
-}
-
-/** 应用-Tool 细粒度授权（app_tool_rel，可选） */
-export interface AppToolRel {
-  id: number;
-  appId: string;
-  toolId: number;
-  status?: number;
-  createTime?: string;
-  updateTime?: string;
-}
-
-/** 应用-Prompt 细粒度授权（app_prompt_rel，可选） */
-export interface AppPromptRel {
-  id: number;
-  appId: string;
-  promptId: number;
-  status?: number;
-  createTime?: string;
-  updateTime?: string;
-}
-
-/** 应用-Resource 细粒度授权（app_resource_rel，可选） */
-export interface AppResourceRel {
-  id: number;
-  appId: string;
-  resourceId: number;
-  status?: number;
-  createTime?: string;
-  updateTime?: string;
-}
-
-/** 应用信息（enn_app_info） */
-export interface EnnAppInfo {
-  id: number;
-  appId: string;
-  appSecret: string;
-  key?: string;
-  deleted?: number;
   createTime: string;
   updateTime: string;
 }
@@ -424,7 +375,6 @@ export interface ApprovalRequest {
   tenantId?: number;
   action: string;
   status: ApprovalStatus;
-  appId?: string;
   serverId?: number;
   toolId?: number;
   promptId?: number;
@@ -537,7 +487,6 @@ export interface EndpointVO {
   serverCount: number;
   toolCount: number;
   namespaces: { id: number; name: string; prefix: string; status: number }[];
-  apps: { appId: string; status: number }[];
   createTime?: string;
   updateTime?: string;
 }

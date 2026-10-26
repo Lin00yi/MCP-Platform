@@ -36,7 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { LoadingState, EmptyState, StatCard } from "@/components/PageState";
+import { LoadingState, EmptyState, ErrorState, StatCard } from "@/components/PageState";
 
 function toBackendTime(v: string): string | undefined {
   return v ? v.replace("T", " ") : undefined;
@@ -110,27 +110,31 @@ function ToolCallRecords({
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  const { data: servers } = useQuery({ queryKey: ["servers"], queryFn: api.listServers });
-  const { data: tenants } = useQuery({ queryKey: ["tenants"], queryFn: api.listTenants });
+  const { data: servers } = useQuery({ queryKey: ["servers"], queryFn: ({ signal }) => api.listServers(signal) });
+  const { data: tenants } = useQuery({ queryKey: ["tenants"], queryFn: ({ signal }) => api.listTenants(signal) });
 
   const tenantNameOf = (id?: number) => tenants?.find((t) => t.id === id)?.name;
   const userIdFilter = applied.userId.trim();
 
-  const { data, isLoading, isFetching, refetch, dataUpdatedAt } = useQuery({
+  const { data, isLoading, isError, error, isFetching, refetch, dataUpdatedAt } = useQuery({
     queryKey: ["tool-call-records", applied, page],
-    queryFn: () =>
-      api.listToolCallRecords({
-        pageNum: page,
-        pageSize,
-        startTime: toBackendTime(applied.startTime),
-        endTime: toBackendTime(applied.endTime),
-        success: applied.success === "all" ? undefined : Number(applied.success),
-        serverId: applied.serverId === "all" ? undefined : Number(applied.serverId),
-        userId: userIdFilter || undefined,
-      }),
+    queryFn: ({ signal }) =>
+      api.listToolCallRecords(
+        {
+          pageNum: page,
+          pageSize,
+          startTime: toBackendTime(applied.startTime),
+          endTime: toBackendTime(applied.endTime),
+          success: applied.success === "all" ? undefined : Number(applied.success),
+          serverId: applied.serverId === "all" ? undefined : Number(applied.serverId),
+          userId: userIdFilter || undefined,
+        },
+        signal,
+      ),
     placeholderData: keepPreviousData,
     refetchInterval: autoRefresh ? 5000 : false,
-    refetchIntervalInBackground: autoRefresh,
+    // 后台标签页不轮询：自动刷新只在页面可见时生效
+    refetchIntervalInBackground: false,
   });
 
   const handleExport = async () => {
@@ -267,6 +271,8 @@ function ToolCallRecords({
         <div className={cn("transition-opacity", isFetching && "opacity-60")}>
           {isLoading ? (
             <LoadingState label="加载 Tool 调用记录…" />
+          ) : isError ? (
+            <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />
           ) : !data || data.list.length === 0 ? (
             <EmptyState icon={FileClock} title="暂无 Tool 调用记录" />
           ) : (
@@ -345,9 +351,9 @@ export function LogsPage() {
 
   const { data: stats } = useQuery({
     queryKey: ["log-stats"],
-    queryFn: api.getLogStats,
+    queryFn: ({ signal }) => api.getLogStats(signal),
     refetchInterval: autoRefresh ? 5000 : false,
-    refetchIntervalInBackground: autoRefresh,
+    refetchIntervalInBackground: false,
   });
 
   const successRate = stats && stats.total > 0 ? ((stats.successCount / stats.total) * 100).toFixed(1) : "0";

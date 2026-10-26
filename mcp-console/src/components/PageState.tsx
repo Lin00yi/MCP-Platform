@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
-import { Inbox, Loader2 } from "lucide-react";
+import { Inbox, Loader2, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function LoadingState({ label = "加载中…" }: { label?: string }) {
   return (
@@ -31,11 +32,18 @@ export function EmptyState({
   );
 }
 
-export function ErrorState({ message }: { message: string }) {
+/** 加载失败态；传入 onRetry 时展示「重试」按钮，避免用户只能整页刷新 */
+export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-20 text-center">
       <div className="text-sm font-medium text-destructive">加载失败</div>
       <div className="max-w-sm text-sm text-muted-foreground">{message}</div>
+      {onRetry && (
+        <Button variant="outline" size="sm" className="mt-2" onClick={onRetry}>
+          <RefreshCw className="h-3.5 w-3.5" />
+          重试
+        </Button>
+      )}
     </div>
   );
 }

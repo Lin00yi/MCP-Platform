@@ -5,8 +5,7 @@ import { Save, Sparkles } from "lucide-react";
 import { api } from "@/lib/api";
 import { isDirect, useApprovalPolicy } from "@/lib/approval";
 import { truncate } from "@/lib/utils";
-import { accessMode } from "@/lib/format";
-import type { McpServer, ToolAccessMode, ToolExposureMode } from "@/types";
+import type { IdentityMode, McpServer, ToolExposureMode } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,10 +33,7 @@ function parseHotCodes(raw?: string): string[] {
 }
 
 interface ExposureForm {
-  toolAccessMode: ToolAccessMode;
   toolExposureMode: ToolExposureMode;
-  promptAccessMode: "WHITELIST" | "ALL";
-  resourceAccessMode: "WHITELIST" | "ALL";
   hotToolCodes: string[];
   toolWarnThreshold?: number;
   toolMaxThreshold?: number;
@@ -45,7 +41,7 @@ interface ExposureForm {
 
 export function ServerSettingsTab({ server }: { server: McpServer }) {
   const queryClient = useQueryClient();
-  const { data: tenants } = useQuery({ queryKey: ["tenants"], queryFn: api.listTenants });
+  const { data: tenants } = useQuery({ queryKey: ["tenants"], queryFn: ({ signal }) => api.listTenants(signal) });
   const { data: policy } = useApprovalPolicy();
   const directConnection = isDirect(policy, "SERVER_UPDATE_CONNECTION");
 
@@ -55,13 +51,13 @@ export function ServerSettingsTab({ server }: { server: McpServer }) {
     path: server.path,
     capabilitiesJson: server.capabilitiesJson,
     status: server.status,
+    audience: server.audience ?? "",
+    identityPublicKey: server.identityPublicKey ?? "",
+    identityMode: (server.identityMode ?? "INHERIT") as IdentityMode,
   });
 
   const [exposure, setExposure] = useState<ExposureForm>({
-    toolAccessMode: accessMode(server.toolAccessMode),
     toolExposureMode: server.toolExposureMode ?? "DIRECT",
-    promptAccessMode: accessMode(server.promptAccessMode),
-    resourceAccessMode: accessMode(server.resourceAccessMode),
     hotToolCodes: parseHotCodes(server.hotToolCodes),
     toolWarnThreshold: server.toolWarnThreshold,
     toolMaxThreshold: server.toolMaxThreshold,
@@ -76,19 +72,19 @@ export function ServerSettingsTab({ server }: { server: McpServer }) {
       path: server.path,
       capabilitiesJson: server.capabilitiesJson,
       status: server.status,
+      audience: server.audience ?? "",
+      identityPublicKey: server.identityPublicKey ?? "",
+      identityMode: (server.identityMode ?? "INHERIT") as IdentityMode,
     });
     setExposure({
-      toolAccessMode: accessMode(server.toolAccessMode),
       toolExposureMode: server.toolExposureMode ?? "DIRECT",
-      promptAccessMode: accessMode(server.promptAccessMode),
-      resourceAccessMode: accessMode(server.resourceAccessMode),
       hotToolCodes: parseHotCodes(server.hotToolCodes),
       toolWarnThreshold: server.toolWarnThreshold,
       toolMaxThreshold: server.toolMaxThreshold,
     });
   }, [server]);
 
-  const { data: tools } = useQuery({ queryKey: ["tools"], queryFn: api.listTools });
+  const { data: tools } = useQuery({ queryKey: ["tools"], queryFn: ({ signal }) => api.listTools(signal) });
   const { data: budget } = useQuery({
     queryKey: ["server-tool-budget", server.id],
     queryFn: () => api.getServerToolBudget(server.id),
@@ -107,11 +103,16 @@ export function ServerSettingsTab({ server }: { server: McpServer }) {
   }, [serverTools, hotSearch]);
 
   const pathChanged = (form.path ?? "") !== (server.path ?? "");
+  const identityChanged =
+    (form.audience ?? "") !== (server.audience ?? "") ||
+    (form.identityPublicKey ?? "") !== (server.identityPublicKey ?? "") ||
+    form.identityMode !== (server.identityMode ?? "INHERIT");
+  const connectionChanged = pathChanged || identityChanged;
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      // path 属于连接层配置：开发者变更需审批
-      if (pathChanged && !directConnection) {
+      // 路径 / audience / 公钥 / 模式属于连接层配置：开发者变更需审批
+      if (connectionChanged && !directConnection) {
         await api.createApproval({
           action: "SERVER_UPDATE_CONNECTION",
           serverId: server.id,
@@ -123,7 +124,7 @@ export function ServerSettingsTab({ server }: { server: McpServer }) {
       return false;
     },
     onSuccess: (pending) => {
-      toast.success(pending ? "路径变更已提交审批，通过后生效" : "Server 设置已更新");
+      toast.success(pending ? "连接配置变更已提交审批，通过后生效" : "Server 设置已更新");
       queryClient.invalidateQueries({ queryKey: ["servers"] });
     },
     onError: (e) => toast.error("保存失败", { description: (e as Error).message }),
@@ -132,10 +133,7 @@ export function ServerSettingsTab({ server }: { server: McpServer }) {
   const exposureMutation = useMutation({
     mutationFn: () =>
       api.updateToolExposure(server.id, {
-        toolAccessMode: exposure.toolAccessMode,
         toolExposureMode: exposure.toolExposureMode,
-        promptAccessMode: exposure.promptAccessMode,
-        resourceAccessMode: exposure.resourceAccessMode,
         hotToolCodes: exposure.hotToolCodes,
         // 0 表示清空，后端会回落全局默认
         toolWarnThreshold: exposure.toolWarnThreshold ?? 0,
@@ -181,7 +179,10 @@ export function ServerSettingsTab({ server }: { server: McpServer }) {
       <Card>
         <CardHeader>
           <CardTitle>端点设置</CardTitle>
-          <CardDescription>修改 path 或 capabilities 后需要点击「刷新端点」才会重新注册。</CardDescription>
+          <CardDescription>
+            客户端统一通过 Endpoint（<code className="font-mono">/mcp/e/&#123;endpointKey&#125;</code>）接入；
+            这里的 path 仅作资产标识展示，不再注册 <code className="font-mono">/mcp/v1</code> 路由。
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -210,7 +211,7 @@ export function ServerSettingsTab({ server }: { server: McpServer }) {
               <Input id="s-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="s-path">路径 (path)</Label>
+              <Label htmlFor="s-path">标识路径 (path)</Label>
               <Input id="s-path" value={form.path} onChange={(e) => setForm({ ...form, path: e.target.value })} className="font-mono" />
             </div>
             <div className="flex items-center gap-2 pt-6">
@@ -239,7 +240,7 @@ export function ServerSettingsTab({ server }: { server: McpServer }) {
               <Save className="h-4 w-4" />
               {saveMutation.isPending
                 ? "提交中…"
-                : pathChanged && !directConnection ? "提交审批" : "保存设置"}
+                : connectionChanged && !directConnection ? "提交审批" : "保存设置"}
             </Button>
           </div>
         </CardContent>
@@ -247,9 +248,65 @@ export function ServerSettingsTab({ server }: { server: McpServer }) {
 
       <Card>
         <CardHeader>
+          <CardTitle>下游身份下传</CardTitle>
+          <CardDescription>
+            网关向下游签发内部断言（JWS/JWE）。默认沿用全局配置；可按 Server 覆盖为关闭 / 灰度 / 强制。
+            健康探活使用独立的 <code className="font-mono">scope=health</code> 断言，下游可只放行该 scope。
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>身份模式</Label>
+              <Select
+                value={form.identityMode}
+                onValueChange={(v) => setForm({ ...form, identityMode: v as IdentityMode })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="INHERIT">INHERIT（沿用全局）</SelectItem>
+                  <SelectItem value="OFF">OFF（不下发）</SelectItem>
+                  <SelectItem value="OPTIONAL">OPTIONAL（失败降级，灰度用）</SelectItem>
+                  <SelectItem value="REQUIRED">REQUIRED（失败拒绝，-32003）</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="s-audience">Audience</Label>
+              <Input
+                id="s-audience"
+                value={form.audience}
+                onChange={(e) => setForm({ ...form, audience: e.target.value })}
+                placeholder="留空默认 server-{id}"
+                className="font-mono"
+              />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="s-identity-key">下游 JWE 公钥（PEM / JWK）</Label>
+              <Textarea
+                id="s-identity-key"
+                rows={4}
+                value={form.identityPublicKey}
+                onChange={(e) => setForm({ ...form, identityPublicKey: e.target.value })}
+                placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----"
+                className="font-mono text-xs"
+              />
+              <p className="text-xs text-muted-foreground">
+                JWS 模式可留空；JWE 模式必须填写。公钥不是密钥，可安全保存在网关。
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            OPTIONAL：缺少客编或下游公钥时只告警、不阻断；REQUIRED：上述任一情况直接返回 -32003。
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Tool 暴露策略</CardTitle>
           <CardDescription>
-            控制应用能看到哪些 Tool（访问模式），以及 tools/list 一次返回多少（暴露模式）。
+            控制 tools/list 一次返回多少（暴露模式）；资产可见性统一为「启用即可见」。
             超过阈值时管理台会告警，避免客户端上下文被 Tool 定义占满。
           </CardDescription>
         </CardHeader>
@@ -275,25 +332,6 @@ export function ServerSettingsTab({ server }: { server: McpServer }) {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Tool 访问模式</Label>
-              <Select
-                value={exposure.toolAccessMode}
-                onValueChange={(v) => setExposure({ ...exposure, toolAccessMode: v as ToolAccessMode })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="WHITELIST">白名单（推荐）</SelectItem>
-                  <SelectItem value="ALL">全部启用 Tool</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                白名单：只有 app_tool_rel 显式授权的 Tool 可见；未配置=看不到。
-                全部：Server 下所有启用 Tool 都可见，忽略细粒度授权。
-              </p>
-            </div>
-            <div className="space-y-2">
               <Label>Tool 暴露模式</Label>
               <Select
                 value={exposure.toolExposureMode}
@@ -311,34 +349,6 @@ export function ServerSettingsTab({ server }: { server: McpServer }) {
                 META：tools/list 只返回热 Tool + search_tools / get_tool_schema / call_tool，
                 适合 Tool 数 &gt; 100 或长尾明显的 Server。
               </p>
-            </div>
-            <div className="space-y-2">
-              <Label>Prompt 访问模式</Label>
-              <Select
-                value={exposure.promptAccessMode}
-                onValueChange={(v) => setExposure({ ...exposure, promptAccessMode: v as "WHITELIST" | "ALL" })}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="WHITELIST">白名单（推荐）</SelectItem>
-                  <SelectItem value="ALL">全部启用 Prompt</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">白名单：仅 app_prompt_rel 显式授权的 Prompt 可见；全部：所有启用 Prompt 可见。</p>
-            </div>
-            <div className="space-y-2">
-              <Label>Resource 访问模式</Label>
-              <Select
-                value={exposure.resourceAccessMode}
-                onValueChange={(v) => setExposure({ ...exposure, resourceAccessMode: v as "WHITELIST" | "ALL" })}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="WHITELIST">白名单（推荐）</SelectItem>
-                  <SelectItem value="ALL">全部启用 Resource</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">白名单：仅 app_resource_rel 显式授权的 Resource 可读；全部：所有启用 Resource 可见。</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="s-warn">告警阈值</Label>

@@ -7,6 +7,8 @@
 # ============================================================
 
 server:
+  # 优雅停机：配合容器 stop_grace_period，避免发布时硬切进行中的 tools/call 与 SSE
+  shutdown: graceful
   servlet:
     encoding:
       charset: UTF-8
@@ -14,6 +16,8 @@ server:
       enabled: true
 
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 25s
   jackson:
     default-property-inclusion: non_null
     serialization:
@@ -24,13 +28,13 @@ spring:
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.mcp.transfer.entity
+  type-aliases-package: com.mcp.transfer.shared.entity
 
 logging:
   level:
     root: INFO
     com.mcp.transfer: INFO
-    com.mcp.transfer.mapper: INFO
+    com.mcp.transfer.shared.mapper: INFO
     org.springframework.web: INFO
 
 # 接口文档开关：默认关闭，生产必须保持关闭；本地/测试按需设 MCP_SWAGGER_ENABLED=true
@@ -47,71 +51,63 @@ mcp:
     secretkey: ${MCP_SECURITY_SECRETKEY:}
   admin:
     jwt-secret: ${MCP_ADMIN_JWT_SECRET:}
+    # 后台登录有效期（小时）：默认 7 天；支持 1～168，超过 168 按 168（7 天）处理
+    jwt-ttl-hours: ${MCP_ADMIN_JWT_TTL_HOURS:168}
     init-password: ${MCP_ADMIN_INIT_PASSWORD:}
+  # 浏览器跨域来源白名单（逗号分隔）；* 表示不限制。生产建议收敛为控制台域名
+  cors:
+    allowed-origins: ${MCP_CORS_ALLOWED_ORIGINS:*}
   # 对外网关地址：discovery 返回给 DSH 等客户端的绝对 URL
   public-base-url: ${MCP_PUBLIC_BASE_URL:http://127.0.0.1:8081}
   auth:
-    # 用户 token 认证（唯一认证方式）：只认 x-dsh-auth-token
+    # 用户 token 认证（唯一认证方式）：头名固定为 x-dsh-auth-token
     user-token:
-      header: ${MCP_AUTH_USER_TOKEN_HEADER:x-dsh-auth-token}
-      cache-ttl-seconds: ${MCP_AUTH_USER_TOKEN_CACHE_TTL_SECONDS:30}
+      header: x-dsh-auth-token
+      cache-ttl-seconds: 30
+      # 仅开发/E2E：token|userId|userName|customerId|scopes，多条用 ; 分隔
+      static-tokens: ${MCP_AUTH_STATIC_TOKENS:}
   session:
-    max-count: ${MCP_SESSION_MAX_COUNT:20000}
+    max-count: 20000
   sse:
-    max-connections: ${MCP_SSE_MAX_CONNECTIONS:1000}
+    max-connections: 1000
+    # SSE 心跳间隔（毫秒，<=0 关闭）；避免空闲连接被代理/NAT 静默断开
+    ping-interval-ms: 25000
+    # 单个用户允许的 SSE 连接数（<=0 不限制），防止单客户端占满连接池
+    max-connections-per-user: 20
+  log:
+    # tool_call_record 保留天数（0 = 不清理）；避免调用明细表无限增长
+    tool-call-retention-days: 30
+  # 登录失败限流（进程内双维度：用户名 20 次/15min、IP 5 次/15min）
+  login:
+    max-failures-per-user: 20
+    max-failures-per-ip: 5
   # 下游调用熔断（与健康探测互补）
   health:
     circuit:
-      failure-threshold: ${MCP_HEALTH_CIRCUIT_FAILURE_THRESHOLD:5}
-      open-seconds: ${MCP_HEALTH_CIRCUIT_OPEN_SECONDS:30}
+      failure-threshold: 5
+      open-seconds: 30
   identity:
     enabled: ${MCP_IDENTITY_ENABLED:false}
+    # OFF / OPTIONAL / REQUIRED；Server 可用 identity_mode 覆盖
+    mode: ${MCP_IDENTITY_MODE:OPTIONAL}
     token-format: ${MCP_IDENTITY_TOKEN_FORMAT:JWE}
-    issuer: ${MCP_IDENTITY_ISSUER:mcp-gateway}
+    issuer: mcp-gateway
     signing-private-key: ${MCP_IDENTITY_SIGNING_KEY:}
-    signing-kid: ${MCP_IDENTITY_SIGNING_KID:gw-1}
-    ttl-seconds: ${MCP_IDENTITY_TTL_SECONDS:60}
-    user-token-header: ${MCP_IDENTITY_USER_TOKEN_HEADER:x-dsh-auth-token}
+    signing-kid: gw-1
+    ttl-seconds: 60
+    user-token-header: x-dsh-auth-token
     forward-user-token: ${MCP_IDENTITY_FORWARD_USER_TOKEN:false}
-    propagate-to-rest-tools: ${MCP_IDENTITY_PROPAGATE_REST:false}
-    customer-arg-names: ${MCP_IDENTITY_CUSTOMER_ARG_NAMES:customerId,customer_id,custId}
-  # 工具规模治理：访问模式 / 暴露模式 / 分页 / 预算告警 / Schema 瘦身
+    propagate-to-rest-tools: false
+    customer-arg-names: customerId,customer_id,custId
+  # 工具规模治理：只保留两个应急/部署开关，其余高级参数见 docs/配置说明.md
   tools:
-    page-size: ${MCP_TOOLS_PAGE_SIZE:200}
-    pagination-min-tools: ${MCP_TOOLS_PAGINATION_MIN_TOOLS:500}
-    pagination-clients: ${MCP_TOOLS_PAGINATION_CLIENTS:codex,claude,dsh,cursor,workbuddy}
-    pagination-unknown-policy: ${MCP_TOOLS_PAGINATION_UNKNOWN_POLICY:PAGINATE}
-    asset-pagination-min: ${MCP_ASSET_PAGINATION_MIN:500}
-    warn-threshold: ${MCP_TOOLS_WARN_THRESHOLD:100}
-    max-threshold: ${MCP_TOOLS_MAX_THRESHOLD:500}
-    search-limit: ${MCP_TOOLS_SEARCH_LIMIT:10}
-    max-search-limit: ${MCP_TOOLS_MAX_SEARCH_LIMIT:50}
-    hot-tool-limit: ${MCP_TOOLS_HOT_LIMIT:50}
-    max-description-length: ${MCP_TOOLS_MAX_DESCRIPTION_LENGTH:1200}
-    search-description-length: ${MCP_TOOLS_SEARCH_DESCRIPTION_LENGTH:300}
-    trim-schema: ${MCP_TOOLS_TRIM_SCHEMA:true}
-    include-server-meta: ${MCP_TOOLS_INCLUDE_SERVER_META:false}
-    warn-throttle-seconds: ${MCP_TOOLS_WARN_THROTTLE_SECONDS:600}
-    # 应急回退开关：false 时所有 server 按 DIRECT 处理
+    # 应急回退：false 时所有 server 按 DIRECT 处理
     meta-enabled: ${MCP_TOOLS_META_ENABLED:true}
-    # 对外工具名最大长度（含 namespace 前缀），超长截断 + 短哈希；0=不限制
-    max-exposed-name-length: ${MCP_TOOLS_MAX_EXPOSED_NAME_LENGTH:64}
-    # search_tools 检索策略：AUTO / CATALOG / KEYWORD / BM25 / VECTOR / HYBRID
-    search-mode: ${MCP_TOOLS_SEARCH_MODE:AUTO}
-    # 超长工具结果：截断暂存 + read_result_chunk 分片读取
-    result-spill-threshold: ${MCP_TOOLS_RESULT_SPILL_THRESHOLD:4000}
-    result-spill-max-chars: ${MCP_TOOLS_RESULT_SPILL_MAX_CHARS:4000000}
-    chunk-limit: ${MCP_TOOLS_CHUNK_LIMIT:3000}
-    chunk-ttl-seconds: ${MCP_TOOLS_CHUNK_TTL_SECONDS:1800}
-    chunk-cache-size: ${MCP_TOOLS_CHUNK_CACHE_SIZE:200}
     # read_result_chunk 暂存载体：memory（默认）/ redis（多副本共享）
     chunk-store: ${MCP_TOOLS_CHUNK_STORE:memory}
-    redis-uri: ${MCP_TOOLS_REDIS_URI:redis://127.0.0.1:6379/0}
-    # 确定性离线元数据增强：code/name 拆词 + 中英同义词补描述/标签
-    metadata-enrich: ${MCP_TOOLS_METADATA_ENRICH:true}
 
   # Prompt / Resource / Tool 结果内容上限
   assets:
-    prompt-max-bytes: ${MCP_PROMPT_MAX_BYTES:262144}
-    resource-max-bytes: ${MCP_RESOURCE_MAX_BYTES:1048576}
-    tool-result-max-bytes: ${MCP_TOOL_RESULT_MAX_BYTES:1048576}
+    prompt-max-bytes: 262144
+    resource-max-bytes: 1048576
+    tool-result-max-bytes: 1048576

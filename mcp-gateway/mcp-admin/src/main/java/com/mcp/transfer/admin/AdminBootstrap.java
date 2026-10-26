@@ -2,8 +2,8 @@ package com.mcp.transfer.admin;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.crypto.digest.BCrypt;
-import com.mcp.transfer.entity.AdminUser;
-import com.mcp.transfer.mapper.AdminUserMapper;
+import com.mcp.transfer.shared.entity.AdminUser;
+import com.mcp.transfer.shared.mapper.AdminUserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

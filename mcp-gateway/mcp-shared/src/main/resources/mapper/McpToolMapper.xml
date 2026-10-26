@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.McpToolMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpTool">
+<mapper namespace="com.mcp.transfer.shared.mapper.McpToolMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.McpTool">
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="server_id" jdbcType="INTEGER" property="serverId" />
     <result column="name" jdbcType="VARCHAR" property="name" />
@@ -38,7 +38,7 @@
     delete from mcp_tool
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpTool" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.McpTool" useGeneratedKeys="true">
     insert into mcp_tool (server_id, `name`, code, `type`, system_id, `status`, service_url, request_type,
       need_token, body_type, auth_type, auth_config, param_mapping, res_json, tags, version,
     token_estimate, tokenizer, create_time, update_time)
@@ -52,7 +52,7 @@
       #{tokenEstimate,jdbcType=INTEGER}, #{tokenizer,jdbcType=VARCHAR},
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpTool" useGeneratedKeys="true">
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.McpTool" useGeneratedKeys="true">
     insert into mcp_tool
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="serverId != null">server_id,</if>
@@ -99,7 +99,7 @@
       <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.entity.McpTool">
+  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.shared.entity.McpTool">
     update mcp_tool
     <set>
       <if test="serverId != null">server_id = #{serverId,jdbcType=INTEGER},</if>
@@ -124,7 +124,7 @@
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.entity.McpTool">
+  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.shared.entity.McpTool">
     update mcp_tool
     set server_id = #{serverId,jdbcType=INTEGER},
       `name` = #{name,jdbcType=VARCHAR},

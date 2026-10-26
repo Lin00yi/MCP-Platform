@@ -1,6 +1,6 @@
 package com.mcp.transfer.cache;
 
-import com.mcp.transfer.entity.McpResource;
+import com.mcp.transfer.shared.entity.McpResource;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

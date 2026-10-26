@@ -2,17 +2,20 @@ package com.mcp.transfer.exposure;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.mcp.transfer.entity.McpTool;
-import com.mcp.transfer.entity.ToolEmbedding;
-import com.mcp.transfer.mapper.McpToolMapper;
-import com.mcp.transfer.mapper.ToolEmbeddingMapper;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.mcp.transfer.shared.entity.McpTool;
+import com.mcp.transfer.shared.entity.ToolEmbedding;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
+import com.mcp.transfer.shared.mapper.ToolEmbeddingMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
+import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -45,10 +48,20 @@ public class ToolEmbeddingService {
     @Autowired
     private EmbeddingProperties embeddingProperties;
 
+    /** embedding 调用失败后的降级窗口：窗口内直接返回 null（检索层降级 BM25），不再每个请求都重试 */
+    private static final long FAIL_BACKOFF_MS = 30_000L;
+
     private final Map<Integer, Index> indexes = new ConcurrentHashMap<>();
-    private final Map<String, float[]> queryCache = new ConcurrentHashMap<>();
+    /** 查询向量缓存：有界 LRU（200 条、10 分钟），不再「超限整表 clear」造成缓存抖动 */
+    private final Cache<String, float[]> queryCache = Caffeine.newBuilder()
+            .maximumSize(200)
+            .expireAfterWrite(Duration.ofMinutes(10))
+            .build();
     private final AtomicLong indexedCount = new AtomicLong();
     private final AtomicLong failedCount = new AtomicLong();
+    /** 查询向量化失败后的降级截止时间（毫秒时间戳） */
+    private volatile long embedFailUntil;
+    private volatile long lastFailWarnAt;
     private final ExecutorService executor = Executors.newFixedThreadPool(2, r -> {
         Thread thread = new Thread(r, "tool-embedding-indexer");
         thread.setDaemon(true);
@@ -163,22 +176,35 @@ public class ToolEmbeddingService {
         return loadIndex(serverId).vectors.get(toolId);
     }
 
-    /** 查询向量：带简单 LRU（最多 200 条），失败返回 null */
+    /**
+     * 查询向量：有界 LRU 缓存；embedding 失败后 30s 内直接返回 null（检索降级 BM25），
+     * 避免检索链路每个请求都要等一次 3s 超时重试。
+     */
     public float[] queryVector(String query) {
         if (!enabled() || !StringUtils.hasText(query)) {
             return null;
         }
-        float[] cached = queryCache.get(query);
+        long now = System.currentTimeMillis();
+        if (now < embedFailUntil) {
+            return null;
+        }
+        float[] cached = queryCache.getIfPresent(query);
         if (cached != null) {
             return cached;
         }
         float[] vector = embeddingClient.embed(query);
-        if (vector != null) {
-            if (queryCache.size() > 200) {
-                queryCache.clear();
+        if (vector == null) {
+            embedFailUntil = now + FAIL_BACKOFF_MS;
+            long last = lastFailWarnAt;
+            if (now - last > 60_000L) {
+                lastFailWarnAt = now;
+                failedCount.incrementAndGet();
+                logger.warn("[EMBEDDING] 查询向量化失败，{}s 内检索降级为 BM25（不再逐请求重试）",
+                        FAIL_BACKOFF_MS / 1000);
             }
-            queryCache.put(query, vector);
+            return null;
         }
+        queryCache.put(query, vector);
         return vector;
     }
 

@@ -10,46 +10,46 @@ import com.mcp.transfer.admin.service.openapi.OpenApiIssue;
 import com.mcp.transfer.admin.service.openapi.OpenApiToolDraft;
 import com.mcp.transfer.admin.service.openapi.OpenApiToolParser;
 import com.mcp.transfer.admin.security.AdminAuthContext;
-import com.mcp.transfer.config.security.McpPathValidator;
-import com.mcp.transfer.config.security.UrlSecurityValidator;
+import com.mcp.transfer.shared.config.security.McpPathValidator;
+import com.mcp.transfer.shared.config.security.UrlSecurityValidator;
 import org.springframework.transaction.annotation.Transactional;
-import com.mcp.transfer.dto.AdminUserRequest;
-import com.mcp.transfer.dto.ApprovalCreateRequest;
-import com.mcp.transfer.dto.ApprovalDecisionRequest;
-import com.mcp.transfer.dto.BulkMoveToolsRequest;
-import com.mcp.transfer.dto.PageResult;
-import com.mcp.transfer.dto.Result;
-import com.mcp.transfer.dto.ToolExposureRequest;
-import com.mcp.transfer.entity.AdminUser;
-import com.mcp.transfer.entity.ApprovalRequest;
-import com.mcp.transfer.entity.McpPrompt;
-import com.mcp.transfer.entity.McpResource;
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.entity.McpTool;
-import com.mcp.transfer.entity.OperationLog;
-import com.mcp.transfer.entity.ServiceSystem;
-import com.mcp.transfer.entity.Tenant;
-import com.mcp.transfer.entity.ToolCallRecord;
-import com.mcp.transfer.enums.ApprovalAction;
-import com.mcp.transfer.enums.ApprovalTier;
-import com.mcp.transfer.enums.RoleEnum;
-import com.mcp.transfer.mapper.AdminUserMapper;
-import com.mcp.transfer.mapper.ApprovalRequestMapper;
-import com.mcp.transfer.mapper.McpPromptMapper;
-import com.mcp.transfer.mapper.McpRequestLogMapper;
-import com.mcp.transfer.mapper.McpResourceMapper;
-import com.mcp.transfer.mapper.McpServerMapper;
-import com.mcp.transfer.mapper.McpToolMapper;
-import com.mcp.transfer.mapper.OperationLogMapper;
-import com.mcp.transfer.mapper.ServiceSystemMapper;
-import com.mcp.transfer.mapper.TenantMapper;
-import com.mcp.transfer.mapper.ToolCallRecordMapper;
+import com.mcp.transfer.shared.dto.AdminUserRequest;
+import com.mcp.transfer.shared.dto.ApprovalCreateRequest;
+import com.mcp.transfer.shared.dto.ApprovalDecisionRequest;
+import com.mcp.transfer.shared.dto.BulkMoveToolsRequest;
+import com.mcp.transfer.shared.dto.PageResult;
+import com.mcp.transfer.shared.dto.Result;
+import com.mcp.transfer.shared.dto.ToolExposureRequest;
+import com.mcp.transfer.shared.entity.AdminUser;
+import com.mcp.transfer.shared.entity.ApprovalRequest;
+import com.mcp.transfer.shared.entity.McpPrompt;
+import com.mcp.transfer.shared.entity.McpResource;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpTool;
+import com.mcp.transfer.shared.entity.OperationLog;
+import com.mcp.transfer.shared.entity.ServiceSystem;
+import com.mcp.transfer.shared.entity.Tenant;
+import com.mcp.transfer.shared.entity.ToolCallRecord;
+import com.mcp.transfer.shared.enums.ApprovalAction;
+import com.mcp.transfer.shared.enums.ApprovalTier;
+import com.mcp.transfer.shared.enums.RoleEnum;
+import com.mcp.transfer.shared.mapper.AdminUserMapper;
+import com.mcp.transfer.shared.mapper.ApprovalRequestMapper;
+import com.mcp.transfer.shared.mapper.McpPromptMapper;
+import com.mcp.transfer.shared.mapper.McpRequestLogMapper;
+import com.mcp.transfer.shared.mapper.McpResourceMapper;
+import com.mcp.transfer.shared.mapper.McpServerMapper;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
+import com.mcp.transfer.shared.mapper.OperationLogMapper;
+import com.mcp.transfer.shared.mapper.ServiceSystemMapper;
+import com.mcp.transfer.shared.mapper.TenantMapper;
+import com.mcp.transfer.shared.mapper.ToolCallRecordMapper;
 import com.mcp.transfer.port.ConfigChangePublisher;
 import com.mcp.transfer.port.EmbeddingAdminPort;
 import com.mcp.transfer.port.ToolConnectivityProbe;
-import com.mcp.transfer.utils.RestToolDraftBuilder;
-import com.mcp.transfer.utils.SecretCrypto;
-import com.mcp.transfer.utils.ServerKeyUtils;
+import com.mcp.transfer.shared.utils.RestToolDraftBuilder;
+import com.mcp.transfer.shared.utils.SecretCrypto;
+import com.mcp.transfer.shared.utils.ServerKeyUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -145,7 +145,7 @@ public class McpAdminController {
     private AdminAuthService adminAuthService;
 
     @Autowired
-    private com.mcp.transfer.mapper.AdminUserTenantMapper adminUserTenantMapper;
+    private com.mcp.transfer.shared.mapper.AdminUserTenantMapper adminUserTenantMapper;
 
     /** 数据面能力端口：连通性探测（单进程为本地实现，物理拆分后为远程实现） */
     @Autowired
@@ -292,15 +292,15 @@ public class McpAdminController {
         if (server.getStatus() == null) {
             server.setStatus(1);
         }
-        // 应用授权已移除：新建 server 默认 ALL（全部启用资产对登录用户可见）
-        if (!StringUtils.hasText(server.getToolAccessMode())) {
-            server.setToolAccessMode(com.mcp.transfer.exposure.ToolExposureModes.ACCESS_ALL);
-        } else if (!com.mcp.transfer.exposure.ToolExposureModes.isValidAccessMode(server.getToolAccessMode())) {
-            return Result.fail("toolAccessMode 仅支持 WHITELIST / ALL");
-        } else {
-            server.setToolAccessMode(com.mcp.transfer.exposure.ToolExposureModes
-                    .normalizeAccessMode(server.getToolAccessMode()));
+        if (!com.mcp.transfer.identity.IdentityModes.isValidServerMode(server.getIdentityMode())) {
+            return Result.fail("identityMode 仅支持 INHERIT / OFF / OPTIONAL / REQUIRED");
         }
+        server.setIdentityMode(com.mcp.transfer.identity.IdentityModes
+                .normalizeServerMode(server.getIdentityMode()));
+        // 应用授权已移除：访问模式固定为 ALL，旧字段仅保留数据库兼容
+        server.setToolAccessMode(com.mcp.transfer.exposure.ToolExposureModes.ACCESS_ALL);
+        server.setPromptAccessMode(com.mcp.transfer.exposure.ToolExposureModes.ACCESS_ALL);
+        server.setResourceAccessMode(com.mcp.transfer.exposure.ToolExposureModes.ACCESS_ALL);
         if (!StringUtils.hasText(server.getToolExposureMode())) {
             server.setToolExposureMode(com.mcp.transfer.exposure.ToolExposureModes.EXPOSURE_DIRECT);
         } else if (!com.mcp.transfer.exposure.ToolExposureModes.isValidExposureMode(server.getToolExposureMode())) {
@@ -308,22 +308,6 @@ public class McpAdminController {
         } else {
             server.setToolExposureMode(com.mcp.transfer.exposure.ToolExposureModes
                     .normalizeExposureMode(server.getToolExposureMode()));
-        }
-        if (!StringUtils.hasText(server.getPromptAccessMode())) {
-            server.setPromptAccessMode(com.mcp.transfer.exposure.ToolExposureModes.ACCESS_ALL);
-        } else if (!com.mcp.transfer.exposure.ToolExposureModes.isValidAssetAccessMode(server.getPromptAccessMode())) {
-            return Result.fail("promptAccessMode 仅支持 WHITELIST / ALL");
-        } else {
-            server.setPromptAccessMode(com.mcp.transfer.exposure.ToolExposureModes
-                    .normalizeAssetAccessMode(server.getPromptAccessMode()));
-        }
-        if (!StringUtils.hasText(server.getResourceAccessMode())) {
-            server.setResourceAccessMode(com.mcp.transfer.exposure.ToolExposureModes.ACCESS_ALL);
-        } else if (!com.mcp.transfer.exposure.ToolExposureModes.isValidAssetAccessMode(server.getResourceAccessMode())) {
-            return Result.fail("resourceAccessMode 仅支持 WHITELIST / ALL");
-        } else {
-            server.setResourceAccessMode(com.mcp.transfer.exposure.ToolExposureModes
-                    .normalizeAssetAccessMode(server.getResourceAccessMode()));
         }
         mcpServerMapper.insertSelective(server);
         String serverKey = ServerKeyUtils.slug(server.getName());
@@ -333,7 +317,7 @@ public class McpAdminController {
         mcpServerMapper.updateServerKey(server.getId(), serverKey);
         server.setServerKey(serverKey);
         recordOperation("CREATE", "SERVER", server.getId(), server.getName() + " " + server.getPath());
-        refreshDynamicRoutes();
+        notifyServerChanged(server.getId());
         return Result.success(server);
     }
 
@@ -384,6 +368,13 @@ public class McpAdminController {
         if (server.getUpstreamType() != null || server.getUpstreamUrl() != null) {
             normalizeUpstream(server);
         }
+        if (server.getIdentityMode() != null) {
+            if (!com.mcp.transfer.identity.IdentityModes.isValidServerMode(server.getIdentityMode())) {
+                return Result.fail("identityMode 仅支持 INHERIT / OFF / OPTIONAL / REQUIRED");
+            }
+            server.setIdentityMode(com.mcp.transfer.identity.IdentityModes
+                    .normalizeServerMode(server.getIdentityMode()));
+        }
         server.setId(id);
         server.setServerKey(null); // 稳定标识不可通过更新接口修改
         // 暴露策略必须走 /servers/{id}/tool-exposure（含热工具 code 校验与阈值校验）
@@ -397,7 +388,7 @@ public class McpAdminController {
         server.setUpdateTime(new Date());
         mcpServerMapper.updateByPrimaryKeySelective(server);
         recordOperation("UPDATE", "SERVER", id, server.getName() + " " + server.getPath());
-        refreshDynamicRoutes();
+        notifyServerChanged(id);
         return Result.success(mcpServerMapper.selectByPrimaryKey(id));
     }
 
@@ -428,7 +419,7 @@ public class McpAdminController {
         recordOperation("DELETE", "SERVER", id, null, tenantId);
         // PURGE_SERVER：让数据面连带清掉该 server 的向量索引（控制面不再持有 embedding 凭证）
         configChangePublisher.toolChanged(id, null, "PURGE_SERVER");
-        refreshDynamicRoutes();
+        notifyServerChanged(id);
         return Result.success();
     }
 
@@ -508,29 +499,11 @@ public class McpAdminController {
             return Result.fail("Server 不存在");
         }
 
-        String accessMode = request.getToolAccessMode() == null
-                ? com.mcp.transfer.exposure.ToolExposureModes.accessOf(old)
-                : request.getToolAccessMode();
-        if (!com.mcp.transfer.exposure.ToolExposureModes.isValidAccessMode(accessMode)) {
-            return Result.fail("toolAccessMode 仅支持 WHITELIST / ALL");
-        }
         String exposureMode = request.getToolExposureMode() == null
                 ? com.mcp.transfer.exposure.ToolExposureModes.exposureOf(old)
                 : request.getToolExposureMode();
         if (!com.mcp.transfer.exposure.ToolExposureModes.isValidExposureMode(exposureMode)) {
             return Result.fail("toolExposureMode 仅支持 DIRECT / META");
-        }
-        String promptMode = request.getPromptAccessMode() == null
-                ? com.mcp.transfer.exposure.ToolExposureModes.promptAccessOf(old)
-                : request.getPromptAccessMode();
-        if (!com.mcp.transfer.exposure.ToolExposureModes.isValidAssetAccessMode(promptMode)) {
-            return Result.fail("promptAccessMode 仅支持 WHITELIST / ALL");
-        }
-        String resourceMode = request.getResourceAccessMode() == null
-                ? com.mcp.transfer.exposure.ToolExposureModes.resourceAccessOf(old)
-                : request.getResourceAccessMode();
-        if (!com.mcp.transfer.exposure.ToolExposureModes.isValidAssetAccessMode(resourceMode)) {
-            return Result.fail("resourceAccessMode 仅支持 WHITELIST / ALL");
         }
 
         boolean hotProvided = request.getHotToolCodes() != null;
@@ -578,16 +551,14 @@ public class McpAdminController {
         }
 
         mcpServerMapper.updateToolExposure(id,
-                com.mcp.transfer.exposure.ToolExposureModes.normalizeAccessMode(accessMode),
+                com.mcp.transfer.exposure.ToolExposureModes.ACCESS_ALL,
                 com.mcp.transfer.exposure.ToolExposureModes.normalizeExposureMode(exposureMode),
-                com.mcp.transfer.exposure.ToolExposureModes.normalizeAssetAccessMode(promptMode),
-                com.mcp.transfer.exposure.ToolExposureModes.normalizeAssetAccessMode(resourceMode),
+                com.mcp.transfer.exposure.ToolExposureModes.ACCESS_ALL,
+                com.mcp.transfer.exposure.ToolExposureModes.ACCESS_ALL,
                 com.alibaba.fastjson.JSON.toJSONString(normalizedHot),
                 warn, max, new Date());
         recordOperation("UPDATE", "SERVER_TOOL_EXPOSURE", id,
-                "access=" + accessMode + ", exposure=" + exposureMode
-                        + ", promptAccess=" + promptMode + ", resourceAccess=" + resourceMode
-                        + ", hot=" + normalizedHot.size(),
+                "exposure=" + exposureMode + ", hot=" + normalizedHot.size(),
                 old.getTenantId());
         // 暴露模式变化会影响 tools/list，通知已连接客户端重新拉取
         configChangePublisher.toolChanged(id);
@@ -662,16 +633,26 @@ public class McpAdminController {
         } else {
             tools = mcpToolMapper.selectByServerIds(serverIds);
         }
-        decryptTools(tools);
+        maskTools(tools);
         return Result.success(tools);
     }
-    private void decryptTools(List<McpTool> tools) {
+    /** 列表/详情不回传下游凭证明文，只返回「是否已配置」，避免开发者账号直接读走密钥。 */
+    private void maskTools(List<McpTool> tools) {
         if (tools == null) {
             return;
         }
         for (McpTool t : tools) {
-            t.setAuthConfig(secretCrypto.decrypt(t.getAuthConfig()));
+            t.setAuthConfigSet(StringUtils.hasText(t.getAuthConfig()));
+            t.setAuthConfig(null);
         }
+    }
+
+    private void maskTool(McpTool tool) {
+        if (tool == null) {
+            return;
+        }
+        tool.setAuthConfigSet(StringUtils.hasText(tool.getAuthConfig()));
+        tool.setAuthConfig(null);
     }
 
     @Operation(summary = "创建工具")
@@ -700,13 +681,14 @@ public class McpAdminController {
             tool.setType(0);
         }
         tool.setVersion(defaultVersion(tool.getVersion()));
-        // auth_config 含鉴权凭证，加密后落库
-        tool.setAuthConfig(secretCrypto.encrypt(tool.getAuthConfig()));
+        // auth_config 含鉴权凭证，加密后落库（空值不写，避免产生空密文）
+        tool.setAuthConfig(StringUtils.hasText(tool.getAuthConfig())
+                ? secretCrypto.encrypt(tool.getAuthConfig()) : null);
         applyTokenEstimate(tool);
         mcpToolMapper.insertSelective(tool);
         recordOperation("CREATE", "TOOL", tool.getId(), tool.getCode());
         onToolChanged(tool.getServerId(), tool.getId(), "UPSERT");
-        tool.setAuthConfig(secretCrypto.decrypt(tool.getAuthConfig()));
+        maskTool(tool);
         return Result.success(tool);
     }
 
@@ -719,6 +701,10 @@ public class McpAdminController {
         McpTool current = mcpToolMapper.selectByPrimaryKey(id);
         if (current == null) {
             return Result.fail("工具不存在");
+        }
+        // 空/未传 = 保持原凭证不变（查询接口不再回传明文，前端留空即不改）
+        if (!StringUtils.hasText(tool.getAuthConfig())) {
+            tool.setAuthConfig(null);
         }
         // 下游凭证（auth_config）变更属于 L2：开发者需审批，管理员可直接执行
         if (tool.getAuthConfig() != null) {
@@ -764,7 +750,11 @@ public class McpAdminController {
         } else {
             tool.setVersion(null);
         }
-        tool.setAuthConfig(secretCrypto.encrypt(tool.getAuthConfig()));
+        if (StringUtils.hasText(tool.getAuthConfig())) {
+            tool.setAuthConfig(secretCrypto.encrypt(tool.getAuthConfig()));
+        } else {
+            tool.setAuthConfig(null);
+        }
         applyTokenEstimate(tool);
         mcpToolMapper.updateByPrimaryKeySelective(tool);
         recordOperation("UPDATE", "TOOL", id, tool.getCode());
@@ -777,7 +767,7 @@ public class McpAdminController {
             onToolChanged(oldServerId, id, "UPSERT");
         }
         McpTool updated = mcpToolMapper.selectByPrimaryKey(id);
-        updated.setAuthConfig(secretCrypto.decrypt(updated.getAuthConfig()));
+        maskTool(updated);
         return Result.success(updated);
     }
 
@@ -941,7 +931,23 @@ public class McpAdminController {
     /** 工具注册前连通性测试（本地格式校验 / HTTP 实际试调） */
     @Operation(summary = "测试工具连通性")
     @PostMapping("/tools/test-connect")
-    public Result<Map<String, Object>> testToolConnect(@RequestBody McpTool tool, javax.servlet.http.HttpServletRequest request) {
+    public Result<Map<String, Object>> testToolConnect(@RequestBody McpTool tool, jakarta.servlet.http.HttpServletRequest request) {
+        // 查询接口不再回传凭证明文：编辑已有 Tool 时允许管理员用「库中已存凭证」做连通性测试；
+        // 开发者即使传 toolId 也不回用库中凭证，避免通过篡改 serviceUrl 把凭证外带。
+        if (tool.getId() != null && !StringUtils.hasText(tool.getAuthConfig())) {
+            AdminAuthContext ctx = AdminAuthContext.get();
+            boolean manager = ctx != null && (ctx.isSuperAdmin()
+                    || (ctx.getRoleEnum() != null && ctx.getRoleEnum().canManageTopology()));
+            if (manager) {
+                McpTool stored = mcpToolMapper.selectByPrimaryKey(tool.getId());
+                if (stored != null) {
+                    String storedConfig = secretCrypto.decrypt(stored.getAuthConfig());
+                    if (StringUtils.hasText(storedConfig)) {
+                        tool.setAuthConfig(storedConfig);
+                    }
+                }
+            }
+        }
         String validateErr = validateToolForSave(tool, false);
         if (validateErr != null) {
             Map<String, Object> invalid = new HashMap<>();
@@ -1784,12 +1790,12 @@ public class McpAdminController {
         return Math.min(pageSize, 200);
     }
 
-    /** Server 变更后自动刷新动态路由（保存即生效，无需手动刷新/重启） */
-    private void refreshDynamicRoutes() {
+    /** Server 变更后通知数据面失效缓存并向客户端广播（保存即生效） */
+    private void notifyServerChanged(Integer serverId) {
         try {
-            configChangePublisher.routesChanged();
+            configChangePublisher.serverChanged(serverId);
         } catch (Exception e) {
-            log.error("[ROUTE] 自动刷新动态路由失败", e);
+            log.error("[SERVER] 通知数据面失效缓存失败", e);
         }
     }
 
@@ -2000,29 +2006,6 @@ public class McpAdminController {
         return Result.success(updated);
     }
 
-    @Operation(summary = "查看审批通过后生成的应用密钥")
-    @GetMapping("/approvals/{id}/secret")
-    public Result<Map<String, Object>> revealApprovalSecret(@PathVariable Long id) {
-        RoleEnum role = currentRole();
-        AdminAuthContext ctx = AdminAuthContext.get();
-        ApprovalRequest req = approvalRequestMapper.selectByPrimaryKey(id);
-        if (req == null || ctx == null) {
-            return Result.fail("申请单不存在");
-        }
-        if (!"APPROVED".equals(req.getStatus())) {
-            return Result.fail("该申请尚未通过");
-        }
-        if (!Objects.equals(req.getRequester(), ctx.getUsername()) && role != RoleEnum.SUPER_ADMIN) {
-            return Result.fail("只有申请人或平台超管可以查看该密钥");
-        }
-        if (!StringUtils.hasText(req.getResultSecret())) {
-            return Result.fail("该申请没有可查看的密钥");
-        }
-        Map<String, Object> data = new HashMap<>();
-        data.put("secret", secretCrypto.decrypt(req.getResultSecret()));
-        return Result.success(data);
-    }
-
     // ---- 审批：提交校验 ----
 
     /**
@@ -2122,8 +2105,8 @@ public class McpAdminController {
         }
     }
 
-    /** 审批通过后按快照执行；返回需要一次性展示的明文密钥（无则 null） */
-    private String executeApproved(ApprovalRequest req) {
+    /** 审批通过后按快照执行 */
+    private void executeApproved(ApprovalRequest req) {
         ApprovalAction action = ApprovalAction.getByCode(req.getAction());
         if (action == null) {
             throw new IllegalArgumentException("未知审批动作");
@@ -2131,21 +2114,21 @@ public class McpAdminController {
         switch (action) {
             case SERVER_CREATE:
                 ensureOk(doCreateServer(readPayload(req, McpServer.class)));
-                return null;
+                break;
             case SERVER_UPDATE_CONNECTION:
                 ensureOk(doUpdateServer(req.getServerId(), readPayload(req, McpServer.class)));
-                return null;
+                break;
             case SERVER_DELETE:
                 ensureOk(doDeleteServer(req.getServerId()));
-                return null;
+                break;
             case TOOL_CREDENTIAL_UPDATE:
                 ensureOk(doUpdateTool(req.getToolId(), readPayload(req, McpTool.class)));
-                return null;
+                break;
             case USER_ROLE_UPDATE: {
                 AdminUserRequest userRequest = new AdminUserRequest();
                 userRequest.setRole(readRole(req));
                 adminAuthService.updateUser(req.getUserId(), userRequest);
-                return null;
+                break;
             }
             default:
                 throw new IllegalArgumentException("不支持的审批动作");
@@ -2192,10 +2175,7 @@ public class McpAdminController {
         }
         if (approve) {
             // 执行失败抛运行时异常，事务整体回滚（含上面的状态变更）
-            String resultSecret = executeApproved(req);
-            if (resultSecret != null) {
-                approvalRequestMapper.updateResultSecret(id, secretCrypto.encrypt(resultSecret));
-            }
+            executeApproved(req);
         }
         recordOperation(approve ? "APPROVE" : "REJECT", "APPROVAL", id, action.getCode(), req.getTenantId());
         ApprovalRequest latest = approvalRequestMapper.selectByPrimaryKey(id);
@@ -2259,7 +2239,6 @@ public class McpAdminController {
         if (req == null) {
             return;
         }
-        req.setResultSecret(null);
         if (!withPayload) {
             req.setPayload(null);
             return;
@@ -2463,6 +2442,10 @@ public class McpAdminController {
         }
         if (request.getIdentityPublicKey() != null
                 && !request.getIdentityPublicKey().trim().equals(trimToEmpty(oldServer.getIdentityPublicKey()))) {
+            return true;
+        }
+        if (request.getIdentityMode() != null
+                && !request.getIdentityMode().trim().equals(trimToEmpty(oldServer.getIdentityMode()))) {
             return true;
         }
         return request.getAudience() != null

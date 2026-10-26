@@ -19,15 +19,15 @@ public class ClusterEvent {
         PROMPT,
         /** Resource 变更 */
         RESOURCE,
-        /** Server 路由变更（path 新增/删除/改名） */
-        ROUTES,
-        /** 无法定位到具体 Server 的全局变更：清空所有缓存 + 刷路由 */
+        /** Server 配置变更（名称/上游/暴露策略/身份断言）；serverId 为空表示全局 */
+        SERVER,
+        /** 无法定位到具体 Server 的全局变更：清空所有缓存 */
         ALL
     }
 
     private Type type;
 
-    /** 关联的 Server；ROUTES 事件可为 null */
+    /** 关联的 Server；SERVER / ALL 事件可为 null */
     private Integer serverId;
 
     /** 关联的工具；为空表示整 server 粒度 */

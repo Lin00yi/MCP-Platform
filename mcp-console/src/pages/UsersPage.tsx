@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { api, type AdminUserRequest, type AdminUserVO } from "@/lib/api";
 import { getUser, isSuperAdmin } from "@/lib/auth";
+import { MIN_PASSWORD_LENGTH, PASSWORD_RULE_HINT } from "@/lib/constants";
 import { cn, formatDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +38,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { LoadingState, EmptyState } from "@/components/PageState";
+import { LoadingState, EmptyState, ErrorState } from "@/components/PageState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 /** 控制台可分配的角色；平台超管只能由初始化脚本创建，不在此列 */
@@ -68,10 +69,14 @@ export function UsersPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<AdminUserVO | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [formError, setFormError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminUserVO | null>(null);
 
-  const { data: users, isLoading } = useQuery({ queryKey: ["users"], queryFn: api.listUsers });
-  const { data: tenants } = useQuery({ queryKey: ["tenants"], queryFn: api.listTenants });
+  const { data: users, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["users"],
+    queryFn: ({ signal }) => api.listUsers(signal),
+  });
+  const { data: tenants } = useQuery({ queryKey: ["tenants"], queryFn: ({ signal }) => api.listTenants(signal) });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["users"] });
 
@@ -142,13 +147,30 @@ export function UsersPage() {
   const openCreate = () => {
     setEditing(null);
     setForm(emptyForm);
+    setFormError(null);
     setDialogOpen(true);
   };
 
   const openEdit = (u: AdminUserVO) => {
     setEditing(u);
     setForm({ username: u.username, password: "", name: u.name, role: u.role, status: u.status, tenantIds: u.tenantIds ?? [] });
+    setFormError(null);
     setDialogOpen(true);
+  };
+
+  /** 提交前本地校验：与后端 MIN_PASSWORD_LENGTH 保持一致，错误内联展示 */
+  const validateForm = (): string | null => {
+    if (!editing && !form.username.trim()) return "用户名不能为空";
+    if (!editing && !form.password) return `密码不能为空（${PASSWORD_RULE_HINT}）`;
+    if (form.password && form.password.length < MIN_PASSWORD_LENGTH) return `密码${PASSWORD_RULE_HINT}`;
+    return null;
+  };
+
+  const handleSave = () => {
+    const message = validateForm();
+    setFormError(message);
+    if (message) return;
+    saveMutation.mutate();
   };
 
   const toggleTenant = (id: number, checked: boolean) => {
@@ -159,6 +181,7 @@ export function UsersPage() {
   };
 
   if (isLoading) return <LoadingState label="加载用户…" />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-4">
@@ -252,7 +275,17 @@ export function UsersPage() {
             )}
             <div className="space-y-2">
               <Label htmlFor="u-password">{editing ? "新密码（留空不修改）" : "密码"}</Label>
-              <Input id="u-password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••" />
+              <Input
+                id="u-password"
+                type="password"
+                value={form.password}
+                onChange={(e) => {
+                  setForm({ ...form, password: e.target.value });
+                  setFormError(null);
+                }}
+                placeholder={editing ? `留空不修改（${PASSWORD_RULE_HINT}）` : PASSWORD_RULE_HINT}
+              />
+              <p className="text-xs text-muted-foreground">密码{PASSWORD_RULE_HINT}</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="u-name">姓名</Label>
@@ -312,11 +345,12 @@ export function UsersPage() {
                 </div>
               </div>
             )}
+            {formError && <p className="text-xs text-destructive">{formError}</p>}
           </div>
           </DialogBody>
 <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>
-            <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
+            <Button onClick={handleSave} disabled={saveMutation.isPending}>
               {saveMutation.isPending ? "保存中…" : "保存"}
             </Button>
           </DialogFooter>

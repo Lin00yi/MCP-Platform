@@ -5,15 +5,15 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mcp.transfer.config.session.McpSessionCache;
 import com.mcp.transfer.config.session.SessionInfo;
-import com.mcp.transfer.dto.mcp.req.McpRequest;
-import com.mcp.transfer.dto.mcp.req.Params;
-import com.mcp.transfer.dto.mcp.res.McpResponse;
-import com.mcp.transfer.dto.mcp.result.data.McpResData;
-import com.mcp.transfer.dto.mcp.result.tools.McpToolsListResult;
-import com.mcp.transfer.entity.McpPrompt;
-import com.mcp.transfer.entity.McpResource;
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.dto.mcp.req.McpRequest;
+import com.mcp.transfer.shared.dto.mcp.req.Params;
+import com.mcp.transfer.shared.dto.mcp.res.McpResponse;
+import com.mcp.transfer.shared.dto.mcp.result.data.McpResData;
+import com.mcp.transfer.shared.dto.mcp.result.tools.McpToolsListResult;
+import com.mcp.transfer.shared.entity.McpPrompt;
+import com.mcp.transfer.shared.entity.McpResource;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpTool;
 import com.mcp.transfer.exposure.AssetAccessPolicy;
 import com.mcp.transfer.exposure.MetaToolFactory;
 import com.mcp.transfer.exposure.TokenEstimator;
@@ -28,9 +28,9 @@ import com.mcp.transfer.exposure.ToolSearchService;
 import com.mcp.transfer.gateway.McpUpstreamClient;
 import com.mcp.transfer.gateway.service.McpService;
 import com.mcp.transfer.identity.McpIdentityContext;
-import com.mcp.transfer.mapper.McpServerMapper;
-import com.mcp.transfer.mapper.McpToolMapper;
-import com.mcp.transfer.utils.ServerKeyUtils;
+import com.mcp.transfer.shared.mapper.McpServerMapper;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
+import com.mcp.transfer.shared.utils.ServerKeyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -124,6 +124,15 @@ public class McpAggregateService {
     private McpSessionCache mcpSessionCache;
 
     private final Map<Integer, ProxyToolCache> proxyToolCache = new ConcurrentHashMap<>();
+
+    /** 配置变更后清理聚合上游工具缓存；serverId 为空表示全部清空 */
+    public void invalidateProxyCache(Integer serverId) {
+        if (serverId == null) {
+            proxyToolCache.clear();
+        } else {
+            proxyToolCache.remove(serverId);
+        }
+    }
 
     // ==================== 模式 / 目录 ====================
 
@@ -333,7 +342,7 @@ public class McpAggregateService {
         List<ServerCatalog> catalogs = catalogs(appId, sessionId);
         boolean metaActive = isMetaActive(catalogs);
 
-        List<com.mcp.transfer.dto.mcp.result.tools.McpTool> all = new ArrayList<>();
+        List<com.mcp.transfer.shared.dto.mcp.result.tools.McpTool> all = new ArrayList<>();
         Set<String> names = new HashSet<>();
         int totalTools = 0;
         int visibleTools = 0;
@@ -371,13 +380,13 @@ public class McpAggregateService {
         }
 
         if (metaActive) {
-            for (com.mcp.transfer.dto.mcp.result.tools.McpTool metaTool : MetaToolFactory.build()) {
+            for (com.mcp.transfer.shared.dto.mcp.result.tools.McpTool metaTool : MetaToolFactory.build()) {
                 addUnique(all, names, metaTool);
             }
         }
         // 顶层列表顺序必须稳定（Prompt Cache 友好），不依赖 DB 返回顺序
         all.sort(Comparator.comparing(
-                com.mcp.transfer.dto.mcp.result.tools.McpTool::getName,
+                com.mcp.transfer.shared.dto.mcp.result.tools.McpTool::getName,
                 Comparator.nullsLast(String::compareTo)));
 
         String cursor = request.getParams() == null ? null : request.getParams().getCursor();
@@ -390,7 +399,7 @@ public class McpAggregateService {
         int start = Math.min(offset, all.size());
         int end = Math.min(start + pageSize, all.size());
 
-        List<com.mcp.transfer.dto.mcp.result.tools.McpTool> dtos =
+        List<com.mcp.transfer.shared.dto.mcp.result.tools.McpTool> dtos =
                 new ArrayList<>(all.subList(start, end));
 
         McpToolsListResult result = new McpToolsListResult();
@@ -470,12 +479,12 @@ public class McpAggregateService {
         return false;
     }
 
-    private com.mcp.transfer.dto.mcp.result.tools.McpTool toExposedToolDto(
+    private com.mcp.transfer.shared.dto.mcp.result.tools.McpTool toExposedToolDto(
             ServerCatalog catalog, McpTool tool) {
         if (tool == null) {
             return null;
         }
-        com.mcp.transfer.dto.mcp.result.tools.McpTool dto =
+        com.mcp.transfer.shared.dto.mcp.result.tools.McpTool dto =
                 mcpService.toToolDto(catalog.server, tool);
         if (dto == null) {
             return null;
@@ -486,14 +495,14 @@ public class McpAggregateService {
         return dto;
     }
 
-    private com.mcp.transfer.dto.mcp.result.tools.McpTool toExposedProxyDto(
+    private com.mcp.transfer.shared.dto.mcp.result.tools.McpTool toExposedProxyDto(
             ServerCatalog catalog, JSONObject definition) {
         if (definition == null || !StringUtils.hasText(definition.getString("name"))) {
             return null;
         }
         try {
-            com.mcp.transfer.dto.mcp.result.tools.McpTool dto = JSON.parseObject(
-                    definition.toJSONString(), com.mcp.transfer.dto.mcp.result.tools.McpTool.class);
+            com.mcp.transfer.shared.dto.mcp.result.tools.McpTool dto = JSON.parseObject(
+                    definition.toJSONString(), com.mcp.transfer.shared.dto.mcp.result.tools.McpTool.class);
             if (dto == null) {
                 return null;
             }
@@ -516,9 +525,9 @@ public class McpAggregateService {
                 toolExposureProperties.getMaxExposedNameLength());
     }
 
-    private boolean addUnique(List<com.mcp.transfer.dto.mcp.result.tools.McpTool> tools,
+    private boolean addUnique(List<com.mcp.transfer.shared.dto.mcp.result.tools.McpTool> tools,
                               Set<String> names,
-                              com.mcp.transfer.dto.mcp.result.tools.McpTool tool) {
+                              com.mcp.transfer.shared.dto.mcp.result.tools.McpTool tool) {
         if (tool == null || !StringUtils.hasText(tool.getName())) {
             return false;
         }
@@ -530,9 +539,9 @@ public class McpAggregateService {
         return true;
     }
 
-    private long returnedTokens(List<com.mcp.transfer.dto.mcp.result.tools.McpTool> tools) {
+    private long returnedTokens(List<com.mcp.transfer.shared.dto.mcp.result.tools.McpTool> tools) {
         long tokens = 0;
-        for (com.mcp.transfer.dto.mcp.result.tools.McpTool tool : tools) {
+        for (com.mcp.transfer.shared.dto.mcp.result.tools.McpTool tool : tools) {
             tokens += tokenEstimator.estimate(JSON.toJSONString(tool)) + 30L;
         }
         return tokens;

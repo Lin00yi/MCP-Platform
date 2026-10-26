@@ -6,8 +6,7 @@ import { Activity, AlertTriangle, ArrowRight, Pencil, Plus, RefreshCw, Server, T
 import { api } from "@/lib/api";
 import { isDirect, useApprovalPolicy } from "@/lib/approval";
 import { cn, formatDateTime } from "@/lib/utils";
-import { accessMode } from "@/lib/format";
-import type { McpServer, ServerHealth, ToolAccessMode, ToolBudget, ToolExposureMode } from "@/types";
+import type { McpServer, ServerHealth, ToolBudget, ToolExposureMode } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -60,13 +59,7 @@ const emptyForm = {
   upstreamType: "NONE",
   upstreamUrl: "",
   status: 1,
-  toolAccessMode: "WHITELIST" as ToolAccessMode,
   toolExposureMode: "DIRECT" as ToolExposureMode,
-};
-
-const ACCESS_MODE_LABEL: Record<ToolAccessMode, string> = {
-  WHITELIST: "白名单",
-  ALL: "全部",
 };
 
 export function ServersPage() {
@@ -88,18 +81,26 @@ export function ServersPage() {
     (form.upstreamType ?? "NONE") !== (oldServer.upstreamType ?? "NONE") ||
     (form.upstreamUrl ?? "") !== (oldServer.upstreamUrl ?? "");
 
-  const { data: servers, isLoading, isError, error } = useQuery({
+  const { data: servers, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["servers"],
-    queryFn: api.listServers,
+    queryFn: ({ signal }) => api.listServers(signal),
   });
-  const { data: budgets } = useQuery({ queryKey: ["server-budgets"], queryFn: api.listServerBudgets });
-  const { data: tenants } = useQuery({ queryKey: ["tenants"], queryFn: api.listTenants });
+  const { data: budgets } = useQuery({
+    queryKey: ["server-budgets"],
+    queryFn: ({ signal }) => api.listServerBudgets(signal),
+  });
+  const { data: tenants } = useQuery({
+    queryKey: ["tenants"],
+    queryFn: ({ signal }) => api.listTenants(signal),
+  });
   const budgetMap = new Map<number, ToolBudget>((budgets ?? []).map((b) => [b.serverId, b]));
 
   const { data: healthList } = useQuery({
     queryKey: ["server-health"],
-    queryFn: api.listServerHealth,
+    queryFn: ({ signal }) => api.listServerHealth(signal),
     refetchInterval: 30_000,
+    // 页面不可见时暂停轮询，避免后台标签页持续打后端
+    refetchIntervalInBackground: false,
   });
   const healthMap = new Map<number, ServerHealth>((healthList ?? []).map((h) => [h.serverId, h]));
 
@@ -194,14 +195,13 @@ export function ServersPage() {
       upstreamType: s.upstreamType ?? "NONE",
       upstreamUrl: s.upstreamUrl ?? "",
       status: s.status,
-      toolAccessMode: accessMode(s.toolAccessMode),
       toolExposureMode: s.toolExposureMode ?? "DIRECT",
     });
     setDialogOpen(true);
   };
 
   if (isLoading) return <LoadingState label="加载 MCP Server…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   const tenantName = (id?: number) => tenants?.find((t) => t.id === id)?.name ?? (id ? `#${id}` : "—");
   const overBudget = (budgets ?? []).filter(
@@ -212,7 +212,7 @@ export function ServersPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          基于 <span className="font-mono">mcp_server</span> 表动态注册的 MCP 端点，共 {servers?.length ?? 0} 个。
+          基于 <span className="font-mono">mcp_server</span> 表的 MCP Server 资产，客户端统一经 Endpoint 访问，共 {servers?.length ?? 0} 个。
           {(healthList ?? []).length > 0 && (() => {
             const list = healthList ?? [];
             const c = (st: string) => list.filter((h) => h.status === st).length;
@@ -256,7 +256,7 @@ export function ServersPage() {
                     `${b.serverName}(Tool ${b.visibleTools} / Prompt ${b.visiblePrompts ?? 0} / Resource ${b.visibleResources ?? 0}，阈值 ${b.warnThreshold})`,
                 )
                 .join(" · ")}
-              。建议启用 META 模式、收紧应用白名单，或按业务域拆分 Server。
+            建议启用 META 模式，或按业务域拆分 Server。
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={() => navigate(`/servers/${overBudget[0].serverId}`)}>
@@ -275,7 +275,7 @@ export function ServersPage() {
                 <TableHead>ID</TableHead>
                 <TableHead>名称</TableHead>
                 <TableHead>租户</TableHead>
-                <TableHead>路径 (path)</TableHead>
+                <TableHead>标识路径</TableHead>
                 <TableHead>资产 / 模式</TableHead>
                 <TableHead>健康</TableHead>
                 <TableHead>状态</TableHead>
@@ -304,8 +304,6 @@ export function ServersPage() {
                       const b = budgetMap.get(s.id);
                       if (!b) return <span className="text-xs text-muted-foreground">—</span>;
                       const toolTone = b.overMax ? "text-rose-400" : b.overWarn ? "text-amber-400" : "text-muted-foreground";
-                      const promptMode = accessMode(b.promptAccessMode);
-                      const resourceMode = accessMode(b.resourceAccessMode);
                       return (
                         <div className="grid grid-cols-[auto_1fr] items-center gap-x-2 gap-y-1 text-xs">
                           <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Tool</span>
@@ -314,7 +312,6 @@ export function ServersPage() {
                             title={`预估 tools/list ${b.estimatedTokens.toLocaleString()} tokens`}
                           >
                             <span className={cn("font-medium", toolTone)}>{b.visibleTools} 个</span>
-                            <Badge variant="outline">{ACCESS_MODE_LABEL[accessMode(b.accessMode)]}</Badge>
                             <Badge variant={b.exposureMode === "META" ? "success" : "outline"}>
                               {b.exposureMode}
                             </Badge>
@@ -330,9 +327,6 @@ export function ServersPage() {
                             <span className={cn(b.promptOverWarn ? "text-amber-400" : "text-muted-foreground")}>
                               {b.visiblePrompts ?? 0}/{b.totalPrompts ?? 0}
                             </span>
-                            <Badge variant={promptMode === "WHITELIST" ? "outline" : "muted"}>
-                              {ACCESS_MODE_LABEL[promptMode]}
-                            </Badge>
                           </div>
 
                           <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Resource</span>
@@ -340,9 +334,6 @@ export function ServersPage() {
                             <span className={cn(b.resourceOverWarn ? "text-amber-400" : "text-muted-foreground")}>
                               {b.visibleResources ?? 0}/{b.totalResources ?? 0}
                             </span>
-                            <Badge variant={resourceMode === "WHITELIST" ? "outline" : "muted"}>
-                              {ACCESS_MODE_LABEL[resourceMode]}
-                            </Badge>
                           </div>
                         </div>
                       );
@@ -412,9 +403,9 @@ export function ServersPage() {
           <DialogHeader>
             <DialogTitle>{editing ? "编辑 Server" : directCreate ? "新增 Server" : "申请创建 Server"}</DialogTitle>
             <DialogDescription>
-              Server 路径将作为动态 MCP 端点注册到网关。
-              {!directCreate && " 当前角色创建 Server 需管理员审批，通过后自动注册。"}
-              {editing && !directConnection && " 修改路径或上游地址将提交审批。"}
+              客户端统一通过 Endpoint（/mcp/e/&#123;endpointKey&#125;）接入；这里的 path 仅作资产标识。
+              {!directCreate && " 当前角色创建 Server 需管理员审批，通过后生效。"}
+              {editing && !directConnection && " 修改连接配置或身份断言将提交审批。"}
             </DialogDescription>
           </DialogHeader>
 <DialogBody>
@@ -454,7 +445,7 @@ export function ServersPage() {
                 id="s-path"
                 value={form.path}
                 onChange={(e) => setForm({ ...form, path: e.target.value })}
-                placeholder="/mcp/v1/core"
+                placeholder="/mcp/e/team-pcb"
                 className="font-mono"
               />
             </div>
@@ -510,28 +501,10 @@ export function ServersPage() {
             )}
             {editing ? (
               <p className="rounded-md border border-dashed p-2 text-xs text-muted-foreground">
-                Tool 访问 / 暴露模式、热 Tool 与阈值请在「详情 → 设置」中调整。
+                Tool 暴露模式、热 Tool、阈值与身份断言请在「详情 → 设置」中调整。
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Tool 访问模式</Label>
-                  <Select
-                    value={form.toolAccessMode}
-                    onValueChange={(v) => setForm({ ...form, toolAccessMode: v as ToolAccessMode })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="WHITELIST">白名单（推荐，新建默认）</SelectItem>
-                      <SelectItem value="ALL">全部启用 Tool</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    白名单模式下，应用只能看到 app_tool_rel 显式授权的 Tool。
-                  </p>
-                </div>
                 <div className="space-y-2">
                   <Label>Tool 暴露模式</Label>
                   <Select

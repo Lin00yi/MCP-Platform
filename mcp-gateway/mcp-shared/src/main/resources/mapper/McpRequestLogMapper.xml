@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.McpRequestLogMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpRequestLog">
+<mapper namespace="com.mcp.transfer.shared.mapper.McpRequestLogMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.McpRequestLog">
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="mcp_method" jdbcType="VARCHAR" property="mcpMethod" />
     <result column="method_name" jdbcType="VARCHAR" property="methodName" />
@@ -16,14 +16,14 @@
   <sql id="Base_Column_List">
     id, mcp_method, method_name, authorization, sk_hash, user_id, tenant_id, request_params, response_result, create_time
   </sql>
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpRequestLog" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.McpRequestLog" useGeneratedKeys="true">
     insert into mcp_request_log
     (mcp_method, method_name, authorization, sk_hash, user_id, tenant_id, request_params, response_result, create_time)
     values
     (#{mcpMethod,jdbcType=VARCHAR}, #{methodName,jdbcType=VARCHAR}, #{authorization,jdbcType=LONGVARCHAR}, #{skHash,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR},
      #{tenantId,jdbcType=INTEGER}, #{requestParams,jdbcType=LONGVARCHAR}, #{responseResult,jdbcType=LONGVARCHAR}, #{createTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpRequestLog" useGeneratedKeys="true">
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.McpRequestLog" useGeneratedKeys="true">
     insert into mcp_request_log
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="mcpMethod != null">mcp_method,</if>

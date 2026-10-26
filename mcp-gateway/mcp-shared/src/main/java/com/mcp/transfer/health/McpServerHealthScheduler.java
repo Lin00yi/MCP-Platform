@@ -1,7 +1,7 @@
 package com.mcp.transfer.health;
 
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.mapper.McpServerMapper;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.mapper.McpServerMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 
 /**

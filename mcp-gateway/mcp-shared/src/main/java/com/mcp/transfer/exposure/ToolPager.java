@@ -1,6 +1,6 @@
 package com.mcp.transfer.exposure;
 
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.entity.McpTool;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

@@ -2,7 +2,7 @@ package com.mcp.transfer.admin.controller;
 
 import com.mcp.transfer.admin.security.AdminAuthContext;
 import com.mcp.transfer.catalog.McpDiscoveryService;
-import com.mcp.transfer.dto.Result;
+import com.mcp.transfer.shared.dto.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;

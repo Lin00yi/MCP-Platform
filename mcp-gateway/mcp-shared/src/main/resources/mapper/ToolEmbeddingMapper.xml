@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.ToolEmbeddingMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.ToolEmbedding">
+<mapper namespace="com.mcp.transfer.shared.mapper.ToolEmbeddingMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.ToolEmbedding">
     <id column="tool_id" jdbcType="INTEGER" property="toolId" />
     <result column="server_id" jdbcType="INTEGER" property="serverId" />
     <result column="model" jdbcType="VARCHAR" property="model" />
@@ -26,7 +26,7 @@
     where server_id = #{serverId,jdbcType=INTEGER}
   </select>
 
-  <insert id="upsert" parameterType="com.mcp.transfer.entity.ToolEmbedding">
+  <insert id="upsert" parameterType="com.mcp.transfer.shared.entity.ToolEmbedding">
     insert into mcp_tool_embedding (tool_id, server_id, model, dim, vector, update_time)
     values (#{toolId,jdbcType=INTEGER}, #{serverId,jdbcType=INTEGER}, #{model,jdbcType=VARCHAR},
             #{dim,jdbcType=INTEGER}, #{vector,jdbcType=LONGVARCHAR}, #{updateTime,jdbcType=TIMESTAMP})

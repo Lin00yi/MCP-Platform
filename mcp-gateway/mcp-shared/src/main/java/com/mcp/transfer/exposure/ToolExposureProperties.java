@@ -25,7 +25,7 @@ public class ToolExposureProperties {
     private int assetPaginationMin = 500;
 
     /** 允许分页的客户端名称正则（逗号分隔，大小写不敏感）；空=不分页客户端限制 */
-    private String paginationClients = "";
+    private String paginationClients = "codex,claude,dsh,cursor,workbuddy";
 
     /** 未识别客户端且工具数超过阈值时的策略：PAGINATE（默认）/ ALL */
     private String paginationUnknownPolicy = "PAGINATE";

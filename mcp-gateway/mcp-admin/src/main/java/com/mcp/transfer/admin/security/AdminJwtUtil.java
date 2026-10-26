@@ -76,8 +76,36 @@ public class AdminJwtUtil {
         return profiles != null && profiles.toLowerCase().contains("prod");
     }
 
-    /** 过期时间：24 小时 */
-    private static final long EXPIRE_MS = 24 * 60 * 60 * 1000L;
+    /** 登录有效期默认值：7 天（168 小时） */
+    public static final long DEFAULT_TTL_MS = 7L * 24 * 60 * 60 * 1000L;
+
+    /** 登录有效期下限：1 小时，避免误配成几乎立即过期 */
+    public static final long MIN_TTL_MS = 60L * 60 * 1000L;
+
+    /** 登录有效期上限：7 天（168 小时），超过按上限处理 */
+    public static final long MAX_TTL_MS = 7L * 24 * 60 * 60 * 1000L;
+
+    /** 当前登录有效期（毫秒），由 {@code mcp.admin.jwt-ttl-hours} 注入 */
+    private static volatile long ttlMillis = DEFAULT_TTL_MS;
+
+    /**
+     * 设置登录有效期（小时）。
+     *
+     * <p>支持 1～168 小时（最长 7 天）：低于 1 小时按 1 小时、高于 168 小时按 168 小时处理并告警，
+     * 防止误配出超长期登录态。
+     */
+    public static void setTtlHours(long hours) {
+        long clamped = Math.max(1L, Math.min(168L, hours));
+        if (clamped != hours) {
+            log.warn("[ADMIN_JWT] 登录有效期 {} 小时超出 [1, 168] 范围，按 {} 小时处理", hours, clamped);
+        }
+        ttlMillis = clamped * 60L * 60L * 1000L;
+    }
+
+    /** 当前登录有效期（毫秒） */
+    public static long getTtlMillis() {
+        return ttlMillis;
+    }
 
     public static String sign(Long userId, String username, String role, Date userUpdateTime) {
         byte[] key = SECRET.getBytes(StandardCharsets.UTF_8);
@@ -89,7 +117,7 @@ public class AdminJwtUtil {
                 // 用户记录版本：update_time 变化（改密/禁用/角色变更）后旧 token 失效
                 .setPayload("uat", userUpdateTime == null ? 0L : userUpdateTime.getTime())
                 .setIssuedAt(new Date(now))
-                .setExpiresAt(new Date(now + EXPIRE_MS))
+                .setExpiresAt(new Date(now + ttlMillis))
                 .setKey(key)
                 .sign();
     }

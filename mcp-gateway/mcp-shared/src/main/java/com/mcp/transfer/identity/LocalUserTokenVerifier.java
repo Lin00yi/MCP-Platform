@@ -1,6 +1,6 @@
 package com.mcp.transfer.identity;
 
-import com.mcp.transfer.utils.SecretCrypto;
+import com.mcp.transfer.shared.utils.SecretCrypto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

@@ -3,7 +3,7 @@ package com.mcp.transfer.config.filter;
 import com.mcp.transfer.identity.UserIdentity;
 import com.mcp.transfer.identity.UserTokenProperties;
 import com.mcp.transfer.identity.UserTokenVerifier;
-import com.mcp.transfer.utils.SecretCrypto;
+import com.mcp.transfer.shared.utils.SecretCrypto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

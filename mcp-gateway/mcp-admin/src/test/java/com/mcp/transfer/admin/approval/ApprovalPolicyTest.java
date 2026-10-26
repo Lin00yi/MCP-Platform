@@ -1,7 +1,7 @@
 package com.mcp.transfer.admin.approval;
 
-import com.mcp.transfer.enums.ApprovalAction;
-import com.mcp.transfer.enums.RoleEnum;
+import com.mcp.transfer.shared.enums.ApprovalAction;
+import com.mcp.transfer.shared.enums.RoleEnum;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

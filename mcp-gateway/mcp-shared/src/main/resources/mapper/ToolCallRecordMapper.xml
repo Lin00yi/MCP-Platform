@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.ToolCallRecordMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.ToolCallRecord">
+<mapper namespace="com.mcp.transfer.shared.mapper.ToolCallRecordMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.ToolCallRecord">
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
     <result column="tenant_name" jdbcType="VARCHAR" property="tenantName" />
@@ -42,7 +42,7 @@
     </choose>
   </sql>
 
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.ToolCallRecord" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.ToolCallRecord" useGeneratedKeys="true">
     insert into tool_call_record
     (tenant_id, tenant_name, server_id, server_name, app_id, user_id, user_name, method_def_id, method_code, method_name,
      request_args, response_result, call_type, http_method, target_url,
@@ -56,7 +56,7 @@
      #{success,jdbcType=INTEGER}, #{errorMsg,jdbcType=LONGVARCHAR}, #{duration,jdbcType=BIGINT},
      #{createTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.ToolCallRecord" useGeneratedKeys="true">
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.ToolCallRecord" useGeneratedKeys="true">
     insert into tool_call_record
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="tenantId != null">tenant_id,</if>
@@ -101,6 +101,31 @@
       <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
     </trim>
   </insert>
+
+  <!-- 数据面异步批量写入（单批建议 <= 200 条） -->
+  <insert id="insertBatch">
+    insert into tool_call_record
+    (tenant_id, tenant_name, server_id, server_name, app_id, user_id, user_name, method_def_id, method_code, method_name,
+     request_args, response_result, call_type, http_method, target_url,
+     success, error_msg, duration, create_time)
+    values
+    <foreach collection="records" item="r" separator=",">
+      (#{r.tenantId,jdbcType=INTEGER}, #{r.tenantName,jdbcType=VARCHAR}, #{r.serverId,jdbcType=INTEGER},
+       #{r.serverName,jdbcType=VARCHAR}, #{r.appId,jdbcType=VARCHAR}, #{r.userId,jdbcType=VARCHAR},
+       #{r.userName,jdbcType=VARCHAR}, #{r.methodDefId,jdbcType=INTEGER}, #{r.methodCode,jdbcType=VARCHAR},
+       #{r.methodName,jdbcType=VARCHAR}, #{r.requestArgs,jdbcType=LONGVARCHAR},
+       #{r.responseResult,jdbcType=LONGVARCHAR}, #{r.callType,jdbcType=VARCHAR},
+       #{r.httpMethod,jdbcType=VARCHAR}, #{r.targetUrl,jdbcType=VARCHAR},
+       #{r.success,jdbcType=INTEGER}, #{r.errorMsg,jdbcType=LONGVARCHAR}, #{r.duration,jdbcType=BIGINT},
+       #{r.createTime,jdbcType=TIMESTAMP})
+    </foreach>
+  </insert>
+
+  <!-- 日志保留策略：删除超期调用记录 -->
+  <delete id="deleteOlderThan">
+    delete from tool_call_record
+    where create_time &lt; #{before,jdbcType=TIMESTAMP}
+  </delete>
 
   <!--管理后台：分页查询工具调用记录（success / tenantIds 可选过滤）-->
   <select id="selectAllWithPage" resultMap="BaseResultMap">

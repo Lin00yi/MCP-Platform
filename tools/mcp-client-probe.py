@@ -3,7 +3,7 @@
 
 用法：
   python3 tools/mcp-client-probe.py \
-    --url http://127.0.0.1:8081/mcp/v1/pcb-server \
+    --url http://127.0.0.1:8081/mcp/e/pcb \
     --token-file /path/to/token
 
 输出 JSON，可直接贴进客户端兼容矩阵。
@@ -22,7 +22,7 @@ HEADERS = {"Content-Type": "application/json", "Accept": "application/json, text
 def call(url: str, token: str, payload: dict, sid: str | None = None):
     headers = dict(HEADERS)
     if token:
-        headers["Authorization"] = "Bearer " + token
+        headers["x-dsh-auth-token"] = token
     if sid:
         headers["Mcp-Session-Id"] = sid
     req = urllib.request.Request(url, data=json.dumps(payload).encode(), method="POST", headers=headers)
@@ -41,7 +41,7 @@ def call(url: str, token: str, payload: dict, sid: str | None = None):
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--url", default="http://127.0.0.1:8081/mcp/v1/pcb-server")
+    parser.add_argument("--url", default="http://127.0.0.1:8081/mcp/e/pcb")
     parser.add_argument("--token-file", default="")
     parser.add_argument("--token", default="")
     parser.add_argument("--query", default="add")

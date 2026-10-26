@@ -39,7 +39,10 @@ export function ServerResourcesTab({ serverId }: { serverId: number }) {
   const [form, setForm] = useState({ uri: "", name: "", status: 1, resJson: "", version: "1.0.0", tags: "" });
   const [deleteTarget, setDeleteTarget] = useState<McpResource | null>(null);
 
-  const { data: allResources, isLoading, isError, error } = useQuery({ queryKey: ["resources"], queryFn: api.listResources });
+  const { data: allResources, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["resources"],
+    queryFn: ({ signal }) => api.listResources(signal),
+  });
   const resources = useMemo(() => (allResources ?? []).filter((r) => r.serverId === serverId), [allResources, serverId]);
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["resources"] });
 
@@ -63,7 +66,7 @@ export function ServerResourcesTab({ serverId }: { serverId: number }) {
   const openEdit = (r: McpResource) => { setEditing(r); setForm({ uri: r.uri, name: r.name, status: r.status, resJson: r.resJson, version: r.version ?? "1.0.0", tags: r.tags ?? "" }); setDialogOpen(true); };
 
   if (isLoading) return <LoadingState label="加载 Resource…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-4">

@@ -48,11 +48,14 @@ export function EndpointsPage() {
   const [nsPicker, setNsPicker] = useState<{ ep: EndpointVO; ids: number[] } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<EndpointVO | null>(null);
 
-  const { data: endpoints, isLoading, isError, error } = useQuery({
+  const { data: endpoints, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["endpoints"],
-    queryFn: api.listEndpoints,
+    queryFn: ({ signal }) => api.listEndpoints(signal),
   });
-  const { data: namespaces } = useQuery<NamespaceVO[]>({ queryKey: ["namespaces"], queryFn: api.listNamespaces });
+  const { data: namespaces } = useQuery<NamespaceVO[]>({
+    queryKey: ["namespaces"],
+    queryFn: ({ signal }) => api.listNamespaces(signal),
+  });
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["endpoints"] });
@@ -113,7 +116,7 @@ export function EndpointsPage() {
   };
 
   if (isLoading) return <LoadingState label="加载 Endpoint…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-4">

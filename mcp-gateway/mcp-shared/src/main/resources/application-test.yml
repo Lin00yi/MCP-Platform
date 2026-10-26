@@ -2,7 +2,7 @@ spring:
   # 测试环境数据源：通过环境变量注入
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-    url: ${MCP_DB_URL:jdbc:mysql://127.0.0.1:3306/xaxsuatdb-test?useSSL=false&serverTimezone=Asia/Shanghai}
+    url: ${MCP_DB_URL:jdbc:mysql://127.0.0.1:3306/mcp_gateway?useSSL=false&serverTimezone=Asia/Shanghai}
     username: ${MCP_DB_USERNAME:}
     password: ${MCP_DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -30,7 +30,7 @@ spring:
 
 logging:
   level:
-    com.mcp.transfer.mapper: INFO
+    com.mcp.transfer.shared.mapper: INFO
     org.apache.ibatis: INFO
 
 springdoc:

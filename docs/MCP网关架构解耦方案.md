@@ -312,17 +312,17 @@ gateway 内置一个 MCP client（`MCP Upstream Client`），作为第二跳的 
 
 | 目标模块 | 现有代码 | 待建 |
 |---|---|---|
-| 数据面核心（第一跳 server 端） | `McpController`、`McpServiceImpl`、`McpServerDynamicControllerManager`、`SseEmitterRegistry`、`ToolListCache`、`UrlSecurityValidator`、`SecretCrypto` | 物理拆分时迁入独立 gateway 服务 |
+| 数据面核心（Endpoint 入口） | `McpEndpointController`、`McpAggregateService`、`McpUpstreamClient`、`SseEmitterRegistry`、`ToolListCache`、`UrlSecurityValidator`、`SecretCrypto`；旧 `McpController` / 动态路由已删除 | 已迁入 `mcp-dataplane` |
 | 控制面核心 | `McpAdminController`、`AdminAuthController`、`McpRequestLogController`、`McpServerAdminController`、`AdminAuthServiceImpl` | 物理拆分时迁入独立 admin 服务 |
 | 工具聚合/命名空间（跨多下游合并） | `McpUpstreamClient` 的 `AGGREGATE` 模式：`{name}__{tool}` 前缀合并 + 按前缀路由 + 每上游独立会话 | — |
-| 物理拆分（两服务） | ✅ Admin / Dataplane 拆为独立部署（Registry 并入数据面） | 多实例扩容（需先做状态外置） |
+| 物理拆分（两服务） | ✅ Admin / Dataplane 拆为独立部署（Registry 并入数据面） | 多实例扩容 ✅ 状态外置已完成 |
 
 ### 9.3 分包边界（P0，已落地）
 
-- `com.mcp.transfer.gateway.*`：数据面（McpController、McpService/Impl、McpUpstreamClient；变更事件改为 `cluster.*`）
+- `com.mcp.transfer.gateway.*`：数据面（Endpoint 控制器、聚合服务、McpUpstreamClient、变更事件 `cluster.*`）
 - `com.mcp.transfer.admin.*`：控制面（McpAdminController、AdminAuthController、McpRequestLogController、McpServerAdminController、AdminAuthService/Impl）
 - `com.mcp.transfer.discovery.*`：注册中心前置（发现接口）
-- `com.mcp.transfer.entity` / `mapper` / `dto` / `config` / `enums`：共享层（实体/Mapper/DTO/配置/枚举，两平面共用）
+- `com.mcp.transfer.shared.entity` / `mapper` / `dto` / `config` / `enums`：共享层（实体/Mapper/DTO/配置/枚举，两平面共用）
 
 ---
 
@@ -333,6 +333,6 @@ gateway 内置一个 MCP client（`MCP Upstream Client`），作为第二跳的 
 | P0 逻辑解耦 | ✅ `gateway`（数据面）/ `admin`（控制面）/ `discovery`（注册中心前置）分包落地，`entity`/`mapper`/`dto`/`config` 为共享层 |
 | P1 MCP→MCP 代理转发 | ✅ 透明代理（单下游）+ 聚合代理（多下游 `{name}__` 前缀 + 路由）+ 两段会话 + 鉴权跳过 + session 映射 |
 | P2 客户端发现 API | ✅ `/mcp/discovery/**` + `tools/list` 元数据增强 |
-| P3 缓存失效分离 | ✅ `ToolChangeNotifier` |
+| P3 缓存失效分离 | ✅ `ClusterEventBus` + `ConfigChangeApplier`（替代 ToolChangeNotifier） |
 | P4 物理拆分 | ✅ 2026-10-22 落地两服务（S1 数据面 / S2 控制面）+ 共享内核：Maven 三模块、端口化、独立启动类、反向代理按路径分流、双服务部署。详见《服务拆分分析.md》第 9 章 |
-| P5 注册中心独立 / 数据面多副本 | ⏳ 未做：状态外置（session/SSE/上游会话）与探活单点仍是前置条件 |
+| P5 注册中心独立 / 数据面多副本 | ✅ 多副本已落地（Redis 会话/上游会话/事件、探活选主）；注册中心并入数据面，不再单独拆服务 |

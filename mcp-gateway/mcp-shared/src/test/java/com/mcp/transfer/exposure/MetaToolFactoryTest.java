@@ -1,6 +1,6 @@
 package com.mcp.transfer.exposure;
 
-import com.mcp.transfer.dto.mcp.result.tools.McpTool;
+import com.mcp.transfer.shared.dto.mcp.result.tools.McpTool;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;

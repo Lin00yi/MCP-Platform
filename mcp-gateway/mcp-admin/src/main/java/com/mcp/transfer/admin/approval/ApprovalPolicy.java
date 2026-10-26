@@ -1,8 +1,8 @@
 package com.mcp.transfer.admin.approval;
 
-import com.mcp.transfer.enums.ApprovalAction;
-import com.mcp.transfer.enums.ApprovalTier;
-import com.mcp.transfer.enums.RoleEnum;
+import com.mcp.transfer.shared.enums.ApprovalAction;
+import com.mcp.transfer.shared.enums.ApprovalTier;
+import com.mcp.transfer.shared.enums.RoleEnum;
 
 /**
  * 审批矩阵唯一事实来源（前后端都以此为准）。

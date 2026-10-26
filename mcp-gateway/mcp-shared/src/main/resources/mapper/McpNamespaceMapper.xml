@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.McpNamespaceMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpNamespace">
+<mapper namespace="com.mcp.transfer.shared.mapper.McpNamespaceMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.McpNamespace">
     <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
     <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="prefix" jdbcType="VARCHAR" property="prefix" />
     <result column="description" jdbcType="VARCHAR" property="description" />
@@ -11,7 +12,7 @@
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
   </resultMap>
 
-  <sql id="Base_Column_List">id, name, prefix, description, status, create_time, update_time</sql>
+  <sql id="Base_Column_List">id, tenant_id, name, prefix, description, status, create_time, update_time</sql>
 
   <select id="selectAll" resultMap="BaseResultMap">
     select <include refid="Base_Column_List" /> from mcp_namespace order by id asc
@@ -25,9 +26,10 @@
     select <include refid="Base_Column_List" /> from mcp_namespace where prefix = #{prefix,jdbcType=VARCHAR}
   </select>
 
-  <insert id="insertSelective" parameterType="com.mcp.transfer.entity.McpNamespace" useGeneratedKeys="true" keyProperty="id">
+  <insert id="insertSelective" parameterType="com.mcp.transfer.shared.entity.McpNamespace" useGeneratedKeys="true" keyProperty="id">
     insert into mcp_namespace
     <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="tenantId != null">tenant_id,</if>
       <if test="name != null">name,</if>
       <if test="prefix != null">prefix,</if>
       <if test="description != null">description,</if>
@@ -36,6 +38,7 @@
       <if test="updateTime != null">update_time,</if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="tenantId != null">#{tenantId,jdbcType=INTEGER},</if>
       <if test="name != null">#{name,jdbcType=VARCHAR},</if>
       <if test="prefix != null">#{prefix,jdbcType=VARCHAR},</if>
       <if test="description != null">#{description,jdbcType=VARCHAR},</if>
@@ -45,7 +48,7 @@
     </trim>
   </insert>
 
-  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.entity.McpNamespace">
+  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.shared.entity.McpNamespace">
     update mcp_namespace
     <set>
       <if test="name != null">name = #{name,jdbcType=VARCHAR},</if>

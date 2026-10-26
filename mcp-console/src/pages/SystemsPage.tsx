@@ -35,9 +35,9 @@ export function SystemsPage() {
   const [editing, setEditing] = useState<ServiceSystem | null>(null);
   const [authUrl, setAuthUrl] = useState("");
 
-  const { data: systems, isLoading, isError, error } = useQuery({
+  const { data: systems, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["service-systems"],
-    queryFn: api.listServiceSystems,
+    queryFn: ({ signal }) => api.listServiceSystems(signal),
   });
 
   const saveMutation = useMutation({
@@ -56,7 +56,7 @@ export function SystemsPage() {
   };
 
   if (isLoading) return <LoadingState label="加载系统服务…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-4">

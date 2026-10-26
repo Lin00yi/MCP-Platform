@@ -20,4 +20,10 @@ public class UserTokenProperties {
 
     /** 身份缓存 TTL（秒）；0=不缓存 */
     private int cacheTtlSeconds = 30;
+
+    /**
+     * 本地静态 token（仅开发/E2E）：{@code token|userId|userName|customerId|scopes}，多条用 ; 分隔。
+     * 为空时由 user-center 提供的 UserTokenStore 接管；未提供时受保护请求返回 503。
+     */
+    private String staticTokens;
 }

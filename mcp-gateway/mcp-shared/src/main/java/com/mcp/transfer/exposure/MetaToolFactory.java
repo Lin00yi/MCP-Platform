@@ -1,7 +1,7 @@
 package com.mcp.transfer.exposure;
 
 import com.alibaba.fastjson.JSON;
-import com.mcp.transfer.dto.mcp.result.tools.McpTool;
+import com.mcp.transfer.shared.dto.mcp.result.tools.McpTool;
 
 import java.util.ArrayList;
 import java.util.Arrays;

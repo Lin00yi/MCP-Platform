@@ -314,7 +314,8 @@ GROUP BY r.app_id;
 -- 6.3 下游内部 JWT 配置（JWE 公钥为 PEM；执行前先确认列不存在）
 ALTER TABLE mcp_server
   ADD COLUMN audience VARCHAR(128) COMMENT '内部 JWT aud，默认 server-{id}',
-  ADD COLUMN identity_public_key LONGTEXT COMMENT '下游 JWE 公钥（PEM/JWK）';
+  ADD COLUMN identity_public_key LONGTEXT COMMENT '下游 JWE 公钥（PEM/JWK）',
+  ADD COLUMN identity_mode VARCHAR(16) NOT NULL DEFAULT 'INHERIT' COMMENT '身份下传覆盖：INHERIT/OFF/OPTIONAL/REQUIRED';
 
 
 -- ============================================================
@@ -387,8 +388,7 @@ ALTER TABLE approval_request
   ADD COLUMN payload MEDIUMTEXT COMMENT '执行快照 JSON（落库前加密）',
   ADD COLUMN requester_role VARCHAR(32) NULL COMMENT '申请人角色',
   ADD COLUMN approver_role VARCHAR(32) NULL COMMENT '审批人角色',
-  ADD COLUMN comment VARCHAR(500) NULL COMMENT '审批意见',
-  ADD COLUMN result_secret TEXT NULL COMMENT '审批通过后生成的一次性凭证密文';
+  ADD COLUMN comment VARCHAR(500) NULL COMMENT '审批意见';
 
 -- 9.3 回填历史数据的 action，并收紧非空约束
 UPDATE approval_request

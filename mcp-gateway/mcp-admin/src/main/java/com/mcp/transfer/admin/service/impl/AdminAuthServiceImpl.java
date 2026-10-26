@@ -4,16 +4,18 @@ import cn.hutool.crypto.digest.BCrypt;
 import com.mcp.transfer.admin.service.AdminAuthService;
 import com.mcp.transfer.admin.service.LoginAttemptService;
 import com.mcp.transfer.admin.security.AdminAuthContext;
-import com.mcp.transfer.dto.AdminUserRequest;
-import com.mcp.transfer.dto.AdminUserVO;
-import com.mcp.transfer.dto.LoginRequest;
-import com.mcp.transfer.dto.LoginResult;
-import com.mcp.transfer.dto.Result;
-import com.mcp.transfer.entity.AdminUser;
-import com.mcp.transfer.entity.AdminUserTenant;
-import com.mcp.transfer.enums.RoleEnum;
-import com.mcp.transfer.mapper.AdminUserMapper;
-import com.mcp.transfer.mapper.AdminUserTenantMapper;
+import com.mcp.transfer.shared.dto.AdminUserRequest;
+import com.mcp.transfer.shared.dto.AdminUserVO;
+import com.mcp.transfer.shared.dto.LoginRequest;
+import com.mcp.transfer.shared.dto.LoginResult;
+import com.mcp.transfer.shared.dto.Result;
+import com.mcp.transfer.shared.entity.AdminUser;
+import com.mcp.transfer.shared.entity.AdminUserTenant;
+import com.mcp.transfer.shared.entity.OperationLog;
+import com.mcp.transfer.shared.enums.RoleEnum;
+import com.mcp.transfer.shared.mapper.AdminUserMapper;
+import com.mcp.transfer.shared.mapper.AdminUserTenantMapper;
+import com.mcp.transfer.shared.mapper.OperationLogMapper;
 import com.mcp.transfer.admin.security.AdminJwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,16 +53,19 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     private AdminUserTenantMapper adminUserTenantMapper;
 
     @Autowired
-    private com.mcp.transfer.mapper.ApprovalRequestMapper approvalRequestMapper;
+    private com.mcp.transfer.shared.mapper.ApprovalRequestMapper approvalRequestMapper;
 
     @Autowired
     private LoginAttemptService loginAttemptService;
 
     @Autowired
+    private OperationLogMapper operationLogMapper;
+
+    @Autowired
     private org.springframework.core.env.Environment environment;
 
     /** 生产环境必须配置管理端 JWT 密钥，避免以启动参数方式指定 prod 时仍落到默认密钥 */
-    @javax.annotation.PostConstruct
+    @jakarta.annotation.PostConstruct
     public void checkJwtSecret() {
         boolean prod = false;
         for (String profile : environment.getActiveProfiles()) {
@@ -86,18 +91,22 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         }
         String username = request.getUsername().trim();
         if (loginAttemptService.isBlocked(username, clientIp)) {
+            auditAs(username, "LOGIN_BLOCKED", "AUTH", username, "ip=" + clientIp + ", reason=locked");
             return Result.fail("登录失败次数过多，请 15 分钟后再试");
         }
 
         AdminUser user = adminUserMapper.selectByUsername(username);
         if (user == null || !BCrypt.checkpw(request.getPassword(), user.getPassword())) {
             loginAttemptService.onFailure(username, clientIp);
+            auditAs(username, "LOGIN_FAILED", "AUTH", username, "ip=" + clientIp + ", reason=bad-credentials");
             return Result.fail("用户名或密码错误");
         }
         if (user.getStatus() != null && user.getStatus() != 1) {
+            auditAs(username, "LOGIN_FAILED", "AUTH", username, "ip=" + clientIp + ", reason=disabled");
             return Result.fail("账号已被禁用");
         }
         loginAttemptService.onSuccess(username, clientIp);
+        auditAs(username, "LOGIN", "AUTH", username, "ip=" + clientIp);
 
         String token = AdminJwtUtil.sign(user.getId(), user.getUsername(), user.getRole(), user.getUpdateTime());
         List<Integer> tenantIds = adminUserTenantMapper.selectTenantIdsByUserId(user.getId());
@@ -212,6 +221,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         adminUserMapper.insertSelective(user);
 
         saveTenantRels(user.getId(), finalTenantIds);
+        audit("CREATE", "USER", String.valueOf(user.getId()),
+                "username=" + user.getUsername() + ", role=" + user.getRole());
         return AdminUserVO.from(user, finalTenantIds == null ? Collections.emptyList() : finalTenantIds);
     }
 
@@ -292,6 +303,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
         AdminUser refreshed = adminUserMapper.selectByPrimaryKey(id);
         List<Integer> tenantIds = adminUserTenantMapper.selectTenantIdsByUserId(id);
+        audit("UPDATE", "USER", String.valueOf(id),
+                "username=" + refreshed.getUsername() + (StringUtils.hasText(request.getPassword()) ? ", passwordReset=true" : ""));
         return AdminUserVO.from(refreshed, tenantIds);
     }
 
@@ -322,6 +335,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         approvalRequestMapper.cancelPendingByRequester(user.getUsername());
         approvalRequestMapper.deleteByUserId(id);
         adminUserMapper.deleteByPrimaryKey(id);
+        audit("DELETE", "USER", String.valueOf(id), "username=" + user.getUsername());
     }
 
     @Override
@@ -346,6 +360,40 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         // update_time 变化会让旧 token 的 uat 失配，实现“改密即下线”
         update.setUpdateTime(new Date());
         adminUserMapper.updateByPrimaryKeySelective(update);
+        audit("PASSWORD_CHANGE", "USER", String.valueOf(userId), "username=" + user.getUsername());
+    }
+
+    /** 记录认证/用户管理审计（失败不影响主流程）。 */
+    private void audit(String action, String resourceType, String resourceId, String detail) {
+        AdminAuthContext ctx = AdminAuthContext.get();
+        String username = ctx != null && StringUtils.hasText(ctx.getUsername()) ? ctx.getUsername() : "anonymous";
+        Integer tenantId = null;
+        if (ctx != null && !ctx.isSuperAdmin() && ctx.getTenantIds() != null && ctx.getTenantIds().size() == 1) {
+            tenantId = ctx.getTenantIds().get(0);
+        }
+        auditAs(username, action, resourceType, resourceId, detail, tenantId);
+    }
+
+    /** 指定操作者的审计记录（登录场景没有 AdminAuthContext）。 */
+    private void auditAs(String username, String action, String resourceType, String resourceId, String detail) {
+        auditAs(username, action, resourceType, resourceId, detail, null);
+    }
+
+    private void auditAs(String username, String action, String resourceType, String resourceId, String detail,
+                         Integer tenantId) {
+        try {
+            OperationLog op = new OperationLog();
+            op.setUsername(username);
+            op.setTenantId(tenantId);
+            op.setAction(action);
+            op.setResourceType(resourceType);
+            op.setResourceId(resourceId);
+            op.setDetail(detail);
+            op.setCreateTime(new Date());
+            operationLogMapper.insertSelective(op);
+        } catch (Exception e) {
+            log.warn("[AUDIT] 记录认证/用户操作审计失败：{}", e.getMessage());
+        }
     }
 
     /** 当前操作用户的 tenantIds（超管返回 null 表示不过滤） */

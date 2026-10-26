@@ -1,8 +1,8 @@
 package com.mcp.transfer.exposure;
 
-import com.mcp.transfer.entity.McpTool;
-import com.mcp.transfer.entity.ToolEmbedding;
-import com.mcp.transfer.mapper.ToolEmbeddingMapper;
+import com.mcp.transfer.shared.entity.McpTool;
+import com.mcp.transfer.shared.entity.ToolEmbedding;
+import com.mcp.transfer.shared.mapper.ToolEmbeddingMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,7 +1,7 @@
 package com.mcp.transfer.health;
 
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.mapper.ToolCallRecordMapper;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.mapper.ToolCallRecordMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

@@ -2,7 +2,7 @@ package com.mcp.transfer.exposure;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.entity.McpTool;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;

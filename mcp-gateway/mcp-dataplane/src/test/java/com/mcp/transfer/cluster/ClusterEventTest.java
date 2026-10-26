@@ -26,9 +26,9 @@ class ClusterEventTest {
 
     @Test
     void nullServerIdRoundTrip() {
-        ClusterEvent parsed = ClusterEvent.fromJson(ClusterEvent.of(ClusterEvent.Type.ROUTES, null).toJson());
+        ClusterEvent parsed = ClusterEvent.fromJson(ClusterEvent.of(ClusterEvent.Type.SERVER, null).toJson());
         assertNotNull(parsed);
-        assertEquals(ClusterEvent.Type.ROUTES, parsed.getType());
+        assertEquals(ClusterEvent.Type.SERVER, parsed.getType());
         assertEquals(null, parsed.getServerId());
     }
 

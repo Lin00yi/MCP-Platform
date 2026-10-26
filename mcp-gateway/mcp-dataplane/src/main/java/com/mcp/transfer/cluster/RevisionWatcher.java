@@ -1,7 +1,7 @@
 package com.mcp.transfer.cluster;
 
-import com.mcp.transfer.mapper.McpServerMapper;
-import com.mcp.transfer.mapper.McpToolMapper;
+import com.mcp.transfer.shared.mapper.McpServerMapper;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

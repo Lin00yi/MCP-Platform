@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
@@ -9,39 +10,60 @@ import {
   Server,
   Timer,
   TrendingUp,
-  XCircle,
 } from "lucide-react";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip as RechartsTooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { api } from "@/lib/api";
 import { formatDuration } from "@/lib/utils";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard, LoadingState, ErrorState } from "@/components/PageState";
 
-const PIE_COLORS = ["hsl(142 71% 45%)", "hsl(199 89% 48%)", "hsl(262 83% 58%)", "hsl(45 93% 47%)", "hsl(0 72% 51%)"];
+/**
+ * 图表区块单独成 chunk 懒加载：recharts + d3 依赖体积大（原产物约 876KB），
+ * 而登录后的默认落地页就是概览页，首屏先渲染指标卡更划算。
+ */
+const DashboardCharts = lazy(() =>
+  import("@/pages/DashboardCharts").then((m) => ({ default: m.DashboardCharts })),
+);
+
+/** 图表 chunk 下载期间的结构骨架，避免内容出现时布局跳动 */
+function ChartsSkeleton() {
+  return (
+    <div className="space-y-6" aria-busy="true" aria-live="polite">
+      <div className="rounded-xl border bg-card">
+        <div className="space-y-2 p-6">
+          <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-48 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="px-6 pb-6">
+          <div className="h-[300px] w-full animate-pulse rounded-lg bg-muted/60" />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {[0, 1].map((i) => (
+          <div key={i} className="rounded-xl border bg-card">
+            <div className="space-y-2 p-6">
+              <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-40 animate-pulse rounded bg-muted" />
+            </div>
+            <div className="px-6 pb-6">
+              <div className="h-[300px] w-full animate-pulse rounded-lg bg-muted/60" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function DashboardPage() {
   const navigate = useNavigate();
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["overview"],
-    queryFn: api.getOverview,
+    queryFn: ({ signal }) => api.getOverview(signal),
   });
 
   if (isLoading) return <LoadingState label="加载概览数据…" />;
-  if (isError || !data) return <ErrorState message={(error as Error)?.message ?? "未知错误"} />;
+  if (isError || !data) {
+    return <ErrorState message={(error as Error)?.message ?? "未知错误"} onRetry={() => void refetch()} />;
+  }
 
   const { stats, trend, toolDist, callTypeDist } = data;
   const successRate = stats.toolCalls ? ((stats.successCount / stats.toolCalls) * 100).toFixed(1) : "0";
@@ -117,130 +139,16 @@ export function DashboardPage() {
         <StatCard title="请求总量" value={stats.totalRequests.toLocaleString()} icon={Clock} />
       </div>
 
-      {/* 趋势图 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>请求趋势</CardTitle>
-          <CardDescription>近 14 天请求量与成功/失败分布</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trend} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="fillRequests" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(142 71% 45%)" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="hsl(142 71% 45%)" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="fillFailed" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(0 72% 51%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(0 72% 51%)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(217 33% 20%)" />
-                <XAxis dataKey="time" tick={{ fontSize: 12, fill: "hsl(215 20% 65%)" }} stroke="hsl(217 33% 20%)" />
-                <YAxis tick={{ fontSize: 12, fill: "hsl(215 20% 65%)" }} stroke="hsl(217 33% 20%)" />
-                <RechartsTooltip
-                  contentStyle={{
-                    background: "hsl(217 33% 13%)",
-                    border: "1px solid hsl(217 33% 20%)",
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                />
-                <Area type="monotone" dataKey="requests" name="请求量" stroke="hsl(142 71% 45%)" fill="url(#fillRequests)" strokeWidth={2} />
-                <Area type="monotone" dataKey="failed" name="失败" stroke="hsl(0 72% 51%)" fill="url(#fillFailed)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 分布图 */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Tool 调用分布</CardTitle>
-            <CardDescription>按 Tool 统计调用次数</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={toolDist} layout="vertical" margin={{ top: 0, right: 16, left: 8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(217 33% 20%)" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 12, fill: "hsl(215 20% 65%)" }} stroke="hsl(217 33% 20%)" />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={190}
-                    tick={{ fontSize: 11, fill: "hsl(215 20% 65%)" }}
-                    stroke="hsl(217 33% 20%)"
-                  />
-                  <RechartsTooltip
-                    contentStyle={{
-                      background: "hsl(217 33% 13%)",
-                      border: "1px solid hsl(217 33% 20%)",
-                      borderRadius: 8,
-                      fontSize: 12,
-                    }}
-                  />
-                  <Bar dataKey="value" name="调用次数" fill="hsl(142 71% 45%)" radius={[0, 4, 4, 0]} barSize={16} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>调用类型分布</CardTitle>
-            <CardDescription>本地反射 vs 外部 HTTP 转发</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex h-[300px] items-center">
-              <div className="h-full flex-1">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={callTypeDist}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={4}
-                    >
-                      {callTypeDist.map((_, i) => (
-                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip
-                      contentStyle={{
-                        background: "hsl(217 33% 13%)",
-                        border: "1px solid hsl(217 33% 20%)",
-                        borderRadius: 8,
-                        fontSize: 12,
-                      }}
-                    />
-                    <Legend verticalAlign="bottom" iconType="circle" formatter={(v) => <span style={{ fontSize: 12 }}>{v}</span>} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="space-y-3 pr-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  <span className="text-muted-foreground">成功</span>
-                  <span className="ml-auto font-mono text-foreground">{stats.successCount.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <XCircle className="h-4 w-4 text-destructive" />
-                  <span className="text-muted-foreground">失败</span>
-                  <span className="ml-auto font-mono text-foreground">{stats.failCount.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* 图表区块：懒加载，加载期间展示骨架 */}
+      <Suspense fallback={<ChartsSkeleton />}>
+        <DashboardCharts
+          trend={trend}
+          toolDist={toolDist}
+          callTypeDist={callTypeDist}
+          successCount={stats.successCount}
+          failCount={stats.failCount}
+        />
+      </Suspense>
     </div>
   );
 }

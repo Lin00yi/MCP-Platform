@@ -39,7 +39,10 @@ export function ServerPromptsTab({ serverId }: { serverId: number }) {
   const [form, setForm] = useState({ name: "", status: 1, resJson: "", version: "1.0.0", tags: "" });
   const [deleteTarget, setDeleteTarget] = useState<McpPrompt | null>(null);
 
-  const { data: allPrompts, isLoading, isError, error } = useQuery({ queryKey: ["prompts"], queryFn: api.listPrompts });
+  const { data: allPrompts, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["prompts"],
+    queryFn: ({ signal }) => api.listPrompts(signal),
+  });
   const prompts = useMemo(() => (allPrompts ?? []).filter((p) => p.serverId === serverId), [allPrompts, serverId]);
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["prompts"] });
 
@@ -63,7 +66,7 @@ export function ServerPromptsTab({ serverId }: { serverId: number }) {
   const openEdit = (p: McpPrompt) => { setEditing(p); setForm({ name: p.name, status: p.status, resJson: p.resJson, version: p.version ?? "1.0.0", tags: p.tags ?? "" }); setDialogOpen(true); };
 
   if (isLoading) return <LoadingState label="加载 Prompt…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-4">

@@ -1,11 +1,11 @@
 package com.mcp.transfer.health;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.entity.McpTool;
-import com.mcp.transfer.mapper.McpToolMapper;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpTool;
+import com.mcp.transfer.identity.IdentityAssertionResolver;
+import com.mcp.transfer.identity.IdentityRequiredException;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
+import com.mcp.transfer.upstream.UpstreamDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,10 @@ public class McpServerHealthProbe {
     private ApplicationContext applicationContext;
 
     @Autowired
-    private com.mcp.transfer.config.security.UrlSecurityValidator urlSecurityValidator;
+    private com.mcp.transfer.shared.config.security.UrlSecurityValidator urlSecurityValidator;
+
+    @Autowired
+    private IdentityAssertionResolver identityAssertionResolver;
 
     public McpServerHealthProbe() {
         this.webClient = WebClient.builder()
@@ -61,16 +64,16 @@ public class McpServerHealthProbe {
         String type = server.getUpstreamType() == null ? "NONE" : server.getUpstreamType().toUpperCase();
         switch (type) {
             case "MCP":
-                return probeSingle(server.getUpstreamUrl());
+                return probeSingle(server, server.getUpstreamUrl(), null);
             case "AGGREGATE":
-                return probeAggregate(server.getUpstreamUrl());
+                return probeAggregate(server);
             default:
                 return probeLocal(server);
         }
     }
 
-    /** 单下游：initialize 探活 */
-    private ProbeResult probeSingle(String url) {
+    /** 单下游：initialize 探活；身份下传开启时带 service 断言 */
+    private ProbeResult probeSingle(McpServer server, String url, UpstreamDef upstream) {
         if (!StringUtils.hasText(url)) {
             return ProbeResult.fail(0, "未配置 upstream_url");
         }
@@ -78,9 +81,20 @@ public class McpServerHealthProbe {
         try {
             // 与数据面一致：探活前同样做 SSRF 校验，避免通过 upstream_url 探测内网
             urlSecurityValidator.validate(url);
-            ResponseEntity<String> resp = webClient.post()
+            String probeToken;
+            try {
+                probeToken = identityAssertionResolver.resolveForHealth(server, upstream);
+            } catch (IdentityRequiredException e) {
+                return ProbeResult.fail(System.currentTimeMillis() - start, e.getMessage());
+            }
+            WebClient.RequestBodySpec spec = webClient.post()
                     .uri(url)
                     .contentType(MediaType.APPLICATION_JSON)
+                    .header("Accept", MediaType.APPLICATION_JSON_VALUE + ", " + MediaType.TEXT_EVENT_STREAM_VALUE);
+            if (StringUtils.hasText(probeToken)) {
+                spec.header("Authorization", "Bearer " + probeToken);
+            }
+            ResponseEntity<String> resp = spec
                     .bodyValue(INIT_BODY)
                     .retrieve()
                     .toEntity(String.class)
@@ -97,39 +111,31 @@ public class McpServerHealthProbe {
     }
 
     /** 聚合：逐个上游探测，任一失败即降级 */
-    private ProbeResult probeAggregate(String upstreamUrl) {
+    private ProbeResult probeAggregate(McpServer server) {
         long start = System.currentTimeMillis();
-        JSONArray arr;
-        try {
-            arr = JSON.parseArray(upstreamUrl);
-        } catch (Exception e) {
-            return ProbeResult.fail(0, "upstream_url 不是合法 JSON 数组");
-        }
-        if (arr == null || arr.isEmpty()) {
-            return ProbeResult.fail(0, "未配置上游");
+        List<UpstreamDef> upstreams = UpstreamDef.parseList(server.getUpstreamUrl());
+        if (upstreams.isEmpty()) {
+            return ProbeResult.fail(0, "未配置上游或 upstream_url 不是合法 JSON 数组");
         }
         int okCount = 0;
         StringBuilder failed = new StringBuilder();
-        for (int i = 0; i < arr.size(); i++) {
-            JSONObject o = arr.getJSONObject(i);
-            String name = o.getString("name");
-            String url = o.getString("url");
-            ProbeResult r = probeSingle(url);
+        for (UpstreamDef u : upstreams) {
+            ProbeResult r = probeSingle(server, u.getUrl(), u);
             if (r.ok) {
                 okCount++;
             } else {
                 if (failed.length() > 0) failed.append("; ");
-                failed.append(name).append(": ").append(r.message);
+                failed.append(u.getName()).append(": ").append(r.message);
             }
         }
         long cost = System.currentTimeMillis() - start;
-        if (okCount == arr.size()) {
+        if (okCount == upstreams.size()) {
             return ProbeResult.ok(cost, "全部 " + okCount + " 个上游正常");
         }
         if (okCount == 0) {
             return ProbeResult.fail(cost, "全部上游失败 → " + failed);
         }
-        return ProbeResult.fail(cost, "部分上游失败(" + (arr.size() - okCount) + "/" + arr.size() + ") → " + failed);
+        return ProbeResult.fail(cost, "部分上游失败(" + (upstreams.size() - okCount) + "/" + upstreams.size() + ") → " + failed);
     }
 
     /** 本地/REST：只校验本地工具类是否存在，不执行、不打下游 */

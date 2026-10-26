@@ -261,12 +261,15 @@ export function ServerToolsTab({ serverId }: { serverId: number }) {
   const [moveTargetId, setMoveTargetId] = useState<number | undefined>(undefined);
   const [moveGrantToApps, setMoveGrantToApps] = useState(true);
 
-  const { data: allTools, isLoading, isError, error } = useQuery({
+  const { data: allTools, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["tools"],
-    queryFn: api.listTools,
+    queryFn: ({ signal }) => api.listTools(signal),
   });
-  const { data: systems } = useQuery({ queryKey: ["service-systems"], queryFn: api.listServiceSystems });
-  const { data: allServers } = useQuery({ queryKey: ["servers"], queryFn: api.listServers });
+  const { data: systems } = useQuery({
+    queryKey: ["service-systems"],
+    queryFn: ({ signal }) => api.listServiceSystems(signal),
+  });
+  const { data: allServers } = useQuery({ queryKey: ["servers"], queryFn: ({ signal }) => api.listServers(signal) });
 
   const tools = useMemo(
     () => (allTools ?? []).filter((t) => t.serverId === serverId),
@@ -278,7 +281,13 @@ export function ServerToolsTab({ serverId }: { serverId: number }) {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["tools"] });
 
   const testMutation = useMutation({
-    mutationFn: () => api.testToolConnection({ ...form, serverId, type: form.type as McpTool["type"] }),
+    mutationFn: () =>
+      api.testToolConnection({
+        ...form,
+        id: editing?.id,
+        serverId,
+        type: form.type as McpTool["type"],
+      }),
     onSuccess: (r) => setTestResult(r),
     onError: (e) => setTestResult({ ok: false, error: (e as Error).message }),
   });
@@ -351,12 +360,21 @@ export function ServerToolsTab({ serverId }: { serverId: number }) {
 
   const { data: policy } = useApprovalPolicy();
   const directCredential = isDirect(policy, "TOOL_CREDENTIAL_UPDATE");
+  /** 用户是否输入了新的鉴权配置（后端不回传明文，无法比对旧值：有输入即视为变更） */
+  const credentialProvided = form.authConfig.trim() !== "";
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const payload = { ...form, serverId, type: form.type as McpTool["type"] };
+      // 鉴权配置留空表示「保持原凭证不变」：不把该字段放进请求体，避免覆盖服务端已配置的凭证
+      const { authConfig, ...rest } = form;
+      const payload = {
+        ...rest,
+        serverId,
+        type: form.type as McpTool["type"],
+        ...(authConfig.trim() !== "" ? { authConfig } : {}),
+      };
       // 下游凭证变更属于 L2：开发者提交审批，管理员及以上直接保存
-      if (editing && !directCredential && (form.authConfig ?? "") !== (editing.authConfig ?? "")) {
+      if (editing && !directCredential && credentialProvided) {
         await api.createApproval({ action: "TOOL_CREDENTIAL_UPDATE", toolId: editing.id, payload });
         return { pending: true };
       }
@@ -490,7 +508,8 @@ export function ServerToolsTab({ serverId }: { serverId: number }) {
       needToken: m.needToken,
       bodyType: m.bodyType,
       authType: m.authType ?? "NONE",
-      authConfig: m.authConfig ?? "",
+      // 后端不再回传鉴权配置明文，编辑时一律从空开始；留空 = 保持原凭证不变
+      authConfig: "",
       paramMapping: m.paramMapping ?? "",
       resJson: m.resJson,
       tags: m.tags ?? "",
@@ -500,7 +519,7 @@ export function ServerToolsTab({ serverId }: { serverId: number }) {
   };
 
   if (isLoading) return <LoadingState label="加载 Tool…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-4">
@@ -709,7 +728,22 @@ export function ServerToolsTab({ serverId }: { serverId: number }) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="m-authcfg">鉴权配置 (JSON)</Label>
+                  <div className="flex items-center justify-between gap-1">
+                    <Label htmlFor="m-authcfg">鉴权配置 (JSON)</Label>
+                    {editing && (
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[10px]",
+                          editing.authConfigSet
+                            ? "border-emerald-500/40 text-emerald-400"
+                            : "text-muted-foreground",
+                        )}
+                      >
+                        {editing.authConfigSet ? "已配置" : "未配置"}
+                      </Badge>
+                    )}
+                  </div>
                   <Textarea
                     id="m-authcfg"
                     rows={3}
@@ -717,15 +751,22 @@ export function ServerToolsTab({ serverId }: { serverId: number }) {
                     onChange={(e) => setForm({ ...form, authConfig: e.target.value })}
                     className="font-mono text-xs"
                     placeholder={
-                      form.authType === "SK_EXCHANGE"
-                        ? '{"auth_url":"https://..."}'
-                        : form.authType === "API_KEY"
-                          ? '{"header_name":"X-Api-Key","api_key":"..."}'
-                          : form.authType === "BEARER"
-                            ? '{"token":"..."}'
-                            : "{}"
+                      editing?.authConfigSet && form.authConfig.trim() === ""
+                        ? "已配置（留空表示不修改；输入新值将覆盖，可能触发审批）"
+                        : form.authType === "SK_EXCHANGE"
+                          ? '{"auth_url":"https://..."}'
+                          : form.authType === "API_KEY"
+                            ? '{"header_name":"X-Api-Key","api_key":"..."}'
+                            : form.authType === "BEARER"
+                              ? '{"token":"..."}'
+                              : "{}"
                     }
                   />
+                  {editing && (
+                    <p className="text-[11px] text-muted-foreground">
+                      凭证不在页面回显；如需更换请直接输入新的 JSON。
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <ParamMappingEditor
@@ -790,7 +831,7 @@ export function ServerToolsTab({ serverId }: { serverId: number }) {
             <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
               {saveMutation.isPending
                 ? "提交中…"
-                : editing && !directCredential && (form.authConfig ?? "") !== (editing.authConfig ?? "")
+                : editing && !directCredential && credentialProvided
                   ? "提交凭证变更审批"
                   : "保存"}
             </Button>

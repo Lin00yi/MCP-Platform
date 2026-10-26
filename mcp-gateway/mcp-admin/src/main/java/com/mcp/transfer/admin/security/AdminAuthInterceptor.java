@@ -2,7 +2,7 @@ package com.mcp.transfer.admin.security;
 
 import com.alibaba.fastjson.JSON;
 import com.mcp.transfer.admin.security.AdminAuthContext;
-import com.mcp.transfer.enums.RoleEnum;
+import com.mcp.transfer.shared.enums.RoleEnum;
 import com.mcp.transfer.admin.service.AdminAuthService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;

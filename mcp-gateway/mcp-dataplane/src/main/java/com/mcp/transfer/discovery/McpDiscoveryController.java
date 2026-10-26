@@ -5,7 +5,7 @@ import com.mcp.transfer.catalog.McpDiscoveryService;
 import com.mcp.transfer.config.filter.McpDiscoveryAuthInterceptor;
 import com.mcp.transfer.config.session.McpSessionCache;
 import com.mcp.transfer.config.session.SseEmitterRegistry;
-import com.mcp.transfer.dto.Result;
+import com.mcp.transfer.shared.dto.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +43,12 @@ public class McpDiscoveryController {
 
     private String appId(HttpServletRequest request) {
         Object attr = request.getAttribute(McpDiscoveryAuthInterceptor.DISCOVERY_APP_ID_ATTR);
+        return attr == null ? null : attr.toString();
+    }
+
+    /** 当前登录用户 id（由 McpDiscoveryAuthInterceptor 写入），用于 SSE 单用户配额 */
+    private String userId(HttpServletRequest request) {
+        Object attr = request.getAttribute(com.mcp.transfer.config.filter.UserTokenAuthenticator.USER_ID_ATTR);
         return attr == null ? null : attr.toString();
     }
 
@@ -112,7 +118,9 @@ public class McpDiscoveryController {
         }
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MS);
         String sessionId = mcpSessionCache.generateSessionId();
-        if (!sseEmitterRegistry.tryRegister(sessionId, id, emitter)) {
+        // 带上 userId：全局配额之外再按用户限流
+        String userId = userId(request);
+        if (!sseEmitterRegistry.tryRegister(sessionId, id, emitter, userId)) {
             response.setStatus(429);
             return null;
         }

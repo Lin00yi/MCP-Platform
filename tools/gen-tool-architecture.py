@@ -297,7 +297,7 @@ def build_architecture():
 
     # data plane
     p.append(rect(84, 310, 600, 330, "#f8fafc", "#e2e8f0", 12, 1.0))
-    p.append(text(102, 338, "数据面  /mcp/v1/{serverKey}", 14, 700, "#4338ca"))
+    p.append(text(102, 338, "数据面  /mcp/e/{endpointKey}", 14, 700, "#4338ca"))
     p.append(box(102, 354, 260, 78, "McpController", ["initialize / tools/list", "tools/call / SSE"], INDIGO, 13, 10.5))
     p.append(box(382, 354, 280, 78, "McpServiceImpl", ["buildToolListResult", "toolsCall / meta tools"], INDIGO, 13, 10.5))
     p.append(box(102, 452, 260, 78, "ToolAccessPolicy", ["visibleTools / canUse", "profile_tags / app override"], ROSE, 13, 10.5))

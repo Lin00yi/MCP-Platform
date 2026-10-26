@@ -1,12 +1,15 @@
 package com.mcp.transfer.exposure;
 
 import com.alibaba.fastjson.JSONObject;
-import com.mcp.transfer.entity.McpTool;
-import com.mcp.transfer.mapper.ToolCallRecordMapper;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.mcp.transfer.shared.entity.McpTool;
+import com.mcp.transfer.shared.mapper.ToolCallRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,6 +61,19 @@ public class ToolSearchService {
     private ToolMetadataEnricher metadataEnricher;
 
     private final Map<Integer, PopularitySnapshot> popularityCache = new ConcurrentHashMap<>();
+
+    /**
+     * BM25 文档索引缓存：key = 工具集签名（id + code + 描述 + tags 的滚动哈希），
+     * 避免每次 search_tools 都对全部工具重新分词建 TF/DF。
+     * 工具内容变化会改变签名，天然失效；TTL/容量只是兜底。
+     */
+    private final Cache<String, Bm25Index> bm25IndexCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(5))
+            .maximumSize(500)
+            .build();
+
+    /** 文档集过大时不做索引缓存，避免单条缓存吃掉过多堆内存 */
+    private static final int BM25_CACHE_MAX_DOCS = 5000;
 
     // ==================== 新模式（推荐） ====================
 
@@ -484,30 +500,17 @@ public class ToolSearchService {
         return score;
     }
 
-    /** 标准 BM25；文档 token 为 ASCII 词 + CJK 单字/二元组。 */
+    /** 标准 BM25；文档 token 为 ASCII 词 + CJK 单字/二元组。索引按工具集签名缓存。 */
     private List<ScoredDoc> bm25(List<ToolDoc> docs, SearchRequest request) {
         List<String> queryTerms = terms(request.getQuery());
         if (queryTerms.isEmpty()) {
             return Collections.emptyList();
         }
-        List<Map<String, Integer>> tfs = new ArrayList<>(docs.size());
-        int[] lengths = new int[docs.size()];
-        Map<String, Integer> df = new HashMap<>();
-        double totalLength = 0;
-        for (int i = 0; i < docs.size(); i++) {
-            Map<String, Integer> tf = docTokens(docs.get(i));
-            tfs.add(tf);
-            int length = 0;
-            for (Integer count : tf.values()) {
-                length += count;
-            }
-            lengths[i] = Math.max(1, length);
-            totalLength += lengths[i];
-            for (String term : tf.keySet()) {
-                df.merge(term, 1, Integer::sum);
-            }
-        }
-        double avgLength = totalLength / Math.max(1, docs.size());
+        Bm25Index index = indexOf(docs);
+        List<Map<String, Integer>> tfs = index.tfs;
+        int[] lengths = index.lengths;
+        Map<String, Integer> df = index.df;
+        double avgLength = index.avgLength;
         List<ScoredDoc> hits = new ArrayList<>();
         for (int i = 0; i < docs.size(); i++) {
             Map<String, Integer> tf = tfs.get(i);
@@ -533,6 +536,92 @@ public class ToolSearchService {
             hits.add(new ScoredDoc(docs.get(i), score));
         }
         return sort(hits);
+    }
+
+    /** 取（或构建）当前文档集的 BM25 索引；工具内容变化→签名变化→自动重建 */
+    private Bm25Index indexOf(List<ToolDoc> docs) {
+        if (docs.isEmpty()) {
+            return buildIndex(docs);
+        }
+        if (docs.size() > BM25_CACHE_MAX_DOCS) {
+            return buildIndex(docs);
+        }
+        String signature = indexSignature(docs);
+        Bm25Index cached = bm25IndexCache.getIfPresent(signature);
+        if (cached != null) {
+            return cached;
+        }
+        Bm25Index built = buildIndex(docs);
+        bm25IndexCache.put(signature, built);
+        return built;
+    }
+
+    /**
+     * 文档集签名：对每个 doc 的 id + code + name + description + tags 做滚动哈希。
+     * 只扫描字符不分配大对象，成本远低于分词；任何字段变化都会导致重建。
+     */
+    private String indexSignature(List<ToolDoc> docs) {
+        long hash = 1125899906842597L;
+        for (ToolDoc doc : docs) {
+            hash = hash * 31 + strHash(doc.getCode());
+            hash = hash * 31 + strHash(doc.getExposedName());
+            hash = hash * 31 + strHash(doc.getName());
+            hash = hash * 31 + strHash(doc.getDescription());
+            hash = hash * 31 + tagsHash(doc.getTags());
+            hash = hash * 31 + (doc.getToolId() == null ? 0 : doc.getToolId());
+            hash = hash * 31 + (doc.getServerId() == null ? 0 : doc.getServerId());
+        }
+        return docs.size() + ":" + Long.toHexString(hash);
+    }
+
+    private static int strHash(String value) {
+        return value == null ? 0 : value.hashCode();
+    }
+
+    private static int tagsHash(List<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return 0;
+        }
+        int hash = 1;
+        for (String tag : tags) {
+            hash = hash * 31 + strHash(tag);
+        }
+        return hash;
+    }
+
+    /** 构建 BM25 索引：文档 token 词频 + 文档长度 + 文档频率 + 平均长度 */
+    private Bm25Index buildIndex(List<ToolDoc> docs) {
+        List<Map<String, Integer>> tfs = new ArrayList<>(docs.size());
+        int[] lengths = new int[docs.size()];
+        Map<String, Integer> df = new HashMap<>();
+        double totalLength = 0;
+        for (int i = 0; i < docs.size(); i++) {
+            Map<String, Integer> tf = docTokens(docs.get(i));
+            tfs.add(tf);
+            int length = 0;
+            for (Integer count : tf.values()) {
+                length += count;
+            }
+            lengths[i] = Math.max(1, length);
+            totalLength += lengths[i];
+            for (String term : tf.keySet()) {
+                df.merge(term, 1, Integer::sum);
+            }
+        }
+        Bm25Index index = new Bm25Index();
+        index.tfs = tfs;
+        index.lengths = lengths;
+        index.df = df;
+        index.avgLength = totalLength / Math.max(1, docs.size());
+        return index;
+    }
+
+    /** BM25 预计算索引（只读） */
+    private static final class Bm25Index {
+        private List<Map<String, Integer>> tfs;
+        private int[] lengths;
+        private Map<String, Integer> df;
+        private double avgLength;
     }
 
     private List<ScoredDoc> vector(List<ToolDoc> docs, SearchRequest request) {

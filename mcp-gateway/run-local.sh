@@ -2,7 +2,7 @@
 # 本地开发启动：复用 .env 中的密钥，数据库默认指向本机 MySQL 的 3306。
 #
 # 拆分后有两个服务，必须同时运行：
-#   ./run-local.sh dataplane    # S1 数据面 :8081（/mcp/e、/mcp/v1、/mcp/discovery）
+#   ./run-local.sh dataplane    # S1 数据面 :8081（/mcp/e、/mcp/discovery）
 #   ./run-local.sh admin        # S2 控制面 :8082（/mcp/admin、/mcp/log）
 #   ./run-local.sh both         # 两个都起（前台并行，Ctrl-C 一起退出）
 set -euo pipefail

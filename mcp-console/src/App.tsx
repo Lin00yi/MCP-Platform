@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { LoadingState } from "@/components/PageState";
 import { LoginPage } from "@/pages/LoginPage";
@@ -31,10 +31,12 @@ function Page({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingState label="加载页面…" />}>{children}</Suspense>;
 }
 
-/** 未登录则跳登录页 */
+/** 未登录则跳登录页；带上当前路由，登录成功后回跳 */
 function RequireAuth() {
+  const location = useLocation();
   if (!isLoggedIn()) {
-    return <Navigate to="/login" replace />;
+    const from = `${location.pathname}${location.search}`;
+    return <Navigate to={`/login?from=${encodeURIComponent(from)}`} replace />;
   }
   return <Outlet />;
 }

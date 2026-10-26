@@ -59,8 +59,17 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Fira Sans", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["Fira Code", "ui-monospace", "SFMono-Regular", "monospace"],
+        // 使用系统字体栈：不依赖 fonts.googleapis.com，内网/离线部署也能正常渲染
+        sans: [
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "PingFang SC",
+          "Hiragino Sans GB",
+          "Microsoft YaHei",
+          "sans-serif",
+        ],
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", "monospace"],
       },
       keyframes: {
         "accordion-down": {

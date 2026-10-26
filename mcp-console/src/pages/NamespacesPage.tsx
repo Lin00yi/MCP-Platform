@@ -48,11 +48,11 @@ export function NamespacesPage() {
   const [members, setMembers] = useState<{ ns: NamespaceVO; ids: number[] } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<NamespaceVO | null>(null);
 
-  const { data: namespaces, isLoading, isError, error } = useQuery({
+  const { data: namespaces, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["namespaces"],
-    queryFn: api.listNamespaces,
+    queryFn: ({ signal }) => api.listNamespaces(signal),
   });
-  const { data: servers } = useQuery({ queryKey: ["servers"], queryFn: api.listServers });
+  const { data: servers } = useQuery({ queryKey: ["servers"], queryFn: ({ signal }) => api.listServers(signal) });
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["namespaces"] });
@@ -116,7 +116,7 @@ export function NamespacesPage() {
   };
 
   if (isLoading) return <LoadingState label="加载 Namespace…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-4">

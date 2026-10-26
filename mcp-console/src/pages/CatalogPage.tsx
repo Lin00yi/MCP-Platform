@@ -113,23 +113,27 @@ export function CatalogPage() {
     isLoading,
     isError,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["disc-servers"],
-    queryFn: () => api.adminDiscoveryServers(),
+    queryFn: ({ signal }) => api.adminDiscoveryServers(signal),
   });
   const { data: dTools } = useQuery({
     queryKey: ["disc-tools"],
-    queryFn: () => api.adminDiscoveryTools(),
+    queryFn: ({ signal }) => api.adminDiscoveryTools(undefined, signal),
   });
   const { data: dPrompts } = useQuery({
     queryKey: ["disc-prompts"],
-    queryFn: () => api.adminDiscoveryPrompts(),
+    queryFn: ({ signal }) => api.adminDiscoveryPrompts(undefined, signal),
   });
   const { data: dResources } = useQuery({
     queryKey: ["disc-resources"],
-    queryFn: () => api.adminDiscoveryResources(),
+    queryFn: ({ signal }) => api.adminDiscoveryResources(undefined, signal),
   });
-  const { data: tenants } = useQuery({ queryKey: ["tenants"], queryFn: api.listTenants });
+  const { data: tenants } = useQuery({
+    queryKey: ["tenants"],
+    queryFn: ({ signal }) => api.listTenants(signal),
+  });
 
   const tenantNameOf = (id?: number) =>
     (tenants ?? []).find((t) => t.id === id)?.name ?? (id ? `租户#${id}` : "—");
@@ -269,7 +273,7 @@ export function CatalogPage() {
   );
 
   if (isLoading) return <LoadingState label="加载资产目录…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   return (
     <>

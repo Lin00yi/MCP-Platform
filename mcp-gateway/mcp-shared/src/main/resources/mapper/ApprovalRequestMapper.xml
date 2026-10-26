@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.ApprovalRequestMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.ApprovalRequest">
+<mapper namespace="com.mcp.transfer.shared.mapper.ApprovalRequestMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.ApprovalRequest">
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
     <result column="action" jdbcType="VARCHAR" property="action" />
@@ -19,14 +19,13 @@
     <result column="approver" jdbcType="VARCHAR" property="approver" />
     <result column="approver_role" jdbcType="VARCHAR" property="approverRole" />
     <result column="comment" jdbcType="VARCHAR" property="comment" />
-    <result column="result_secret" jdbcType="LONGVARCHAR" property="resultSecret" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
   </resultMap>
 
   <sql id="Base_Column_List">
     id, tenant_id, action, status, app_id, server_id, tool_id, prompt_id, resource_id, user_id,
-    payload, reason, requester, requester_role, approver, approver_role, comment, result_secret,
+    payload, reason, requester, requester_role, approver, approver_role, comment,
     create_time, update_time
   </sql>
 
@@ -42,7 +41,7 @@
     </choose>
   </sql>
 
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.ApprovalRequest" useGeneratedKeys="true">
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.ApprovalRequest" useGeneratedKeys="true">
     insert into approval_request
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="tenantId != null">tenant_id,</if>
@@ -61,7 +60,6 @@
       <if test="approver != null and approver != ''">approver,</if>
       <if test="approverRole != null and approverRole != ''">approver_role,</if>
       <if test="comment != null and comment != ''">comment,</if>
-      <if test="resultSecret != null and resultSecret != ''">result_secret,</if>
       <if test="createTime != null">create_time,</if>
       <if test="updateTime != null">update_time,</if>
     </trim>
@@ -82,7 +80,6 @@
       <if test="approver != null and approver != ''">#{approver,jdbcType=VARCHAR},</if>
       <if test="approverRole != null and approverRole != ''">#{approverRole,jdbcType=VARCHAR},</if>
       <if test="comment != null and comment != ''">#{comment,jdbcType=VARCHAR},</if>
-      <if test="resultSecret != null and resultSecret != ''">#{resultSecret,jdbcType=LONGVARCHAR},</if>
       <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
       <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
     </trim>
@@ -163,17 +160,9 @@
         approver = #{approver,jdbcType=VARCHAR},
         approver_role = #{approverRole,jdbcType=VARCHAR},
         comment = #{comment,jdbcType=VARCHAR},
-        result_secret = #{resultSecret,jdbcType=LONGVARCHAR},
         update_time = #{updateTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=BIGINT}
       and status = 'PENDING'
-  </update>
-
-  <update id="updateResultSecret">
-    update approval_request
-    set result_secret = #{resultSecret,jdbcType=LONGVARCHAR},
-        update_time = NOW()
-    where id = #{id,jdbcType=BIGINT}
   </update>
 
   <update id="cancelPendingByRequester">
@@ -203,10 +192,6 @@
 
   <delete id="deleteByResourceId">
     delete from approval_request where resource_id = #{resourceId,jdbcType=INTEGER}
-  </delete>
-
-  <delete id="deleteByAppId">
-    delete from approval_request where app_id = #{appId,jdbcType=VARCHAR}
   </delete>
 
   <delete id="deleteByUserId">

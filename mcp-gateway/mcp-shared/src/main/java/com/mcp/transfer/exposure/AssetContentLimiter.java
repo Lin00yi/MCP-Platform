@@ -2,7 +2,7 @@ package com.mcp.transfer.exposure;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.mcp.transfer.dto.mcp.result.data.McpResData;
+import com.mcp.transfer.shared.dto.mcp.result.data.McpResData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

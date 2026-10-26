@@ -1,8 +1,8 @@
 package com.mcp.transfer.admin.security;
 
-import com.mcp.transfer.enums.RoleEnum;
+import com.mcp.transfer.shared.enums.RoleEnum;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 后台管理接口权限矩阵。
@@ -61,7 +61,8 @@ public final class AdminPermissionEvaluator {
             return role.canExport();
         }
         if (path.contains("/mcp/admin/namespaces") || path.contains("/mcp/admin/endpoints")) {
-            return role.canView();
+            // 拓扑资源含跨业务方绑定关系，只读也要求拓扑管理权限（超管/管理员）
+            return role.canManageTopology();
         }
         if (path.contains("/mcp/admin/service-systems")) {
             return role.canManageSystem();

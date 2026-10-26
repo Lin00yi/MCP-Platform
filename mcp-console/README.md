@@ -26,7 +26,7 @@ MCP Gateway（`mcp-gateway`）的管理控制面板。基于 **React 18 + TypeSc
 - **sonner**（Toast 通知）
 - **lucide-react**（图标）
 
-设计采用深色「代码/终端」风格（Fira Code / Fira Sans 字体 + 绿色主色），契合开发者工具定位。
+设计采用深色「代码/终端」风格（系统字体栈 + 绿色主色），契合开发者工具定位；不引用外部字体服务，内网/离线部署也能正常渲染。
 
 ## 快速开始
 
@@ -35,7 +35,7 @@ pnpm install
 pnpm dev        # http://localhost:5173
 ```
 
-> 默认走**真实网关**（`VITE_USE_MOCK` 未设置时为 false）。如需离线演示，显式设置 `VITE_USE_MOCK=true`。
+> 默认走**真实网关**（`VITE_USE_MOCK` 未设置时为 false）。本地 mock 已随应用维度下线；`VITE_USE_MOCK=true` 会直接报错。
 
 生产构建：
 
@@ -50,13 +50,13 @@ pnpm preview     # 预览构建产物
 侧边栏底部展示控制面板版本号（点击可查看版本详情与更新内容）。部署新版本后，已打开的页面会自动发现并弹窗展示更新内容，可一键刷新。
 
 - **版本号**：`package.json` 的 `version`，发布时按需升级。
-- **更新内容**：`changelog.json` 的 `releases`，发版时在最前面追加一条：
+- **更新内容**：每次发版**默认只取最近一条提交标题**（自动跳过 Merge / `chore(release)`），更新弹窗里只展示当前版本的说明；可用 `CONSOLE_RELEASES` 覆盖（若提供多条则按提供的展示）。`changelog.json` 的 `releases` 只作为历史版本记录：
 
 ```json
 {
   "version": "1.2.0",
   "date": "2026-12-01",
-  "highlights": ["新增 xxx", "修复 yyy"]
+  "highlights": ["新增 xxx"]
 }
 ```
 
@@ -74,7 +74,7 @@ VITE_USE_MOCK=false
 VITE_API_BASE_URL=/api
 ```
 
-2. `vite.config.js` 已配置 `/api` 代理到 `http://localhost:8081`（MCP 网关后端端口）；也可用 `node server.cjs` 托管 `dist/` 并代理 `/api`。
+2. `vite.config.js` 已配置 `/api` 代理到 `http://localhost:8082`（控制面 `mcp-admin` 端口，可用 `MCP_ADMIN_URL` 覆盖）；也可用 `node server.cjs` 托管 `dist/` 并代理 `/api`。
 
 后端（`mcp-gateway`）管理 REST 接口统一返回 `Result<T>` 信封 `{code, message, data}`，对应 `McpAdminController`：
 
@@ -85,16 +85,16 @@ VITE_API_BASE_URL=/api
 | 工具 | `GET/POST /mcp/admin/tools`、`PUT/DELETE /mcp/admin/tools/{id}` |
 | Prompt | `GET/POST /mcp/admin/prompts`、`PUT/DELETE /mcp/admin/prompts/{id}` |
 | Resource | `GET/POST /mcp/admin/resources`、`PUT/DELETE /mcp/admin/resources/{id}` |
-| 应用 | `GET/POST /mcp/admin/apps`、`PUT /mcp/admin/apps/{id}/reset-secret`、`DELETE /mcp/admin/apps/{id}` |
-| 应用×server 授权 | `GET/POST /mcp/admin/app-server-rels`、`POST /mcp/admin/app-server-rels/batch`、`DELETE /mcp/admin/app-server-rels/{id}` |
-| 应用×tool 授权 | `GET/POST /mcp/admin/app-tool-rels`、`DELETE /mcp/admin/app-tool-rels/{id}` |
+| Namespace | `GET/POST /mcp/admin/namespaces`、`PUT/DELETE /mcp/admin/namespaces/{id}` |
+| Endpoint | `GET/POST /mcp/admin/endpoints`、`PUT/DELETE /mcp/admin/endpoints/{id}` |
+| 用户管理 | `GET/POST /mcp/admin/users`、`PUT/DELETE /mcp/admin/users/{id}` |
 | 系统服务 | `GET /mcp/admin/service-systems`、`PUT /mcp/admin/service-systems/{id}` |
 | 工具调用 | `GET /mcp/admin/tool-call-records`、`GET /mcp/admin/tool-call-stats` |
 | 请求日志导出 | `GET /mcp/log/export` |
 | 刷新端点 | `POST /mcp/admin/refresh-server-api` |
 
 > 管理接口已接入 JWT + 角色权限矩阵（`AdminPermissionEvaluator`，默认拒绝）；敏感资源（应用密钥、工具鉴权配置、下游系统）需要对应管理角色。
-> 列表接口不再返回明文 `app_secret`，仅在创建/重置时一次性展示。
+> 工具列表不再返回明文 `authConfig`，只返回 `authConfigSet`；修改凭证仍需审批。
 > 导出已改为带 `Authorization` 的 `fetch + blob` 下载。
 
 ## 目录结构
@@ -107,11 +107,11 @@ src/
 │   └── PageState.tsx    # 加载/空/错误/指标卡
 ├── pages/               # 各路由页面
 ├── lib/
-│   ├── api.ts           # 数据访问层（mock / 真实接口切换）
+│   ├── api.ts           # 数据访问层（默认真实接口；mock 已下线）
 │   ├── queryClient.ts   # TanStack Query 客户端
 │   ├── utils.ts         # cn / 格式化
 │   └── format.ts        # 展示辅助
-├── mocks/               # 模拟数据与 mock API
+├── mocks/               # mock 已下线，仅保留报错占位
 ├── types/               # 领域类型（与后端实体一一对应）
 ├── App.tsx / main.tsx
 └── index.css            # 主题 tokens

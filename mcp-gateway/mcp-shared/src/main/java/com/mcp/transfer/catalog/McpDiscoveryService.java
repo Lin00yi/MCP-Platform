@@ -1,15 +1,14 @@
 package com.mcp.transfer.catalog;
 
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpTool;
 import com.mcp.transfer.exposure.ToolAccessPolicy;
 import com.mcp.transfer.exposure.ToolBudget;
 import com.mcp.transfer.exposure.ToolExposureModes;
-import com.mcp.transfer.mapper.McpServerMapper;
-import com.mcp.transfer.mapper.McpToolMapper;
-import com.mcp.transfer.utils.ServerKeyUtils;
+import com.mcp.transfer.shared.mapper.McpServerMapper;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
+import com.mcp.transfer.shared.utils.ServerKeyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -43,10 +42,10 @@ public class McpDiscoveryService {
     private McpToolMapper mcpToolMapper;
 
     @Autowired
-    private com.mcp.transfer.mapper.McpPromptMapper mcpPromptMapper;
+    private com.mcp.transfer.shared.mapper.McpPromptMapper mcpPromptMapper;
 
     @Autowired
-    private com.mcp.transfer.mapper.McpResourceMapper mcpResourceMapper;
+    private com.mcp.transfer.shared.mapper.McpResourceMapper mcpResourceMapper;
 
     @Autowired
     private com.mcp.transfer.exposure.AssetAccessPolicy assetAccessPolicy;
@@ -59,10 +58,6 @@ public class McpDiscoveryService {
 
     @Autowired
     private com.mcp.transfer.health.McpServerHealthService healthService;
-
-    /** DSH 等客户端使用的网关外部地址；生产通过 MCP_PUBLIC_BASE_URL 配置 */
-    @Value("${mcp.public-base-url:http://127.0.0.1:8081}")
-    private String publicBaseUrl;
 
     /** Server 是否可见（不再按应用授权；只校验启用状态） */
     public boolean canAccessServer(String appId, Integer serverId) {
@@ -106,12 +101,11 @@ public class McpDiscoveryService {
             m.put("serverKey", serverKey(s));
             m.put("name", s.getName());
             m.put("path", s.getPath());
-            m.put("url", absoluteUrl(s.getPath()));
             m.put("status", s.getStatus());
             m.put("upstreamType", s.getUpstreamType() == null ? "NONE" : s.getUpstreamType());
             m.put("toolCount", tools.size());
             m.put("totalToolCount", budget.getTotalTools());
-            m.put("toolAccessMode", ToolExposureModes.accessOf(s));
+            m.put("toolAccessMode", ToolExposureModes.ACCESS_ALL);
             m.put("toolExposureMode", ToolExposureModes.exposureOf(s));
             m.put("hotToolCount", budget.getHotTools());
             m.put("promptCount", budget.getVisiblePrompts());
@@ -147,17 +141,6 @@ public class McpDiscoveryService {
         return ServerKeyUtils.fallback(server.getName(), server.getId());
     }
 
-    private String absoluteUrl(String path) {
-        if (!StringUtils.hasText(path)) {
-            return null;
-        }
-        String base = StringUtils.hasText(publicBaseUrl) ? publicBaseUrl.trim() : "http://127.0.0.1:8081";
-        while (base.endsWith("/")) {
-            base = base.substring(0, base.length() - 1);
-        }
-        return path.startsWith("/") ? base + path : base + "/" + path;
-    }
-
     private Long updatedAt(McpServer server, List<McpTool> tools) {
         long max = time(server.getUpdateTime());
         if (tools != null) {
@@ -191,16 +174,16 @@ public class McpDiscoveryService {
                             .append(t.getCode()).append(':')
                             .append(time(t.getUpdateTime())).append('|'));
         }
-        List<com.mcp.transfer.entity.McpPrompt> prompts = mcpPromptMapper.selectAllByServerId(server.getId());
+        List<com.mcp.transfer.shared.entity.McpPrompt> prompts = mcpPromptMapper.selectAllByServerId(server.getId());
         if (prompts != null) {
-            prompts.stream().sorted(Comparator.comparing(com.mcp.transfer.entity.McpPrompt::getId,
+            prompts.stream().sorted(Comparator.comparing(com.mcp.transfer.shared.entity.McpPrompt::getId,
                             Comparator.nullsLast(Integer::compareTo)))
                     .forEach(p -> sb.append("p:").append(p.getId()).append(':')
                             .append(p.getStatus()).append(':').append(time(p.getUpdateTime())).append('|'));
         }
-        List<com.mcp.transfer.entity.McpResource> resources = mcpResourceMapper.selectAllByServerId(server.getId());
+        List<com.mcp.transfer.shared.entity.McpResource> resources = mcpResourceMapper.selectAllByServerId(server.getId());
         if (resources != null) {
-            resources.stream().sorted(Comparator.comparing(com.mcp.transfer.entity.McpResource::getId,
+            resources.stream().sorted(Comparator.comparing(com.mcp.transfer.shared.entity.McpResource::getId,
                             Comparator.nullsLast(Integer::compareTo)))
                     .forEach(r -> sb.append("r:").append(r.getId()).append(':')
                             .append(r.getStatus()).append(':').append(time(r.getUpdateTime())).append('|'));
@@ -272,7 +255,7 @@ public class McpDiscoveryService {
             if (serverId != null && !serverId.equals(s.getId())) {
                 continue;
             }
-            for (com.mcp.transfer.entity.McpPrompt p : assetAccessPolicy.visiblePrompts(s, null, true)) {
+            for (com.mcp.transfer.shared.entity.McpPrompt p : assetAccessPolicy.visiblePrompts(s, null, true)) {
                 if (StringUtils.hasText(q) && !matchesText(q, p.getName(), p.getResJson())) {
                     continue;
                 }
@@ -297,7 +280,7 @@ public class McpDiscoveryService {
             if (serverId != null && !serverId.equals(s.getId())) {
                 continue;
             }
-            for (com.mcp.transfer.entity.McpResource r : assetAccessPolicy.visibleResources(s, null, true)) {
+            for (com.mcp.transfer.shared.entity.McpResource r : assetAccessPolicy.visibleResources(s, null, true)) {
                 if (StringUtils.hasText(q) && !matchesText(q, r.getName(), r.getUri(), r.getResJson())) {
                     continue;
                 }
@@ -321,7 +304,7 @@ public class McpDiscoveryService {
         return false;
     }
 
-    private Map<String, Object> toPromptVO(McpServer s, com.mcp.transfer.entity.McpPrompt p) {
+    private Map<String, Object> toPromptVO(McpServer s, com.mcp.transfer.shared.entity.McpPrompt p) {
         Map<String, Object> m = new HashMap<>();
         m.put("id", p.getId());
         m.put("name", p.getName());
@@ -333,7 +316,7 @@ public class McpDiscoveryService {
         return m;
     }
 
-    private Map<String, Object> toResourceVO(McpServer s, com.mcp.transfer.entity.McpResource r) {
+    private Map<String, Object> toResourceVO(McpServer s, com.mcp.transfer.shared.entity.McpResource r) {
         Map<String, Object> m = new HashMap<>();
         m.put("id", r.getId());
         m.put("name", r.getName());

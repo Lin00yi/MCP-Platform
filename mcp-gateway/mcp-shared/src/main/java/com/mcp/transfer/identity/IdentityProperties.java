@@ -14,8 +14,15 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "mcp.identity")
 public class IdentityProperties {
 
-    /** 总开关 */
+    /** 总开关；false 时等价于 mode=OFF */
     private boolean enabled = false;
+
+    /**
+     * 全局模式：OFF / OPTIONAL / REQUIRED。
+     *
+     * <p>Server 可用 {@code mcp_server.identity_mode} 覆盖；为空或 INHERIT 时沿用本值。
+     */
+    private String mode = "OPTIONAL";
 
     /** JWE / JWS；客编敏感场景建议 JWE */
     private String tokenFormat = "JWE";

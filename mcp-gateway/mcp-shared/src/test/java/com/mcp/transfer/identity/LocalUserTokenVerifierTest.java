@@ -1,6 +1,6 @@
 package com.mcp.transfer.identity;
 
-import com.mcp.transfer.utils.SecretCrypto;
+import com.mcp.transfer.shared.utils.SecretCrypto;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;

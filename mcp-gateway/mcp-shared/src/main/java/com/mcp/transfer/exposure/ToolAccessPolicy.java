@@ -3,9 +3,9 @@ package com.mcp.transfer.exposure;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.mcp.transfer.cache.ToolListCache;
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.entity.McpTool;
-import com.mcp.transfer.mapper.McpToolMapper;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpTool;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -138,7 +138,7 @@ public class ToolAccessPolicy {
         List<McpTool> visible = filter(server, appId, adminView, all);
         budget.setServerId(server.getId());
         budget.setServerName(server.getName());
-        budget.setAccessMode(ToolExposureModes.accessOf(server));
+        budget.setAccessMode(ToolExposureModes.ACCESS_ALL);
         budget.setExposureMode(ToolExposureModes.exposureOf(server));
         budget.setTotalTools(all.size());
         budget.setVisibleTools(visible.size());
@@ -150,14 +150,14 @@ public class ToolAccessPolicy {
         budget.setEstimatedTokens(estimateTokens(visible));
 
         if (assetAccessPolicy != null) {
-            List<com.mcp.transfer.entity.McpPrompt> prompts = assetAccessPolicy.allPrompts(server.getId());
-            List<com.mcp.transfer.entity.McpPrompt> visiblePrompts =
+            List<com.mcp.transfer.shared.entity.McpPrompt> prompts = assetAccessPolicy.allPrompts(server.getId());
+            List<com.mcp.transfer.shared.entity.McpPrompt> visiblePrompts =
                     assetAccessPolicy.filterPrompts(server, appId, adminView, prompts);
-            List<com.mcp.transfer.entity.McpResource> resources = assetAccessPolicy.allResources(server.getId());
-            List<com.mcp.transfer.entity.McpResource> visibleResources =
+            List<com.mcp.transfer.shared.entity.McpResource> resources = assetAccessPolicy.allResources(server.getId());
+            List<com.mcp.transfer.shared.entity.McpResource> visibleResources =
                     assetAccessPolicy.filterResources(server, appId, adminView, resources);
-            budget.setPromptAccessMode(ToolExposureModes.promptAccessOf(server));
-            budget.setResourceAccessMode(ToolExposureModes.resourceAccessOf(server));
+            budget.setPromptAccessMode(ToolExposureModes.ACCESS_ALL);
+            budget.setResourceAccessMode(ToolExposureModes.ACCESS_ALL);
             budget.setTotalPrompts(prompts.size());
             budget.setVisiblePrompts(visiblePrompts.size());
             budget.setTotalResources(resources.size());
@@ -190,12 +190,12 @@ public class ToolAccessPolicy {
         for (Object asset : assets) {
             Integer estimate = null;
             String json = null;
-            if (asset instanceof com.mcp.transfer.entity.McpPrompt) {
-                estimate = ((com.mcp.transfer.entity.McpPrompt) asset).getTokenEstimate();
-                json = ((com.mcp.transfer.entity.McpPrompt) asset).getResJson();
-            } else if (asset instanceof com.mcp.transfer.entity.McpResource) {
-                estimate = ((com.mcp.transfer.entity.McpResource) asset).getTokenEstimate();
-                json = ((com.mcp.transfer.entity.McpResource) asset).getResJson();
+            if (asset instanceof com.mcp.transfer.shared.entity.McpPrompt) {
+                estimate = ((com.mcp.transfer.shared.entity.McpPrompt) asset).getTokenEstimate();
+                json = ((com.mcp.transfer.shared.entity.McpPrompt) asset).getResJson();
+            } else if (asset instanceof com.mcp.transfer.shared.entity.McpResource) {
+                estimate = ((com.mcp.transfer.shared.entity.McpResource) asset).getTokenEstimate();
+                json = ((com.mcp.transfer.shared.entity.McpResource) asset).getResJson();
             }
             tokens += estimate != null && estimate > 0 ? estimate : tokenEstimator.estimate(json) + 30L;
         }

@@ -2,7 +2,7 @@ spring:
   # 数据源配置：所有敏感项必须通过环境变量注入，禁止在仓库中保存明文
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-    url: ${MCP_DB_URL:jdbc:mysql://127.0.0.1:3306/xaxsproddb?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectTimeout=5000&socketTimeout=30000}
+    url: ${MCP_DB_URL:jdbc:mysql://127.0.0.1:3306/mcp_gateway?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectTimeout=5000&socketTimeout=30000}
     username: ${MCP_DB_USERNAME:}
     password: ${MCP_DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -33,7 +33,7 @@ logging:
   level:
     root: INFO
     com.mcp.transfer: INFO
-    com.mcp.transfer.mapper: INFO
+    com.mcp.transfer.shared.mapper: INFO
     org.apache.ibatis: INFO
     com.alibaba.druid: WARN
 
@@ -45,11 +45,6 @@ mcp:
   admin:
     jwt-secret: ${MCP_ADMIN_JWT_SECRET:}
     init-password: ${MCP_ADMIN_INIT_PASSWORD:}
-  session:
-    max-count: ${MCP_SESSION_MAX_COUNT:20000}
-  sse:
-    max-connections: ${MCP_SSE_MAX_CONNECTIONS:1000}
-
 
 # 生产默认关闭接口文档
 springdoc:

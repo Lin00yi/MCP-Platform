@@ -28,7 +28,12 @@ CREATE PROCEDURE mcp_add_column_if_missing(
   IN p_ddl TEXT
 )
 BEGIN
-  IF NOT EXISTS (
+  -- 表不存在（如 app_server_rel 已被后续迁移删除）时直接跳过，保证脚本可在任意存量库重复执行
+  IF EXISTS (
+    SELECT 1 FROM information_schema.TABLES
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = p_table
+  ) AND NOT EXISTS (
     SELECT 1 FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = p_table

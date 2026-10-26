@@ -1,21 +1,23 @@
 package com.mcp.transfer.topology;
 
-import com.mcp.transfer.entity.McpEndpoint;
-import com.mcp.transfer.entity.McpEndpointNamespace;
-import com.mcp.transfer.entity.McpNamespace;
-import com.mcp.transfer.entity.McpNamespaceServer;
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.entity.McpEndpoint;
+import com.mcp.transfer.shared.entity.McpEndpointNamespace;
+import com.mcp.transfer.shared.entity.McpNamespace;
+import com.mcp.transfer.shared.entity.McpNamespaceServer;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpTool;
 import com.mcp.transfer.exposure.MetaToolFactory;
 import com.mcp.transfer.exposure.ToolAccessPolicy;
 import com.mcp.transfer.exposure.ToolBudget;
 import com.mcp.transfer.exposure.ToolExposureModes;
 import com.mcp.transfer.exposure.ToolExposureProperties;
-import com.mcp.transfer.mapper.McpEndpointMapper;
-import com.mcp.transfer.mapper.McpEndpointNamespaceMapper;
-import com.mcp.transfer.mapper.McpNamespaceMapper;
-import com.mcp.transfer.mapper.McpNamespaceServerMapper;
-import com.mcp.transfer.mapper.McpServerMapper;
+import com.mcp.transfer.shared.mapper.McpEndpointMapper;
+import com.mcp.transfer.shared.mapper.McpEndpointNamespaceMapper;
+import com.mcp.transfer.shared.mapper.McpNamespaceMapper;
+import com.mcp.transfer.shared.mapper.McpNamespaceServerMapper;
+import com.mcp.transfer.shared.mapper.McpServerMapper;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,10 +26,13 @@ import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 /**
@@ -68,11 +73,48 @@ public class EndpointScopeReader {
     @Autowired
     private ToolExposureProperties toolExposureProperties;
 
+    /**
+     * Endpoint 运行时范围缓存：数据面每个 MCP 请求都会解析一次拓扑，原先一次请求要打 9~17 条 SQL，
+     * 这里加 10s 的短 TTL 缓存；cached value 为不可抛出的 {@link Optional}（null 表示 Endpoint 不存在/停用）。
+     */
+    private final Cache<String, Optional<EndpointScope>> scopeCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofSeconds(10))
+            .maximumSize(2000)
+            .build();
+
+    /** 统一入口目录缓存：探测/发现客户端会高频拉取，5s 内复用（内部同样走 scopeCache）。 */
+    private final Cache<String, List<Map<String, Object>>> discoveryCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofSeconds(5))
+            .maximumSize(1)
+            .build();
+
+    private static final String DISCOVERY_CACHE_KEY = "all";
+
     /** 解析 Endpoint 的运行时范围：只校验 Endpoint 与成员 Server 启用，不做应用授权。 */
     public EndpointScope resolveScope(String endpointKey) {
         if (!StringUtils.hasText(endpointKey)) {
             return null;
         }
+        Optional<EndpointScope> cached = scopeCache.get(endpointKey, key -> Optional.ofNullable(loadScope(key)));
+        return cached == null ? null : cached.orElse(null);
+    }
+
+    /** 失效全部拓扑缓存（配置变更事件、手动排障用）。 */
+    public void invalidateAll() {
+        scopeCache.invalidateAll();
+        discoveryCache.invalidateAll();
+    }
+
+    /** 失效单个 Endpoint 的拓扑缓存。 */
+    public void invalidate(String endpointKey) {
+        if (StringUtils.hasText(endpointKey)) {
+            scopeCache.invalidate(endpointKey);
+        }
+        discoveryCache.invalidateAll();
+    }
+
+    /** 真实的拓扑解析（无缓存），返回 null 表示 Endpoint 不存在或已停用。 */
+    private EndpointScope loadScope(String endpointKey) {
         McpEndpoint ep = endpointMapper.selectByEndpointKey(endpointKey);
         if (ep == null || ep.getStatus() == null || ep.getStatus() != 1) {
             return null;
@@ -102,12 +144,17 @@ public class EndpointScopeReader {
         return new EndpointScope(ep, prefixes);
     }
 
-    /** 统一入口目录：返回全部启用且有资产的 Endpoint（不再按应用过滤）。 */
+    /** 统一入口目录：返回全部启用且有资产的 Endpoint（不再按应用过滤），结果缓存 5s。 */
     public List<Map<String, Object>> discoveryServers() {
+        List<Map<String, Object>> cached = discoveryCache.get(DISCOVERY_CACHE_KEY, key -> buildDiscoveryServers());
+        return cached == null ? Collections.emptyList() : cached;
+    }
+
+    private List<Map<String, Object>> buildDiscoveryServers() {
         List<Map<String, Object>> result = new ArrayList<>();
         List<McpEndpoint> endpoints = endpointMapper.selectAll();
         if (CollectionUtils.isEmpty(endpoints)) {
-            return result;
+            return Collections.unmodifiableList(result);
         }
         for (McpEndpoint ep : endpoints) {
             if (ep == null || ep.getStatus() == null || ep.getStatus() != 1) {
@@ -167,12 +214,13 @@ public class EndpointScopeReader {
             m.put("estimatedVisibleTokens", estimatedVisibleTokens);
             m.put("totalToolCount", totalTools);
             m.put("serverCount", members.size());
-            m.put("servers", members);
+            m.put("servers", Collections.unmodifiableList(members));
             m.put("updatedAt", ep.getUpdateTime());
             m.put("revision", revision(ep, members));
-            result.add(m);
+            result.add(Collections.unmodifiableMap(m));
         }
-        return result;
+        // 缓存结果会被多个请求共享，统一返回不可变视图，避免调用方误改污染缓存
+        return Collections.unmodifiableList(result);
     }
 
     private String absoluteUrl(String path) {

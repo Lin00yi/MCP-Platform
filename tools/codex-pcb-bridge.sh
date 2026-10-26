@@ -5,12 +5,12 @@
 # 用法：
 #   1. 配置 $HOME/.config/pcb-codex/env（或 PCB_CODEX_ENV 指向的文件）：
 #        MCP_USER_TOKEN=<dsh_ 或 PAT>              # 唯一认证凭证
-#        MCP_SERVER_URL=http://127.0.0.1:8081/mcp/v1/pcb-server
+#        MCP_SERVER_URL=http://127.0.0.1:8081/mcp/e/team-pcb
 #   2. Codex 自定义 MCP：
 #        类型：STDIO
 #        启动命令：/bin/bash
-#        参数：-lc /Users/lin/Downloads/MCP-Gateway/tools/codex-pcb-bridge.sh
-#        工作目录：/Users/lin/Downloads/MCP-Gateway
+#        参数：-lc <仓库根目录>/tools/codex-pcb-bridge.sh
+#        工作目录：<仓库根目录>
 #
 # 网关只认 x-dsh-auth-token；不再使用 appId/app_secret 签 JWT。
 set -euo pipefail
@@ -47,7 +47,7 @@ fi
 source "$ENV_FILE"
 
 : "${MCP_USER_TOKEN:?MCP_USER_TOKEN 未配置（dsh_ 或 PAT）}"
-MCP_SERVER_URL="${MCP_SERVER_URL:-http://127.0.0.1:8081/mcp/v1/pcb-server}"
+MCP_SERVER_URL="${MCP_SERVER_URL:-http://127.0.0.1:8081/mcp/e/team-pcb}"
 
 # 某些机器的 ~/.npm 存在 root 权限问题，使用可写缓存避免 EPERM
 export npm_config_cache="${npm_config_cache:-/tmp/mcp-npm-cache}"

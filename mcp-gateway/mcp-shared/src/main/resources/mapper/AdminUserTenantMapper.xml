@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.AdminUserTenantMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.AdminUserTenant">
+<mapper namespace="com.mcp.transfer.shared.mapper.AdminUserTenantMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.AdminUserTenant">
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="user_id" jdbcType="BIGINT" property="userId" />
     <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
@@ -14,7 +14,7 @@
     where user_id = #{userId,jdbcType=BIGINT}
   </select>
 
-  <insert id="insert" parameterType="com.mcp.transfer.entity.AdminUserTenant">
+  <insert id="insert" parameterType="com.mcp.transfer.shared.entity.AdminUserTenant">
     insert into admin_user_tenant (user_id, tenant_id, create_time)
     values (#{userId,jdbcType=BIGINT}, #{tenantId,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP})
   </insert>

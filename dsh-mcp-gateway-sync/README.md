@@ -24,13 +24,13 @@ DSH 进程
 - profile 可解析 `@deepseek-ai/cordis`、`@deepseek-ai/schemastery`；
 - Node.js >= 20；
 - 网关 `/mcp/discovery/servers` 返回 `serverKey`、`url`、`revision`；
-- 一个 DSH 用户/租户的 app JWT，放在 0600 文件。
+- 一个 DSH 用户的 `dsh_`/PAT（`x-dsh-auth-token`），放在 0600 文件。
 
 ## 安装
 
 ```bash
 # 在本仓库根目录
-dsh plugin --profile <profile> add /Users/lin/Downloads/MCP-Gateway/dsh-mcp-gateway-sync
+dsh plugin --profile <profile> add <仓库根目录>/dsh-mcp-gateway-sync
 ```
 
 然后在对应 profile 的 `cordis.patch.yml` 中只添加一个同步插件：
@@ -41,9 +41,9 @@ dsh plugin --profile <profile> add /Users/lin/Downloads/MCP-Gateway/dsh-mcp-gate
       name: "@mcp-gateway/dsh-mcp-gateway-sync"
       config:
         gatewayBaseUrl: http://127.0.0.1:8081
-        tokenFile: /Users/lin/.dsh/mcp-gateway/token
+        tokenFile: ~/.dsh/mcp-gateway/token
         # 网关开启身份下传时必填：文件内容即 x-dsh-auth-token 的值
-        userTokenFile: /Users/lin/.dsh/mcp-gateway/user-token
+        userTokenFile: ~/.dsh/mcp-gateway/user-token
         intervalMs: 30000
         serverNamePrefix: ""
         toolCallTimeoutMs: 60000
@@ -74,7 +74,7 @@ dsh plugin --profile <profile> add /Users/lin/Downloads/MCP-Gateway/dsh-mcp-gate
 
 - 插件使用当前 profile 的 token 文件，不要使用 admin token；
 - 网关开启身份下传时，`userTokenFile` 提供 `x-dsh-auth-token` 的用户 token；它与应用 JWT 是两个文件；
-- 网关按 `app_server_rel` + 租户过滤，插件只挂载该用户可见的 Server；
+- 网关按 user token 认证，插件只挂载该用户可见的 Endpoint；
 - 多租户需要多个 app/token，或每个租户一个 profile/plugin 实例；
 - 共享 DSH profile 时，不同用户必须使用不同 token/配置。
 

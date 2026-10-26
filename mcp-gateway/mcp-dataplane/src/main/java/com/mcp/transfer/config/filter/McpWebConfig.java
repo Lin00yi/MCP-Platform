@@ -6,20 +6,20 @@ import org.springframework.http.MediaType;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * 数据面 WebMvc 配置：MCP 协议鉴权 + 会话 + 发现鉴权，以及请求体可重复读的包装。
+ * 数据面 WebMvc 配置：会话 + 发现鉴权，以及请求体可重复读的包装。
  *
- * <p>控制面的后台 JWT 拦截器已迁到 {@code admin.config.AdminWebConfig}；
- * 拆服务后两边各自只注册自己那套拦截器，MCP 请求不再需要「先判断属于哪一面」。
+ * <p>对外只有 {@code /mcp/e/{endpointKey}} 与 {@code /mcp/discovery/**}；
+ * 旧的 {@code /mcp/v1/{serverPath}} 动态路由已下线，Endpoint 入口在控制器内完成用户 token 认证。
  */
 @Configuration
 public class McpWebConfig implements WebMvcConfigurer, Filter {
@@ -28,25 +28,17 @@ public class McpWebConfig implements WebMvcConfigurer, Filter {
     private McpSessionInterceptor mcpSessionInterceptor;
 
     @Autowired
-    private McpAuthInterceptor mcpAuthInterceptor;
-
-    @Autowired
     private McpDiscoveryAuthInterceptor mcpDiscoveryAuthInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // MCP 协议鉴权（只认 x-dsh-auth-token）
-        // /internal/** 是控制面专用接口，由 InternalApiController 自己做 X-Internal-Token 校验
-        registry.addInterceptor(mcpAuthInterceptor)
-                .addPathPatterns("/**")
-                .excludePathPatterns("/error", "/internal/**");
-        // 客户端发现接口同样只认用户 token
+        // 客户端发现接口只认用户 token
         registry.addInterceptor(mcpDiscoveryAuthInterceptor)
                 .addPathPatterns("/mcp/discovery/**");
-        // 会话校验 / Streamable HTTP 的 Mcp-Session-Id
+        // 会话校验 / Streamable HTTP 的 Mcp-Session-Id：只作用于 Endpoint 数据面，
+        // 否则未注册路径也会被会话拦截器改成 400，无法正确返回 404
         registry.addInterceptor(mcpSessionInterceptor)
-                .addPathPatterns("/**")
-                .excludePathPatterns("/error", "/internal/**");
+                .addPathPatterns("/mcp/e/**");
     }
 
     /**

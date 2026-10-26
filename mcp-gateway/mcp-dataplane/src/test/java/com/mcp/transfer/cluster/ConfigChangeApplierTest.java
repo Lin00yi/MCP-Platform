@@ -4,10 +4,10 @@ import com.mcp.transfer.cache.PromptListCache;
 import com.mcp.transfer.cache.ResourceListCache;
 import com.mcp.transfer.cache.ToolListCache;
 import com.mcp.transfer.config.session.SseEmitterRegistry;
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.entity.McpTool;
 import com.mcp.transfer.exposure.ToolEmbeddingService;
-import com.mcp.transfer.gateway.route.McpServerDynamicControllerManager;
-import com.mcp.transfer.mapper.McpToolMapper;
+import com.mcp.transfer.gateway.aggregate.McpAggregateService;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,11 +41,13 @@ class ConfigChangeApplierTest {
     @Mock
     private SseEmitterRegistry sseEmitterRegistry;
     @Mock
-    private McpServerDynamicControllerManager routeManager;
+    private McpAggregateService aggregateService;
     @Mock
     private ToolEmbeddingService toolEmbeddingService;
     @Mock
     private McpToolMapper mcpToolMapper;
+    @Mock
+    private com.mcp.transfer.topology.EndpointScopeReader endpointScopeReader;
 
     @InjectMocks
     private ConfigChangeApplier applier;
@@ -67,9 +69,10 @@ class ConfigChangeApplierTest {
         handler.accept(ClusterEvent.of(ClusterEvent.Type.TOOL, 5));
 
         verify(toolListCache).invalidate(5);
+        verify(aggregateService).invalidateProxyCache(5);
+        verify(endpointScopeReader).invalidateAll();
         verify(sseEmitterRegistry).broadcastToServer(eq(5), contains("notifications/tools/list_changed"));
         verify(sseEmitterRegistry).broadcastToAggregate(contains("notifications/tools/list_changed"));
-        verify(routeManager, never()).refreshAllServerController();
     }
 
     @Test
@@ -119,24 +122,26 @@ class ConfigChangeApplierTest {
     }
 
     @Test
-    void routesEventRefreshesRouteTable() {
-        when(routeManager.refreshAllServerController()).thenReturn("ok");
+    void serverEventInvalidatesAllAssetCachesAndBroadcasts() {
+        handler.accept(ClusterEvent.of(ClusterEvent.Type.SERVER, 5));
 
-        handler.accept(ClusterEvent.of(ClusterEvent.Type.ROUTES, null));
-
-        verify(routeManager).refreshAllServerController();
+        verify(toolListCache).invalidate(5);
+        verify(promptListCache).invalidate(5);
+        verify(resourceListCache).invalidate(5);
+        verify(aggregateService).invalidateProxyCache(5);
+        verify(sseEmitterRegistry).broadcastToServer(eq(5), contains("tools/list_changed"));
+        verify(sseEmitterRegistry).broadcastToServer(eq(5), contains("prompts/list_changed"));
+        verify(sseEmitterRegistry).broadcastToServer(eq(5), contains("resources/list_changed"));
     }
 
     @Test
-    void allEventClearsEveryCacheAndRefreshesRoutes() {
-        when(routeManager.refreshAllServerController()).thenReturn("ok");
-
+    void allEventClearsEveryCacheAndBroadcasts() {
         handler.accept(ClusterEvent.of(ClusterEvent.Type.ALL, null));
 
         verify(toolListCache).clear();
         verify(promptListCache).clear();
         verify(resourceListCache).clear();
-        verify(routeManager).refreshAllServerController();
+        verify(aggregateService).invalidateProxyCache(null);
         ArgumentCaptor<String> message = ArgumentCaptor.forClass(String.class);
         verify(sseEmitterRegistry, org.mockito.Mockito.atLeastOnce())
                 .broadcastToAggregate(message.capture());

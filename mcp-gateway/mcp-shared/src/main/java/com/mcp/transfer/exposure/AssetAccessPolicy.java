@@ -2,11 +2,11 @@ package com.mcp.transfer.exposure;
 
 import com.mcp.transfer.cache.PromptListCache;
 import com.mcp.transfer.cache.ResourceListCache;
-import com.mcp.transfer.entity.McpPrompt;
-import com.mcp.transfer.entity.McpResource;
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.mapper.McpPromptMapper;
-import com.mcp.transfer.mapper.McpResourceMapper;
+import com.mcp.transfer.shared.entity.McpPrompt;
+import com.mcp.transfer.shared.entity.McpResource;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.mapper.McpPromptMapper;
+import com.mcp.transfer.shared.mapper.McpResourceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

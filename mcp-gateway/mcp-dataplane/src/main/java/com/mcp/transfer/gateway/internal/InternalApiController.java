@@ -1,12 +1,12 @@
 package com.mcp.transfer.gateway.internal;
 
 import com.alibaba.fastjson.JSON;
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpTool;
 import com.mcp.transfer.health.McpServerHealthService;
 import com.mcp.transfer.exposure.ToolEmbeddingService;
 import com.mcp.transfer.health.ProbeLeader;
-import com.mcp.transfer.mapper.McpServerMapper;
+import com.mcp.transfer.shared.mapper.McpServerMapper;
 import com.mcp.transfer.cluster.ClusterEventBus;
 import com.mcp.transfer.config.session.SessionStore;
 import com.mcp.transfer.gateway.port.LocalConfigChangePublisher;
@@ -27,14 +27,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * 数据面内部接口（仅供控制面调用，不对外暴露）。
  *
- * <p>Caddy 只转发 {@code /mcp/*} 与 {@code /api/*}，本前缀不会被公网路由到；
+ * <p>反向代理只转发 {@code /mcp/*} 与 {@code /api/*}，本前缀不会被公网路由到；
  * 另外再做一层 {@code X-Internal-Token} 校验：
  * <ul>
  *   <li>配置了 {@code mcp.internal.token} → 必须完全匹配；</li>
@@ -119,8 +119,9 @@ public class InternalApiController {
             case "resource":
                 changePublisher.resourceChanged(serverId);
                 break;
-            case "routes":
-                changePublisher.routesChanged();
+            case "server":
+            case "routes": // 兼容旧控制面：/mcp/v1 路由已下线，统一按 Server 配置变更处理
+                changePublisher.serverChanged(serverId);
                 break;
             default:
                 result.put("ok", false);

@@ -1,7 +1,7 @@
 # ============================================================
 # S2 控制面（mcp-admin）
 #   入口：/mcp/admin/**、/mcp/log/**
-#   不出：/mcp/e/**、/mcp/v1/**、/mcp/discovery/**（属于数据面）
+#   不出：/mcp/e/**、/mcp/discovery/**（属于数据面）
 #
 # 公共配置见 mcp-shared 的 application-common.yml；profile 见 application-{dev,test,prod}.yml
 # ============================================================

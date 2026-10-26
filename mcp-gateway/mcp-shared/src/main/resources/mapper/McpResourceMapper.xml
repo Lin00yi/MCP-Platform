@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.McpResourceMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpResource">
+<mapper namespace="com.mcp.transfer.shared.mapper.McpResourceMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.McpResource">
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="server_id" jdbcType="INTEGER" property="serverId" />
     <result column="uri" jdbcType="VARCHAR" property="uri" />
@@ -27,14 +27,14 @@
     delete from mcp_resource
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpResource" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.McpResource" useGeneratedKeys="true">
     insert into mcp_resource (server_id, uri, `name`, `status`, res_json, tags, version, token_estimate, tokenizer, create_time, update_time)
     values (#{serverId,jdbcType=INTEGER}, #{uri,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR},
       #{status,jdbcType=INTEGER}, #{resJson,jdbcType=LONGVARCHAR}, #{tags,jdbcType=VARCHAR}, #{version,jdbcType=VARCHAR},
       #{tokenEstimate,jdbcType=INTEGER}, #{tokenizer,jdbcType=VARCHAR},
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpResource" useGeneratedKeys="true">
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.McpResource" useGeneratedKeys="true">
     insert into mcp_resource
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="serverId != null">server_id,</if>
@@ -63,7 +63,7 @@
       <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.entity.McpResource">
+  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.shared.entity.McpResource">
     update mcp_resource
     <set>
       <if test="serverId != null">server_id = #{serverId,jdbcType=INTEGER},</if>
@@ -79,7 +79,7 @@
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.entity.McpResource">
+  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.shared.entity.McpResource">
     update mcp_resource
     set server_id = #{serverId,jdbcType=INTEGER},
       uri = #{uri,jdbcType=VARCHAR},

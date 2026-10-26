@@ -2,7 +2,7 @@ package com.mcp.transfer.exposure;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.mcp.transfer.dto.mcp.result.tools.McpTool;
+import com.mcp.transfer.shared.dto.mcp.result.tools.McpTool;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;

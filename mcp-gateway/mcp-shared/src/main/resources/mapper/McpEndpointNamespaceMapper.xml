@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.McpEndpointNamespaceMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpEndpointNamespace">
+<mapper namespace="com.mcp.transfer.shared.mapper.McpEndpointNamespaceMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.McpEndpointNamespace">
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="endpoint_id" jdbcType="INTEGER" property="endpointId" />
     <result column="namespace_id" jdbcType="INTEGER" property="namespaceId" />
@@ -18,7 +18,7 @@
     where namespace_id = #{namespaceId,jdbcType=INTEGER} order by endpoint_id asc
   </select>
 
-  <insert id="insert" parameterType="com.mcp.transfer.entity.McpEndpointNamespace" useGeneratedKeys="true" keyProperty="id">
+  <insert id="insert" parameterType="com.mcp.transfer.shared.entity.McpEndpointNamespace" useGeneratedKeys="true" keyProperty="id">
     insert into mcp_endpoint_namespace (endpoint_id, namespace_id, create_time)
     values (#{endpointId,jdbcType=INTEGER}, #{namespaceId,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP})
   </insert>

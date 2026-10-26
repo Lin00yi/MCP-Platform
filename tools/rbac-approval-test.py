@@ -27,7 +27,7 @@ TENANT_NAME = f"e2e-rbac-{STAMP}"
 USERNAME = f"e2e-dev-{STAMP}"
 PASSWORD = "DevPass123!"
 SERVER_NAME = f"e2e-rbac-server-{STAMP}"
-SERVER_PATH = f"/mcp/v1/e2e-rbac-{STAMP}"
+SERVER_PATH = f"/assets/e2e-rbac-{STAMP}"
 
 results = []
 state = {}

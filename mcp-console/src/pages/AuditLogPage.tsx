@@ -54,13 +54,17 @@ export function AuditLogPage() {
   const [pageNum, setPageNum] = useState(1);
   const [actionFilter, setActionFilter] = useState("all");
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["operation-logs", pageNum, actionFilter],
-    queryFn: () => api.listOperationLogs({ pageNum, pageSize: PAGE_SIZE, action: actionFilter === "all" ? undefined : actionFilter }),
+    queryFn: ({ signal }) =>
+      api.listOperationLogs(
+        { pageNum, pageSize: PAGE_SIZE, action: actionFilter === "all" ? undefined : actionFilter },
+        signal,
+      ),
   });
 
   if (isLoading) return <LoadingState label="加载审计日志…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));

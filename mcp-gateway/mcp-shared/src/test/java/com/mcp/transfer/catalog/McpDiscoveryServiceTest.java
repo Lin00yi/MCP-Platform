@@ -1,11 +1,11 @@
 package com.mcp.transfer.catalog;
 
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.entity.McpTool;
-import com.mcp.transfer.mapper.McpPromptMapper;
-import com.mcp.transfer.mapper.McpResourceMapper;
-import com.mcp.transfer.mapper.McpServerMapper;
-import com.mcp.transfer.mapper.McpToolMapper;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpTool;
+import com.mcp.transfer.shared.mapper.McpPromptMapper;
+import com.mcp.transfer.shared.mapper.McpResourceMapper;
+import com.mcp.transfer.shared.mapper.McpServerMapper;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,8 +46,6 @@ class McpDiscoveryServiceTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(service, "publicBaseUrl", "http://gw:8081/");
-
         // 真实策略对象 + mock 依赖：验证列表过滤与预算计算走同一套规则
         policy = new com.mcp.transfer.exposure.ToolAccessPolicy();
         toolListCache = new com.mcp.transfer.cache.ToolListCache();
@@ -69,7 +67,7 @@ class McpDiscoveryServiceTest {
         assertEquals(1, servers.size());
         Map<String, Object> item = servers.get(0);
         assertEquals("pcb", item.get("serverKey"));
-        assertEquals("http://gw:8081/mcp/v1/pcb-server", item.get("url"));
+        assertEquals("/mcp/v1/pcb-server", item.get("path"));
         assertEquals(2, item.get("toolCount"));
         assertEquals(64, ((String) item.get("revision")).length());
     }

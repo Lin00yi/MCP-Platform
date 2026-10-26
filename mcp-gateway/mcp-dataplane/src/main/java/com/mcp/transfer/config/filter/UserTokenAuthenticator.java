@@ -2,14 +2,14 @@ package com.mcp.transfer.config.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.mcp.transfer.enums.McpErrorCode;
+import com.mcp.transfer.shared.enums.McpErrorCode;
 import com.mcp.transfer.identity.McpIdentityContext;
 import com.mcp.transfer.identity.ResolvedIdentity;
 import com.mcp.transfer.identity.UserIdentity;
 import com.mcp.transfer.identity.UserTokenProperties;
 import com.mcp.transfer.identity.UserTokenUnavailableException;
 import com.mcp.transfer.identity.UserTokenVerifier;
-import com.mcp.transfer.utils.SecretCrypto;
+import com.mcp.transfer.shared.utils.SecretCrypto;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 
 /**

@@ -1,9 +1,9 @@
 package com.mcp.transfer.admin.controller;
 
 import com.mcp.transfer.admin.topology.AccessTopologyAdminService;
-import com.mcp.transfer.dto.Result;
-import com.mcp.transfer.entity.McpEndpoint;
-import com.mcp.transfer.entity.McpNamespace;
+import com.mcp.transfer.shared.dto.Result;
+import com.mcp.transfer.shared.entity.McpEndpoint;
+import com.mcp.transfer.shared.entity.McpNamespace;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,7 +39,8 @@ public class McpAdminAccessController {
     public Result<McpNamespace> createNamespace(@RequestBody Map<String, Object> body) {
         try {
             McpNamespace ns = topologyService.saveNamespace(null,
-                    str(body, "name"), str(body, "prefix"), str(body, "description"), integer(body, "status"));
+                    str(body, "name"), str(body, "prefix"), str(body, "description"), integer(body, "status"),
+                    integer(body, "tenantId"));
             return Result.success(ns);
         } catch (IllegalArgumentException e) {
             return Result.fail(e.getMessage());
@@ -51,7 +52,8 @@ public class McpAdminAccessController {
     public Result<McpNamespace> updateNamespace(@PathVariable Integer id, @RequestBody Map<String, Object> body) {
         try {
             McpNamespace ns = topologyService.saveNamespace(id,
-                    str(body, "name"), str(body, "prefix"), str(body, "description"), integer(body, "status"));
+                    str(body, "name"), str(body, "prefix"), str(body, "description"), integer(body, "status"),
+                    null);
             return Result.success(ns);
         } catch (IllegalArgumentException e) {
             return Result.fail(e.getMessage());
@@ -93,7 +95,8 @@ public class McpAdminAccessController {
     public Result<McpEndpoint> createEndpoint(@RequestBody Map<String, Object> body) {
         try {
             McpEndpoint ep = topologyService.saveEndpoint(null,
-                    str(body, "endpointKey"), str(body, "name"), str(body, "description"), integer(body, "status"));
+                    str(body, "endpointKey"), str(body, "name"), str(body, "description"), integer(body, "status"),
+                    integer(body, "tenantId"));
             return Result.success(ep);
         } catch (IllegalArgumentException e) {
             return Result.fail(e.getMessage());
@@ -105,7 +108,8 @@ public class McpAdminAccessController {
     public Result<McpEndpoint> updateEndpoint(@PathVariable Integer id, @RequestBody Map<String, Object> body) {
         try {
             McpEndpoint ep = topologyService.saveEndpoint(id,
-                    str(body, "endpointKey"), str(body, "name"), str(body, "description"), integer(body, "status"));
+                    str(body, "endpointKey"), str(body, "name"), str(body, "description"), integer(body, "status"),
+                    null);
             return Result.success(ep);
         } catch (IllegalArgumentException e) {
             return Result.fail(e.getMessage());

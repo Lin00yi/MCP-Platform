@@ -1,6 +1,6 @@
 package com.mcp.transfer.port;
 
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.entity.McpTool;
 
 import java.util.Map;
 

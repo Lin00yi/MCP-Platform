@@ -4,8 +4,8 @@ import com.mcp.transfer.config.filter.UserTokenAuthenticator;
 import com.mcp.transfer.config.session.McpInterceptorConstants;
 import com.mcp.transfer.config.session.McpSessionCache;
 import com.mcp.transfer.config.session.SseEmitterRegistry;
-import com.mcp.transfer.dto.mcp.req.McpRequest;
-import com.mcp.transfer.dto.mcp.res.McpResponse;
+import com.mcp.transfer.shared.dto.mcp.req.McpRequest;
+import com.mcp.transfer.shared.dto.mcp.res.McpResponse;
 import com.mcp.transfer.gateway.McpUpstreamClient;
 import com.mcp.transfer.gateway.aggregate.AggregateScope;
 import com.mcp.transfer.gateway.aggregate.McpAggregateService;
@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -104,7 +104,8 @@ public class McpEndpointController {
             produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter sse(@PathVariable String endpointKey,
                           HttpServletRequest request, HttpServletResponse response) {
-        if (userTokenAuthenticator.authenticate(request, response) == null) {
+        ResolvedIdentity identity = userTokenAuthenticator.authenticate(request, response);
+        if (identity == null) {
             return null;
         }
         if (topologyService.resolveScope(endpointKey) == null) {
@@ -120,9 +121,11 @@ public class McpEndpointController {
             return null;
         }
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MS);
-        if (!sseEmitterRegistry.tryRegister(sessionId, null, emitter)) {
+        // 带上 userId：全局配额之外再按用户限流，避免单客户端占满连接
+        if (!sseEmitterRegistry.tryRegister(sessionId, null, emitter, identity.getUserId())) {
             response.setStatus(429);
-            logger.warn("[SSE] Endpoint 连接数已达上限，拒绝新连接 endpoint={} sessionId={}", endpointKey, sessionId);
+            logger.warn("[SSE] Endpoint 连接数已达上限（全局或单用户），拒绝新连接 endpoint={} sessionId={} userId={}",
+                    endpointKey, sessionId, identity.getUserId());
             return null;
         }
         try {

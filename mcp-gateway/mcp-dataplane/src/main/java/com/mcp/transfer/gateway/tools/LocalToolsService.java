@@ -1,8 +1,8 @@
 package com.mcp.transfer.gateway.tools;
 
 import com.alibaba.fastjson.JSONObject;
-import com.mcp.transfer.dto.mcp.req.McpRequest;
-import com.mcp.transfer.dto.mcp.result.data.McpResData;
+import com.mcp.transfer.shared.dto.mcp.req.McpRequest;
+import com.mcp.transfer.shared.dto.mcp.result.data.McpResData;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

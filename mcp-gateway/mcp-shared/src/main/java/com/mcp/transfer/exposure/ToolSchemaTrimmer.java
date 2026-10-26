@@ -20,7 +20,7 @@ public class ToolSchemaTrimmer {
     @Autowired
     private ToolExposureProperties properties;
 
-    public com.mcp.transfer.dto.mcp.result.tools.McpTool trim(com.mcp.transfer.dto.mcp.result.tools.McpTool tool) {
+    public com.mcp.transfer.shared.dto.mcp.result.tools.McpTool trim(com.mcp.transfer.shared.dto.mcp.result.tools.McpTool tool) {
         if (tool == null) {
             return null;
         }

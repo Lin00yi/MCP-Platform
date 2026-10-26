@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, Copy, Inbox, KeyRound, ShieldCheck, Undo2, X } from "lucide-react";
+import { Check, Inbox, ShieldCheck, Undo2, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { APPROVAL_ACTION_LABEL, canApprove, useApprovalPolicy } from "@/lib/approval";
 import { getUser, roleLevel } from "@/lib/auth";
@@ -61,29 +61,34 @@ export function ApprovalsPage() {
   const [detailId, setDetailId] = useState<number | null>(null);
   const [comment, setComment] = useState("");
 
-  const [secret, setSecret] = useState<{ id: number; value: string } | null>(null);
 
   const { data: policy } = useApprovalPolicy();
 
-  const { data: page, isLoading, isError, error } = useQuery({
+  const { data: page, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["approvals", scope, statusFilter, pageNum],
-    queryFn: () =>
-      api.listApprovals({
-        pageNum,
-        pageSize: PAGE_SIZE,
-        scope,
-        status: scope === "pending" || statusFilter === "ALL" ? undefined : statusFilter,
-      }),
+    queryFn: ({ signal }) =>
+      api.listApprovals(
+        {
+          pageNum,
+          pageSize: PAGE_SIZE,
+          scope,
+          status: scope === "pending" || statusFilter === "ALL" ? undefined : statusFilter,
+        },
+        signal,
+      ),
   });
 
-  const { data: servers } = useQuery({ queryKey: ["servers"], queryFn: api.listServers });
-  const { data: tools } = useQuery({ queryKey: ["tools"], queryFn: api.listTools });
-  const { data: prompts } = useQuery({ queryKey: ["prompts"], queryFn: api.listPrompts });
-  const { data: resources } = useQuery({ queryKey: ["resources"], queryFn: api.listResources });
+  const { data: servers } = useQuery({ queryKey: ["servers"], queryFn: ({ signal }) => api.listServers(signal) });
+  const { data: tools } = useQuery({ queryKey: ["tools"], queryFn: ({ signal }) => api.listTools(signal) });
+  const { data: prompts } = useQuery({ queryKey: ["prompts"], queryFn: ({ signal }) => api.listPrompts(signal) });
+  const { data: resources } = useQuery({
+    queryKey: ["resources"],
+    queryFn: ({ signal }) => api.listResources(signal),
+  });
 
   const { data: detail } = useQuery({
     queryKey: ["approval-detail", detailId],
-    queryFn: () => api.getApproval(detailId as number),
+    queryFn: ({ signal }) => api.getApproval(detailId as number, signal),
     enabled: detailId !== null,
   });
 
@@ -116,12 +121,6 @@ export function ApprovalsPage() {
     onError: (e) => toast.error("操作失败", { description: (e as Error).message }),
   });
 
-  const secretMutation = useMutation({
-    mutationFn: (id: number) => api.revealApprovalSecret(id),
-    onSuccess: (res, id) => setSecret({ id, value: res.secret }),
-    onError: (e) => toast.error("获取密钥失败", { description: (e as Error).message }),
-  });
-
   const serverName = (id?: number) => servers?.find((s) => s.id === id)?.name ?? (id ? `server#${id}` : "—");
   const toolName = (id?: number) => tools?.find((t) => t.id === id)?.code ?? (id ? `tool#${id}` : "—");
   const promptName = (id?: number) => prompts?.find((p) => p.id === id)?.name ?? (id ? `prompt#${id}` : "—");
@@ -129,7 +128,6 @@ export function ApprovalsPage() {
 
   const targetText = (r: ApprovalRequest) => {
     const parts: string[] = [];
-    if (r.appId) parts.push(`应用 ${r.appId}`);
     if (r.serverId) parts.push(`Server ${serverName(r.serverId)}`);
     if (r.toolId) parts.push(`Tool ${toolName(r.toolId)}`);
     if (r.promptId) parts.push(`Prompt ${promptName(r.promptId)}`);
@@ -139,7 +137,7 @@ export function ApprovalsPage() {
   };
 
   if (isLoading) return <LoadingState label="加载审批…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   const total = page?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -218,7 +216,6 @@ export function ApprovalsPage() {
                 const isMine = r.requester === me?.username;
                 const canDecide = r.status === "PENDING" && !isMine && canApprove(policy, r.action);
                 const canCancel = r.status === "PENDING" && isMine;
-                const canReveal = r.status === "APPROVED" && isMine && (r.action === "APP_CREATE" || r.action === "APP_RESET_SECRET");
                 return (
                   <TableRow key={r.id}>
                     <TableCell className="font-mono text-muted-foreground">{r.id}</TableCell>
@@ -257,11 +254,6 @@ export function ApprovalsPage() {
                         {canCancel && (
                           <Button variant="ghost" size="xs" onClick={() => { setDetailId(r.id); setComment(""); }}>
                             <Undo2 className="h-3.5 w-3.5" /> 撤回
-                          </Button>
-                        )}
-                        {canReveal && (
-                          <Button variant="ghost" size="xs" onClick={() => secretMutation.mutate(r.id)} disabled={secretMutation.isPending}>
-                            <KeyRound className="h-3.5 w-3.5" /> 密钥
                           </Button>
                         )}
                         <Button variant="ghost" size="xs" onClick={() => { setDetailId(r.id); setComment(""); }}>
@@ -359,44 +351,10 @@ export function ApprovalsPage() {
                 </Button>
               </>
             )}
-            {detail && detail.status === "APPROVED" && detail.requester === me?.username && (detail.action === "APP_CREATE" || detail.action === "APP_RESET_SECRET") && (
-              <Button onClick={() => secretMutation.mutate(detail.id)} disabled={secretMutation.isPending}>
-                <KeyRound className="h-4 w-4" /> 查看应用密钥
-              </Button>
-            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* 密钥一次性展示 */}
-      <Dialog open={secret !== null} onOpenChange={(o) => !o && setSecret(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>应用密钥</DialogTitle>
-            <DialogDescription>审批通过后生成，仅申请人可查看；请立即保存，后续如需重置需再次审批。</DialogDescription>
-          </DialogHeader>
-          <DialogBody>
-            <div className="flex items-center gap-2 rounded-md border bg-muted/40 p-3">
-              <code className="flex-1 break-all font-mono text-xs">{secret?.value}</code>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  if (secret) {
-                    navigator.clipboard?.writeText(secret.value);
-                    toast.success("已复制");
-                  }
-                }}
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
-          </DialogBody>
-          <DialogFooter>
-            <Button onClick={() => setSecret(null)}>关闭</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.McpPromptMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpPrompt">
+<mapper namespace="com.mcp.transfer.shared.mapper.McpPromptMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.McpPrompt">
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="server_id" jdbcType="INTEGER" property="serverId" />
     <result column="name" jdbcType="VARCHAR" property="name" />
@@ -26,14 +26,14 @@
     delete from mcp_prompt
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpPrompt" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.McpPrompt" useGeneratedKeys="true">
     insert into mcp_prompt (server_id, `name`, `status`, res_json, tags, version, token_estimate, tokenizer, create_time, update_time)
     values (#{serverId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER},
       #{resJson,jdbcType=LONGVARCHAR}, #{tags,jdbcType=VARCHAR}, #{version,jdbcType=VARCHAR},
       #{tokenEstimate,jdbcType=INTEGER}, #{tokenizer,jdbcType=VARCHAR},
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpPrompt" useGeneratedKeys="true">
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.McpPrompt" useGeneratedKeys="true">
     insert into mcp_prompt
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="serverId != null">server_id,</if>
@@ -60,7 +60,7 @@
       <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.entity.McpPrompt">
+  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.shared.entity.McpPrompt">
     update mcp_prompt
     <set>
       <if test="serverId != null">server_id = #{serverId,jdbcType=INTEGER},</if>
@@ -75,7 +75,7 @@
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.entity.McpPrompt">
+  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.shared.entity.McpPrompt">
     update mcp_prompt
     set server_id = #{serverId,jdbcType=INTEGER},
       `name` = #{name,jdbcType=VARCHAR},

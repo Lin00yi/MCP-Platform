@@ -26,8 +26,8 @@ GET /mcp/discovery/servers（扩展后的现有接口）
 工具名为 `mcp__<endpointName>__<namespacePrefix>__<tool>`（DSH 先加 `mcp__<serverName>__`，网关再加
 `{namespacePrefix}__`）。同步器/插件不需要改代码：它们仍然按发现结果挂载。
 
-Endpoint、Namespace 在控制台「资产 → Namespaces」「权限与治理 → Endpoints」维护，应用需显式授权到 Endpoint。
-旧的 `client.access.mode` 开关与 `/mcp/v1/aggregate` 已下线，详见
+Endpoint、Namespace 在控制台「资产 → Namespaces」「权限与治理 → Endpoints」维护；应用授权已移除，启用 Endpoint 即可访问。
+旧的 `client.access.mode`、`/mcp/v1/aggregate` 与 `/mcp/v1/{serverPath}` 均已下线，详见
 [Endpoint统一接入.md](Endpoint统一接入.md)。
 
 配置文件：
@@ -47,8 +47,8 @@ Endpoint、Namespace 在控制台「资产 → Namespaces」「权限与治理 �
   "id": 10,
   "serverKey": "pcb",
   "name": "pcb-server",
-  "path": "/mcp/v1/pcb-server",
-  "url": "http://127.0.0.1:8081/mcp/v1/pcb-server",
+  "path": "/mcp/e/pcb",
+  "url": "http://127.0.0.1:8081/mcp/e/pcb",
   "status": 1,
   "upstreamType": "NONE",
   "toolCount": 8,
@@ -57,7 +57,7 @@ Endpoint、Namespace 在控制台「资产 → Namespaces」「权限与治理 �
 }
 ```
 
-- 只返回当前 app token 已授权的 Server；
+- 只返回当前用户 token 可见的 Endpoint（应用授权已移除）；
 - `toolCount` 是**授权后的工具数**；
 - `revision` 包含 server、授权、工具变更；
 - 响应带 `ETag` / `X-MCP-Revision`，支持 `If-None-Match` 304；
@@ -128,7 +128,7 @@ chmod 600 ~/.dsh/mcp-gateway/user-token
 ### 2.2 运行
 
 ```bash
-cd /Users/lin/Downloads/MCP-Gateway
+cd <仓库根目录>
 
 # 先看将生成什么
 python3 tools/dsh-mcp-sync.py \
@@ -153,9 +153,9 @@ python3 tools/dsh-mcp-sync.py \
       config:
         serverName: "pcb"
         transport: streamable-http
-        url: "http://127.0.0.1:8081/mcp/v1/pcb-server"
+        url: "http://127.0.0.1:8081/mcp/e/pcb"
         headers:
-          Authorization: !!js '`Bearer ${process.getBuiltinModule("node:fs").readFileSync("/Users/.../.dsh/mcp-gateway/token", "utf8").trim()}`'
+          x-dsh-auth-token: !!js '`${process.getBuiltinModule("node:fs").readFileSync("/Users/.../.dsh/mcp-gateway/token", "utf8").trim()}`'
         failOnStartupError: false
         toolCallTimeoutMs: 60000
 # <<< mcp-gateway managed block <<<
@@ -178,15 +178,15 @@ python3 tools/dsh-mcp-sync.py \
   <key>ProgramArguments</key>
   <array>
     <string>/usr/bin/python3</string>
-    <string>/Users/lin/Downloads/MCP-Gateway/tools/dsh-mcp-sync.py</string>
+    <string><仓库根目录>/tools/dsh-mcp-sync.py</string>
     <string>--config</string>
-    <string>/Users/lin/.dsh/mcp-gateway/config.json</string>
+    <string>~/.dsh/mcp-gateway/config.json</string>
     <string>--once</string>
   </array>
   <key>StartInterval</key><integer>30</integer>
   <key>RunAtLoad</key><true/>
-  <key>StandardOutPath</key><string>/Users/lin/.dsh/mcp-gateway/sync.log</string>
-  <key>StandardErrorPath</key><string>/Users/lin/.dsh/mcp-gateway/sync.err.log</string>
+  <key>StandardOutPath</key><string>~/.dsh/mcp-gateway/sync.log</string>
+  <key>StandardErrorPath</key><string>~/.dsh/mcp-gateway/sync.err.log</string>
 </dict>
 </plist>
 ```
@@ -242,22 +242,16 @@ python3 tools/dsh-mcp-sync.py --config ~/.dsh/mcp-gateway/config.json --once --f
 
 ## 4. 用户态
 
-- 同步器使用**当前 DSH 用户的应用 token**，不是 admin token；网关开启身份下传时，还需 `userTokenFile` 提供 `x-dsh-auth-token` 的用户 token；
-- 网关按 `app_server_rel` + 租户过滤，DSH 只看到该用户可见的 Server；
-- 一个 app 只归属一个租户；多租户需要多个 app/token/条目；
-- 共享 `~/.dsh` profile 时，切换用户必须先替换 managed block，再重载 DSH；
-- 不要为了“全部可见”使用超管 token。
+- 同步器使用**当前 DSH 用户的 token**（`dsh_` / PAT），不是 admin token；**不再需要应用 token**；
+- 网关只按用户 token 认证，不再做应用/租户授权过滤；DSH 看到的是全部启用 Endpoint；
+- 共享 `~/.dsh` profile 时，切换用户必须先替换 managed block（token 文件），再重载 DSH；
+- 不要使用超管 token 以外的后台凭证；`dsh_`/PAT 失效会直接 401。
 
 ---
 
 ## 5. Token 过期
 
-```bash
-cd /Users/lin/Downloads/MCP-Gateway
-python3 tools/gen-mcp-app-token.py \
-  --env-file mcp-gateway/.codex/dsh-pcb.env \
-  --out ~/.dsh/mcp-gateway/token
-```
+在 user-center 重新登录生成 `dsh_` token，或重新生成 PAT，把 token 文件（`~/.dsh/mcp-gateway/token`）更新为一行新的 Bearer token。
 
 然后让 DSH 重载/重启；`cordis.patch.yml` 不需要改。
 

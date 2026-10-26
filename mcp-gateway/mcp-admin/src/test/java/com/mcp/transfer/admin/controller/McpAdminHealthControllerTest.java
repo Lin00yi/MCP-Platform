@@ -1,8 +1,8 @@
 package com.mcp.transfer.admin.controller;
 
-import com.mcp.transfer.dto.Result;
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.mapper.McpServerMapper;
+import com.mcp.transfer.shared.dto.Result;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.mapper.McpServerMapper;
 import com.mcp.transfer.port.HealthQueryPort;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

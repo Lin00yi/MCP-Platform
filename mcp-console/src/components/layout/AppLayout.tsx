@@ -16,6 +16,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
+import { MIN_PASSWORD_LENGTH, PASSWORD_RULE_HINT } from "@/lib/constants";
 import { navItems, NAV_GROUP_ORDER, type NavItem } from "./nav";
 import { getUser, logout, roleLevel } from "@/lib/auth";
 import {
@@ -337,8 +338,8 @@ export function AppLayout() {
       toast.error("请填写旧密码和新密码");
       return;
     }
-    if (pwdForm.newPassword.length < 6) {
-      toast.error("新密码至少 8 位");
+    if (pwdForm.newPassword.length < MIN_PASSWORD_LENGTH) {
+      toast.error(`新密码${PASSWORD_RULE_HINT}`);
       return;
     }
     if (pwdForm.newPassword !== pwdForm.confirmPassword) {
@@ -464,7 +465,7 @@ export function AppLayout() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="pwd-new">新密码</Label>
-              <Input id="pwd-new" type="password" value={pwdForm.newPassword} onChange={(e) => setPwdForm({ ...pwdForm, newPassword: e.target.value })} placeholder="至少 8 位" />
+              <Input id="pwd-new" type="password" value={pwdForm.newPassword} onChange={(e) => setPwdForm({ ...pwdForm, newPassword: e.target.value })} placeholder={PASSWORD_RULE_HINT} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="pwd-confirm">确认新密码</Label>

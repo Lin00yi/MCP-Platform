@@ -4,7 +4,7 @@
 //
 // 数据来源：
 //   - 版本号：package.json 的 major.minor + git 提交数（可用 CONSOLE_VERSION 覆盖）
-//   - 更新内容：当前构建自动生成（最近提交标题）+ changelog.json 历史版本
+//   - 更新内容：当前构建自动生成（最近一条提交标题）+ changelog.json 历史版本
 //   - 构建时间：本次生成时间（可用 CONSOLE_BUILD_TIME 覆盖）
 //   - 提交号：GIT_COMMIT 环境变量，或本地 git
 //
@@ -29,7 +29,7 @@ function readCommit() {
       .toString()
       .trim();
   } catch {
-    // Docker 构建上下文不包含 .git，取不到提交号时留空
+    // 发布构建上下文可能不包含 .git，取不到提交号时留空
     return "";
   }
 }

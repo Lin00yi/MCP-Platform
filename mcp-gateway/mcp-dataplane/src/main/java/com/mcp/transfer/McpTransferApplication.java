@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 // 扫描 Mapper 接口所在的包
-@MapperScan("com.mcp.transfer.mapper")
+@MapperScan("com.mcp.transfer.shared.mapper")
 @SpringBootApplication
 @EnableScheduling
 public class McpTransferApplication {

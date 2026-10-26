@@ -1,6 +1,7 @@
 package com.mcp.transfer.admin.security;
 
 import cn.hutool.jwt.JWT;
+import cn.hutool.jwt.JWTUtil;
 import com.mcp.transfer.admin.security.AdminAuthContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -71,5 +72,35 @@ class AdminJwtUtilTest {
                 .setKey("another-secret-another-secret-1234".getBytes(StandardCharsets.UTF_8))
                 .sign();
         assertNull(AdminJwtUtil.parse(token));
+    }
+
+    /** 登录有效期可配置：token 的 exp - iat 等于配置值 */
+    @Test
+    void ttlIsConfigurable() {
+        try {
+            AdminJwtUtil.setTtlHours(24);
+            String token = AdminJwtUtil.sign(1L, "alice", "ADMIN", new Date());
+            JWT jwt = JWTUtil.parseToken(token);
+            long iat = Long.parseLong(jwt.getPayload("iat").toString());
+            long exp = Long.parseLong(jwt.getPayload("exp").toString());
+            assertEquals(24 * 60 * 60L, exp - iat);
+        } finally {
+            AdminJwtUtil.setTtlHours(AdminJwtUtil.DEFAULT_TTL_MS / (60L * 60L * 1000L));
+        }
+    }
+
+    /** 最长 7 天：超过 168 小时按 168 小时处理，低于 1 小时按 1 小时处理 */
+    @Test
+    void ttlIsClampedToSevenDays() {
+        try {
+            AdminJwtUtil.setTtlHours(9999);
+            assertEquals(AdminJwtUtil.MAX_TTL_MS, AdminJwtUtil.getTtlMillis());
+            assertEquals(AdminJwtUtil.MAX_TTL_MS, 7L * 24 * 60 * 60 * 1000L);
+
+            AdminJwtUtil.setTtlHours(0);
+            assertEquals(AdminJwtUtil.MIN_TTL_MS, AdminJwtUtil.getTtlMillis());
+        } finally {
+            AdminJwtUtil.setTtlHours(AdminJwtUtil.DEFAULT_TTL_MS / (60L * 60L * 1000L));
+        }
     }
 }

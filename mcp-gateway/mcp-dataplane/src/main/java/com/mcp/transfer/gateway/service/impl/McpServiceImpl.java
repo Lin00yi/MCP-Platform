@@ -5,38 +5,28 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mcp.transfer.utils.ReflectMethodInvoker;
+import com.mcp.transfer.shared.utils.ReflectMethodInvoker;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-import com.mcp.transfer.dto.mcp.req.McpRequest;
-import com.mcp.transfer.dto.mcp.req.Params;
-import com.mcp.transfer.dto.mcp.res.McpResponse;
-import com.mcp.transfer.dto.mcp.result.data.McpResData;
-import com.mcp.transfer.dto.mcp.result.initialize.McpInitializeResult;
-import com.mcp.transfer.dto.mcp.result.initialize.McpPromptsCapability;
-import com.mcp.transfer.dto.mcp.result.initialize.McpResourcesCapability;
-import com.mcp.transfer.dto.mcp.result.initialize.McpServerCapabilities;
-import com.mcp.transfer.dto.mcp.result.initialize.McpServerInfo;
-import com.mcp.transfer.dto.mcp.result.initialize.McpToolsCapability;
-import com.mcp.transfer.dto.mcp.result.tools.McpToolsListResult;
-import com.mcp.transfer.entity.McpPrompt;
-import com.mcp.transfer.entity.McpResource;
-import com.mcp.transfer.entity.McpRequestLog;
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.entity.McpTool;
-import com.mcp.transfer.entity.ServiceSystem;
-import com.mcp.transfer.entity.ToolCallRecord;
-import com.mcp.transfer.enums.McpErrorCode;
-import com.mcp.transfer.enums.McpMethodEnum;
+import com.mcp.transfer.shared.dto.mcp.req.McpRequest;
+import com.mcp.transfer.shared.dto.mcp.req.Params;
+import com.mcp.transfer.shared.dto.mcp.res.McpResponse;
+import com.mcp.transfer.shared.dto.mcp.result.data.McpResData;
+import com.mcp.transfer.shared.entity.McpPrompt;
+import com.mcp.transfer.shared.entity.McpResource;
+import com.mcp.transfer.shared.entity.McpRequestLog;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpTool;
+import com.mcp.transfer.shared.entity.ServiceSystem;
+import com.mcp.transfer.shared.entity.ToolCallRecord;
+import com.mcp.transfer.shared.enums.McpErrorCode;
+import com.mcp.transfer.shared.enums.McpMethodEnum;
 import com.mcp.transfer.exposure.AssetAccessPolicy;
 import com.mcp.transfer.exposure.AssetContentLimiter;
-import com.mcp.transfer.exposure.AssetPager;
 import com.mcp.transfer.exposure.MetaToolFactory;
 import com.mcp.transfer.exposure.ToolAccessPolicy;
-import com.mcp.transfer.exposure.ToolBudget;
-import com.mcp.transfer.exposure.ToolBudgetAlerter;
 import com.mcp.transfer.exposure.ToolDefinitionSupport;
 import com.mcp.transfer.exposure.ToolExposureModes;
 import com.mcp.transfer.exposure.ToolExposureProperties;
@@ -45,21 +35,21 @@ import com.mcp.transfer.exposure.ToolResultService;
 import com.mcp.transfer.exposure.ToolSchemaCompactor;
 import com.mcp.transfer.exposure.ToolSchemaTrimmer;
 import com.mcp.transfer.exposure.ToolSearchService;
-import com.mcp.transfer.mapper.McpPromptMapper;
-import com.mcp.transfer.mapper.McpRequestLogMapper;
-import com.mcp.transfer.mapper.McpResourceMapper;
-import com.mcp.transfer.mapper.McpServerMapper;
-import com.mcp.transfer.mapper.McpToolMapper;
-import com.mcp.transfer.mapper.ServiceSystemMapper;
-import com.mcp.transfer.mapper.ToolCallRecordMapper;
+import com.mcp.transfer.shared.mapper.McpPromptMapper;
+import com.mcp.transfer.shared.mapper.McpRequestLogMapper;
+import com.mcp.transfer.shared.mapper.McpResourceMapper;
+import com.mcp.transfer.shared.mapper.McpServerMapper;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
+import com.mcp.transfer.shared.mapper.ServiceSystemMapper;
+import com.mcp.transfer.gateway.log.ToolCallRecordWriter;
 import com.mcp.transfer.gateway.service.McpService;
 import com.mcp.transfer.config.session.McpSessionCache;
 import com.mcp.transfer.health.UpstreamCircuitBreaker;
 import com.mcp.transfer.identity.IdentityProperties;
 import com.mcp.transfer.identity.McpIdentityContext;
 import com.mcp.transfer.identity.ResolvedIdentity;
-import com.mcp.transfer.utils.SecretCrypto;
-import com.mcp.transfer.utils.ServerKeyUtils;
+import com.mcp.transfer.shared.utils.SecretCrypto;
+import com.mcp.transfer.shared.utils.ServerKeyUtils;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +59,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -143,8 +133,6 @@ public class McpServiceImpl implements McpService {
     @Autowired
     private ToolSearchService toolSearchService;
 
-    @Autowired
-    private ToolBudgetAlerter toolBudgetAlerter;
 
     @Autowired
     private com.mcp.transfer.exposure.ToolPaginationTelemetry toolPaginationTelemetry;
@@ -153,10 +141,7 @@ public class McpServiceImpl implements McpService {
     private com.mcp.transfer.exposure.TokenEstimator tokenEstimator;
 
     @Autowired
-    private com.mcp.transfer.config.security.UrlSecurityValidator urlSecurityValidator;
-
-    @Autowired
-    private com.mcp.transfer.mapper.TenantMapper tenantMapper;
+    private com.mcp.transfer.shared.config.security.UrlSecurityValidator urlSecurityValidator;
 
     @Autowired
     private McpPromptMapper mcpPromptMapper;
@@ -168,7 +153,7 @@ public class McpServiceImpl implements McpService {
     private ServiceSystemMapper serviceSystemMapper;
 
     @Autowired
-    private ToolCallRecordMapper toolCallRecordMapper;
+    private ToolCallRecordWriter toolCallRecordWriter;
 
     @Autowired
     private McpRequestLogMapper mcpRequestLogMapper;
@@ -220,167 +205,6 @@ public class McpServiceImpl implements McpService {
         this.webClient = WebClient.builder()
                 .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(20 * 1024 * 1024))
                 .build();
-    }
-
-    @Override
-    public McpResponse handleMcpRequest(McpRequest mcpRequest, HttpServletRequest request) {
-        McpResponse response = new McpResponse();
-        Object reqId = mcpRequest.getId() == null ? UUID.randomUUID().toString() : mcpRequest.getId();
-        response.setId(reqId);
-
-        String method = mcpRequest.getMethod();
-        String requestPath = request.getRequestURI();
-        String appId = request.getAttribute("mcpAppId") == null ? null : request.getAttribute("mcpAppId").toString();
-        logger.info("MCP 请求 method={}, path={}, appId={}", method, requestPath, appId);
-
-        // 客编只信任用户信息服务；模型/客户端传入的客编字段统一覆盖（含代理转发）
-        overrideCustomerArgs(mcpRequest);
-
-        // initialize 完成后，把身份绑定到会话（客编来自用户信息服务，客户端不可切换）
-        if ("initialize".equals(method) || "mcp/initialize".equals(method)) {
-            bindClientInfo(mcpRequest, request);
-        }
-
-        if ("initialize".equals(method) || "mcp/initialize".equals(method)) {
-            Object sessionIdAttr = request.getAttribute(com.mcp.transfer.config.session.McpInterceptorConstants.MCP_SESSION_ID_HEADER);
-            Object identityAttr = request.getAttribute("mcpIdentity");
-            if (sessionIdAttr != null && identityAttr instanceof ResolvedIdentity) {
-                mcpSessionCache.bind(sessionIdAttr.toString(), (ResolvedIdentity) identityAttr);
-            }
-        }
-
-        // MCP 代理/聚合型 server：整包透传到下游真实 MCP server
-        McpServer proxyServer = mcpServerMapper.selectOneByPath(requestPath);
-        if (proxyServer != null && ("MCP".equalsIgnoreCase(proxyServer.getUpstreamType())
-                || "AGGREGATE".equalsIgnoreCase(proxyServer.getUpstreamType()))) {
-            String gatewaySessionId = request.getHeader(com.mcp.transfer.config.session.McpInterceptorConstants.MCP_SESSION_ID_HEADER);
-            if (gatewaySessionId == null) {
-                Object attr = request.getAttribute(com.mcp.transfer.config.session.McpInterceptorConstants.MCP_SESSION_ID_HEADER);
-                gatewaySessionId = attr != null ? attr.toString() : null;
-            }
-            McpResponse proxyResp = mcpUpstreamClient.proxy(proxyServer, mcpRequest, gatewaySessionId);
-            String toolName = "tools/call".equals(method) && mcpRequest.getParams() != null ? mcpRequest.getParams().getName() : null;
-            saveMcpRequestLog(method, toolName, requestPath, request, mcpRequest, proxyResp);
-            return proxyResp;
-        }
-
-        // 未知通知类方法：按 MCP 规范直接受理，不返回错误
-        if (method != null && method.startsWith("notifications/")) {
-            response.setResult(null);
-            saveMcpRequestLog(method, null, requestPath, request, mcpRequest, response);
-            return response;
-        }
-
-        McpMethodEnum mcpMethod = McpMethodEnum.getByMethod(method);
-        if (mcpMethod == null) {
-            logger.warn("未识别的 MCP method：{}", method);
-            response.setError(McpErrorCode.METHOD_NOT_FOUND);
-            return response;
-        }
-
-        switch (mcpMethod) {
-            case INITIALIZE:
-                response.setResult(this.buildMcpInitializeResult(requestPath));
-                return response;
-            case PING:
-                response.setResult(new Object());
-                return response;
-            case NOTIFICATIONS_INITIALIZED:
-                response.setResult(new JSONObject());
-                break;
-            case TOOLS_LIST:
-                response.setResult(this.buildToolListResult(requestPath, appId,
-                        mcpRequest.getParams() == null ? null : mcpRequest.getParams().getCursor(),
-                        resolveSessionId(request), resolveClientName(request)));
-                break;
-            case PROMPTS_LIST:
-                response.setResult(this.buildPromptListResult(requestPath, appId,
-                        mcpRequest.getParams() == null ? null : mcpRequest.getParams().getCursor(),
-                        resolveSessionId(request), resolveClientName(request)));
-                break;
-            case RESOURCES_LIST:
-                response.setResult(this.buildResourceListResult(requestPath, appId,
-                        mcpRequest.getParams() == null ? null : mcpRequest.getParams().getCursor(),
-                        resolveSessionId(request), resolveClientName(request)));
-                break;
-            case RESOURCES_TEMPLATES_LIST:
-                response.setResult(this.buildResourceTemplatesListResult(requestPath, appId,
-                        mcpRequest.getParams() == null ? null : mcpRequest.getParams().getCursor(),
-                        resolveSessionId(request), resolveClientName(request)));
-                break;
-            case PROMPTS_GET:
-                response.setResult(this.promptGet(mcpRequest, requestPath, appId));
-                break;
-            case RESOURCES_READ:
-                response.setResult(this.resourceRead(mcpRequest, requestPath, appId));
-                break;
-            case TOOLS_CALL:
-                try {
-                    response.setResult(this.toolsCall(mcpRequest, requestPath, request, appId));
-                } catch (IllegalArgumentException e) {
-                    // 参数校验失败：以标准 MCP result 格式返回错误信息，让 LLM 能读取到
-                    logger.warn("工具参数校验失败, method: {}, path: {}, error: {}", mcpRequest.getParams().getName(), requestPath, e.getMessage());
-                    response.setResult(errorResult(e.getMessage()));
-                    response.setError((Object) null);
-                } catch (Exception e) {
-                    logger.error("工具调用异常, method: {}, path: {}", mcpRequest.getParams() != null ? mcpRequest.getParams().getName() : null, requestPath, e);
-                    JSONObject error = new JSONObject();
-                    error.put("code", -32603);
-                    error.put("message", "工具调用失败");
-                    response.setError(error);
-                    response.setResult(null);
-                } catch (Throwable t) {
-                    logger.error("工具调用发生 Error 级别异常, method: {}, path: {}",
-                            mcpRequest.getParams() != null ? mcpRequest.getParams().getName() : "unknown",
-                            requestPath, t);
-                    JSONObject error = new JSONObject();
-                    error.put("code", -32603);
-                    error.put("message", "服务器内部错误");
-                    response.setError(error);
-                    response.setResult(null);
-                }
-                break;
-            default:
-                response.setError(McpErrorCode.METHOD_NOT_FOUND);
-                break;
-        }
-
-        String toolName = "tools/call".equals(method) && mcpRequest.getParams() != null ? mcpRequest.getParams().getName() : null;
-        saveMcpRequestLog(method, toolName, requestPath, request, mcpRequest, response);
-
-        return response;
-    }
-
-    /**
-     * tools/call 入口：先做访问鉴权，再区分元工具与真实工具。
-     *
-     * <p>鉴权与 tools/list 的可见性规则一致，修复“列表已按白名单过滤、但按名字仍能调用”的旧漏洞。
-     */
-    @SneakyThrows
-    private Object toolsCall(McpRequest mcpRequest, String requestPath, HttpServletRequest request, String appId) {
-        McpServer server = mcpServerMapper.selectOneByPath(requestPath);
-        if (server == null) {
-            return errorResult("MCP Server 不存在或已下线");
-        }
-        if (mcpRequest.getParams() == null || !StringUtils.hasText(mcpRequest.getParams().getName())) {
-            throw new IllegalArgumentException("tools/call 缺少 params.name");
-        }
-        String name = mcpRequest.getParams().getName();
-
-        // META 模式：元工具由网关本地处理，不查 mcp_tool 表
-        if (isMetaExposure(server) && MetaToolFactory.isMetaTool(name)) {
-            return callMetaTool(server, name, mcpRequest, request, appId);
-        }
-
-        McpTool tool = mcpToolMapper.selectOneByServerIdAndCode(server.getId(), name);
-        if (tool == null) {
-            return errorResult("工具不存在: " + name);
-        }
-        if (!toolAccessPolicy.canUse(server, appId, tool)) {
-            logger.warn("工具调用被拒绝（未授权）: server={}, appId={}, tool={}", server.getName(), appId, name);
-            return errorResult("无权调用该工具: " + name);
-        }
-        return executeToolOnServer(server, tool, mcpRequest, request);
     }
 
     /** 真实工具执行（本地反射 / HTTP 转发）+ 调用日志，标准 tools/call 与 META call_tool 共用 */
@@ -792,8 +616,8 @@ public class McpServiceImpl implements McpService {
         try {
             ToolCallRecord record = new ToolCallRecord();
             record.setTenantId(server.getTenantId());
-            com.mcp.transfer.entity.Tenant tenant = tenantMapper.selectByPrimaryKey(server.getTenantId());
-            record.setTenantName(tenant != null ? tenant.getName() : null);
+            // 租户名走本地缓存（10min TTL），避免每次工具调用多一次 SELECT
+            record.setTenantName(toolCallRecordWriter.tenantName(server.getTenantId()));
             record.setServerId(server.getId());
             record.setServerName(server.getName());
             // 应用维度已移除；调用记录只保留用户与资产
@@ -826,7 +650,8 @@ public class McpServiceImpl implements McpService {
             record.setErrorMsg(errorMsg);
             record.setDuration(System.currentTimeMillis() - start);
             record.setCreateTime(new Date());
-            toolCallRecordMapper.insertSelective(record);
+            // 异步批量写入：请求线程只入队，不等待 DB
+            toolCallRecordWriter.offer(record);
         } catch (Exception e) {
             logger.error("记录工具调用日志失败, methodCode: {}", tool.getCode(), e);
         }
@@ -948,15 +773,7 @@ public class McpServiceImpl implements McpService {
         return s.length() > max ? s.substring(0, max) + "..." : s;
     }
 
-    @Override
-    public Integer resolveServerIdByPath(String path) {
-        McpServer server = mcpServerMapper.selectOneByPath(path);
-        return server != null ? server.getId() : null;
-    }
-
-    /**
-     * 调用外部服务
-     */
+    /** 调用外部服务 */
     private Object callExternalService(McpTool tool, McpRequest mcpRequest, HttpServletRequest request) {
         JSONObject args = mcpRequest.getParams().getArguments();
 
@@ -1470,128 +1287,19 @@ public class McpServiceImpl implements McpService {
      *   <li>同时计算预算并触发超阈值告警。</li>
      * </ul>
      */
-    private McpToolsListResult buildToolListResult(String requestPath, String appId, String cursor,
-                                                    String sessionId, String clientName) {
-        McpServer server = mcpServerMapper.selectOneByPath(requestPath);
-        if (server == null) {
-            return null;
-        }
-        List<McpTool> visible = toolAccessPolicy.visibleTools(server, appId, false);
-        ToolBudget budget = toolAccessPolicy.budget(server, appId, false);
-        toolBudgetAlerter.check(server, budget);
 
-        McpToolsListResult result = new McpToolsListResult();
-        List<com.mcp.transfer.dto.mcp.result.tools.McpTool> mcpTools = new ArrayList<>();
 
-        if (isMetaExposure(server)) {
-            for (McpTool hot : toolAccessPolicy.hotTools(server, visible)) {
-                com.mcp.transfer.dto.mcp.result.tools.McpTool dto = toToolDto(server, hot);
-                if (dto != null) {
-                    mcpTools.add(dto);
-                }
-            }
-            mcpTools.addAll(MetaToolFactory.build());
-            result.setTools(mcpTools);
-            Map<String, Object> meta = buildListMeta(budget, mcpTools, false, sessionId, clientName);
-            meta.put("paginationUsed", false);
-            meta.put("paginationRisk", false);
-            result.setMeta(meta);
-            return result;
-        }
 
-        int minTools = Math.max(1, toolExposureProperties.getPaginationMinTools());
-        boolean clientAllowed = clientAllowed(clientName);
-        boolean cursorUsed = StringUtils.hasText(cursor);
-        boolean shouldPaginate = visible.size() > minTools || cursorUsed;
-        if (shouldPaginate && !cursorUsed && !clientAllowed
-                && "ALL".equalsIgnoreCase(toolExposureProperties.getPaginationUnknownPolicy())) {
-            shouldPaginate = false;
-        }
-        int pageSize = shouldPaginate ? Math.max(1, toolExposureProperties.getPageSize())
-                : Math.max(visible.size(), 1);
-        ToolPager.Page page = ToolPager.page(visible, cursor, pageSize);
-        for (McpTool tool : page.getTools()) {
-            com.mcp.transfer.dto.mcp.result.tools.McpTool dto = toToolDto(server, tool);
-            if (dto != null) {
-                mcpTools.add(dto);
-            }
-        }
-        boolean hasNext = page.getNextCursor() != null;
-        boolean paginationRisk = visible.size() > minTools && !clientAllowed;
-        toolPaginationTelemetry.record(sessionId, cursorUsed, hasNext, clientName);
-        if (paginationRisk) {
-            logger.warn("[TOOLS_PAGINATION] 客户端 {} 未在分页白名单内，server={} 可见 {} 个工具，"
-                            + "若客户端不跟随 nextCursor 可能只看到第一页",
-                    clientName, server.getName(), visible.size());
-        }
-        result.setTools(mcpTools);
-        result.setNextCursor(page.getNextCursor());
-        Map<String, Object> meta = buildListMeta(budget, mcpTools, cursorUsed, sessionId, clientName);
-        meta.put("paginationUsed", shouldPaginate);
-        meta.put("paginationRisk", paginationRisk);
-        meta.put("paginationThreshold", minTools);
-        result.setMeta(meta);
-        return result;
-    }
-
-    private void bindClientInfo(McpRequest mcpRequest, HttpServletRequest request) {
-        if (mcpRequest == null || mcpRequest.getParams() == null
-                || mcpRequest.getParams().getClientInfo() == null) {
-            return;
-        }
-        String sid = resolveSessionId(request);
-        if (!StringUtils.hasText(sid)) {
-            return;
-        }
-        mcpSessionCache.bindClient(sid,
-                mcpRequest.getParams().getClientInfo().getName(),
-                mcpRequest.getParams().getClientInfo().getVersion());
-    }
-
-    private String resolveSessionId(HttpServletRequest request) {
-        String sid = request.getHeader(com.mcp.transfer.config.session.McpInterceptorConstants.MCP_SESSION_ID_HEADER);
-        if (!StringUtils.hasText(sid)) {
-            Object attr = request.getAttribute(
-                    com.mcp.transfer.config.session.McpInterceptorConstants.MCP_SESSION_ID_HEADER);
-            sid = attr == null ? null : attr.toString();
-        }
-        return sid;
-    }
-
-    private String resolveClientName(HttpServletRequest request) {
-        String sid = resolveSessionId(request);
-        if (StringUtils.hasText(sid)) {
-            com.mcp.transfer.config.session.SessionInfo info = mcpSessionCache.getSession(sid);
-            if (info != null && StringUtils.hasText(info.getClientName())) {
-                return info.getClientName();
-            }
-        }
-        return request.getHeader("User-Agent");
-    }
 
     /** 客户端白名单：逗号分隔的小写子串匹配；空配置表示不限制 */
-    private boolean clientAllowed(String clientName) {
-        String config = toolExposureProperties.getPaginationClients();
-        if (!StringUtils.hasText(config)) {
-            return true;
-        }
-        String name = clientName == null ? "" : clientName.toLowerCase();
-        for (String item : config.split(",")) {
-            String token = item.trim().toLowerCase();
-            if (!token.isEmpty() && name.contains(token)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     @Override
-    public com.mcp.transfer.dto.mcp.result.tools.McpTool toToolDto(McpServer server, McpTool tool) {
+    public com.mcp.transfer.shared.dto.mcp.result.tools.McpTool toToolDto(McpServer server, McpTool tool) {
         try {
-            com.mcp.transfer.dto.mcp.result.tools.McpTool dto =
-                    JSON.parseObject(tool.getResJson(), com.mcp.transfer.dto.mcp.result.tools.McpTool.class);
+            com.mcp.transfer.shared.dto.mcp.result.tools.McpTool dto =
+                    JSON.parseObject(tool.getResJson(), com.mcp.transfer.shared.dto.mcp.result.tools.McpTool.class);
             if (dto == null) {
-                dto = new com.mcp.transfer.dto.mcp.result.tools.McpTool();
+                dto = new com.mcp.transfer.shared.dto.mcp.result.tools.McpTool();
             }
             dto.setName(tool.getCode());
             dto.setVersion(tool.getVersion());
@@ -1609,224 +1317,25 @@ public class McpServiceImpl implements McpService {
         }
     }
 
-    private java.util.Map<String, Object> buildListMeta(ToolBudget budget,
-                                                        List<com.mcp.transfer.dto.mcp.result.tools.McpTool> returnedTools,
-                                                        boolean cursorUsed, String sessionId, String clientName) {
-        java.util.Map<String, Object> meta = new java.util.LinkedHashMap<>();
-        meta.put("totalTools", budget.getTotalTools());
-        meta.put("visibleTools", budget.getVisibleTools());
-        meta.put("returned", returnedTools.size());
-        meta.put("accessMode", budget.getAccessMode());
-        meta.put("exposureMode", budget.getExposureMode());
-        meta.put("hotTools", budget.getHotTools());
-        meta.put("warnThreshold", budget.getWarnThreshold());
-        meta.put("maxThreshold", budget.getMaxThreshold());
-        meta.put("overWarn", budget.isOverWarn());
-        meta.put("overMax", budget.isOverMax());
-        meta.put("estimatedTokens", budget.getEstimatedTokens());
-        meta.put("visibleTokens", budget.getEstimatedTokens());
-        long returnedTokens = 0;
-        for (com.mcp.transfer.dto.mcp.result.tools.McpTool dto : returnedTools) {
-            returnedTokens += tokenEstimator.estimate(JSON.toJSONString(dto)) + 20L;
-        }
-        meta.put("returnedTokens", returnedTokens);
-        meta.put("tokenizer", tokenEstimator.method());
-        meta.put("clientName", clientName);
-        meta.put("sessionBound", StringUtils.hasText(sessionId));
-        if (cursorUsed) {
-            meta.put("cursorUsed", true);
-        }
-        return meta;
-    }
 
 
-    private JSONObject buildPromptListResult(String requestPath, String appId, String cursor,
-                                             String sessionId, String clientName) {
-        McpServer server = mcpServerMapper.selectOneByPath(requestPath);
-        if (server == null) {
-            return null;
-        }
-        int total = assetAccessPolicy.allPrompts(server.getId()).size();
-        List<McpPrompt> visible = assetAccessPolicy.visiblePrompts(server, appId, false);
-        AssetPage<McpPrompt> page = paginateAssets(visible, cursor, sessionId, clientName, "prompts", McpPrompt::getId);
-        JSONArray promptArr = new JSONArray();
-        int returnedTokens = 0;
-        for (McpPrompt prompt : page.items) {
-            JSONObject item = parseDefinition(prompt.getResJson());
-            if (item == null) {
-                item = new JSONObject();
-            }
-            if (!item.containsKey("name") || StringUtils.isEmpty(item.getString("name"))) {
-                item.put("name", prompt.getName());
-            }
-            promptArr.add(item);
-            returnedTokens += promptTokens(prompt);
-        }
-        JSONObject result = new JSONObject();
-        result.put("prompts", promptArr);
-        if (page.nextCursor != null) {
-            result.put("nextCursor", page.nextCursor);
-        }
-        result.put("_meta", buildAssetMeta(server, "prompts", total, visible.size(), page,
-                visible.stream().mapToInt(this::promptTokens).sum(), returnedTokens, clientName));
-        return result;
-    }
 
     /**
      * Resource 列表：可见性策略 + 可选 cursor 分页 + 预算 meta。
      */
-    private JSONObject buildResourceListResult(String requestPath, String appId, String cursor,
-                                               String sessionId, String clientName) {
-        McpServer server = mcpServerMapper.selectOneByPath(requestPath);
-        if (server == null) {
-            return null;
-        }
-        int total = assetAccessPolicy.allResources(server.getId()).size();
-        List<McpResource> visible = assetAccessPolicy.visibleResources(server, appId, false);
-        AssetPage<McpResource> page = paginateAssets(visible, cursor, sessionId, clientName, "resources", McpResource::getId);
-        JSONArray resourceArr = new JSONArray();
-        int returnedTokens = 0;
-        for (McpResource resource : page.items) {
-            JSONObject item = parseDefinition(resource.getResJson());
-            if (item == null) {
-                item = new JSONObject();
-            }
-            if (!item.containsKey("uri") || StringUtils.isEmpty(item.getString("uri"))) {
-                item.put("uri", resource.getUri());
-            }
-            if (!item.containsKey("name") || StringUtils.isEmpty(item.getString("name"))) {
-                item.put("name", resource.getName());
-            }
-            resourceArr.add(item);
-            returnedTokens += resourceTokens(resource);
-        }
-        JSONObject result = new JSONObject();
-        result.put("resources", resourceArr);
-        if (page.nextCursor != null) {
-            result.put("nextCursor", page.nextCursor);
-        }
-        result.put("_meta", buildAssetMeta(server, "resources", total, visible.size(), page,
-                visible.stream().mapToInt(this::resourceTokens).sum(), returnedTokens, clientName));
-        return result;
-    }
 
     /**
      * Resource 模板列表：与 resources/list 同一套可见性、分页与预算。
      */
-    private JSONObject buildResourceTemplatesListResult(String requestPath, String appId, String cursor,
-                                                        String sessionId, String clientName) {
-        McpServer server = mcpServerMapper.selectOneByPath(requestPath);
-        if (server == null) {
-            return null;
-        }
-        int total = assetAccessPolicy.allResources(server.getId()).size();
-        List<McpResource> visible = assetAccessPolicy.visibleResources(server, appId, false);
-        AssetPage<McpResource> page = paginateAssets(visible, cursor, sessionId, clientName, "resources", McpResource::getId);
-        JSONArray templateArr = new JSONArray();
-        int returnedTokens = 0;
-        for (McpResource resource : page.items) {
-            JSONObject item = parseDefinition(resource.getResJson());
-            if (item == null) {
-                item = new JSONObject();
-            }
-            if (!item.containsKey("uriTemplate") || StringUtils.isEmpty(item.getString("uriTemplate"))) {
-                item.put("uriTemplate", resource.getUri());
-            }
-            if (!item.containsKey("name") || StringUtils.isEmpty(item.getString("name"))) {
-                item.put("name", resource.getName());
-            }
-            templateArr.add(item);
-            returnedTokens += resourceTokens(resource);
-        }
-        JSONObject result = new JSONObject();
-        result.put("resourceTemplates", templateArr);
-        if (page.nextCursor != null) {
-            result.put("nextCursor", page.nextCursor);
-        }
-        result.put("_meta", buildAssetMeta(server, "resources", total, visible.size(), page,
-                visible.stream().mapToInt(this::resourceTokens).sum(), returnedTokens, clientName));
-        return result;
-    }
 
-    private <T> AssetPage<T> paginateAssets(List<T> visible, String cursor, String sessionId,
-                                             String clientName, String kind,
-                                             java.util.function.Function<T, Integer> idGetter) {
-        int min = Math.max(1, toolExposureProperties.getAssetPaginationMin());
-        boolean clientAllowed = clientAllowed(clientName);
-        boolean cursorUsed = StringUtils.hasText(cursor);
-        boolean shouldPaginate = visible.size() > min || cursorUsed;
-        if (shouldPaginate && !cursorUsed && !clientAllowed
-                && "ALL".equalsIgnoreCase(toolExposureProperties.getPaginationUnknownPolicy())) {
-            shouldPaginate = false;
-        }
-        int pageSize = shouldPaginate ? Math.max(1, toolExposureProperties.getPageSize())
-                : Math.max(visible.size(), 1);
-        AssetPager.Page<T> page = AssetPager.page(visible, cursor, pageSize, idGetter);
-        boolean hasNext = page.getNextCursor() != null;
-        boolean risk = visible.size() > min && !clientAllowed;
-        toolPaginationTelemetry.record(sessionId, kind, cursorUsed, hasNext, clientName);
-        if (risk) {
-            logger.warn("[ASSET_PAGINATION] 客户端 {} 未在分页白名单内，{} 可见 {} 个，"
-                            + "若客户端不跟随 nextCursor 可能只看到第一页",
-                    clientName, kind, visible.size());
-        }
-        AssetPage<T> result = new AssetPage<>();
-        result.items = page.getItems();
-        result.nextCursor = page.getNextCursor();
-        result.paginationUsed = shouldPaginate;
-        result.risk = risk;
-        result.threshold = min;
-        return result;
-    }
 
-    private Map<String, Object> buildAssetMeta(McpServer server, String kind, int total, int visible,
-                                                AssetPage<?> page, int visibleTokens, int returnedTokens,
-                                                String clientName) {
-        Map<String, Object> meta = new LinkedHashMap<>();
-        meta.put("kind", kind);
-        meta.put("totalCount", total);
-        meta.put("visibleCount", visible);
-        meta.put("returned", page.items.size());
-        meta.put("accessMode", "prompts".equals(kind)
-                ? ToolExposureModes.promptAccessOf(server) : ToolExposureModes.resourceAccessOf(server));
-        meta.put("paginationUsed", page.paginationUsed);
-        meta.put("paginationRisk", page.risk);
-        meta.put("paginationThreshold", page.threshold);
-        meta.put("clientName", clientName);
-        meta.put("visibleTokens", visibleTokens);
-        meta.put("returnedTokens", returnedTokens);
-        meta.put("tokenizer", tokenEstimator.method());
-        return meta;
-    }
 
-    private int promptTokens(McpPrompt prompt) {
-        return prompt.getTokenEstimate() != null && prompt.getTokenEstimate() > 0
-                ? prompt.getTokenEstimate() : tokenEstimator.estimate(prompt.getResJson()) + 30;
-    }
 
-    private int resourceTokens(McpResource resource) {
-        return resource.getTokenEstimate() != null && resource.getTokenEstimate() > 0
-                ? resource.getTokenEstimate() : tokenEstimator.estimate(resource.getResJson()) + 30;
-    }
 
-    private static class AssetPage<T> {
-        private List<T> items;
-        private String nextCursor;
-        private boolean paginationUsed;
-        private boolean risk;
-        private int threshold;
-    }
 
     /**
      * prompts/get：优先返回 res_json 中预置的 messages；否则用描述/名称生成一条 user 消息。
      */
-    private JSONObject promptGet(McpRequest mcpRequest, String requestPath, String appId) {
-        McpServer server = mcpServerMapper.selectOneByPath(requestPath);
-        if (server == null || mcpRequest.getParams() == null) {
-            return null;
-        }
-        return promptGetOnServer(server, mcpRequest.getParams().getName(), appId);
-    }
 
     @Override
     public JSONObject promptGetOnServer(McpServer server, String promptName, String appId) {
@@ -1859,13 +1368,6 @@ public class McpServiceImpl implements McpService {
     /**
      * resources/read：优先返回 res_json 中预置的 contents；否则把定义 JSON 作为文本返回。
      */
-    private JSONObject resourceRead(McpRequest mcpRequest, String requestPath, String appId) {
-        McpServer server = mcpServerMapper.selectOneByPath(requestPath);
-        if (server == null || mcpRequest.getParams() == null) {
-            return null;
-        }
-        return resourceReadOnServer(server, mcpRequest.getParams().getUri(), appId);
-    }
 
     @Override
     public JSONObject resourceReadOnServer(McpServer server, String uri, String appId) {
@@ -1923,54 +1425,5 @@ public class McpServiceImpl implements McpService {
      * protocolVersion/serverInfo 读 capabilities_json（缺失时兜底），
      * capabilities.tools/resources/prompts 按实际注册内容自动派生。
      */
-    private McpInitializeResult buildMcpInitializeResult(String requestPath) {
-        McpServer server = mcpServerMapper.selectOneByPath(requestPath);
-        if (server == null) {
-            return null;
-        }
-        String capabilitiesJson = server.getCapabilitiesJson();
-        McpInitializeResult result = null;
-        try {
-            result = JSON.parseObject(capabilitiesJson, McpInitializeResult.class);
-        } catch (Exception e) {
-            logger.error("构建MCP初始化响应转换失败:{}", capabilitiesJson);
-        }
-        if (result == null) {
-            result = new McpInitializeResult();
-        }
-        // 兜底 protocolVersion
-        if (!StringUtils.hasText(result.getProtocolVersion())) {
-            result.setProtocolVersion("2024-11-05");
-        }
-        // 兜底 serverInfo.name/version
-        McpServerInfo serverInfo = result.getServerInfo();
-        if (serverInfo == null) {
-            serverInfo = new McpServerInfo();
-            result.setServerInfo(serverInfo);
-        }
-        if (!StringUtils.hasText(serverInfo.getName())) {
-            serverInfo.setName(server.getName());
-        }
-        if (!StringUtils.hasText(serverInfo.getVersion())) {
-            serverInfo.setVersion("1.0.0");
-        }
-        // 自动派生 capabilities：按实际注册的工具/资源/提示
-        McpServerCapabilities capabilities = new McpServerCapabilities();
-        Integer serverId = server.getId();
-        // META 模式即使没有真实工具，也会暴露 search/get_schema/call 三个元工具
-        if (isMetaExposure(server) || !CollectionUtils.isEmpty(mcpToolMapper.selectAllByServerId(serverId))) {
-            McpToolsCapability toolsCapability = new McpToolsCapability();
-            toolsCapability.setListChanged(true);
-            capabilities.setTools(toolsCapability);
-        }
-        if (!CollectionUtils.isEmpty(mcpResourceMapper.selectAllByServerId(serverId))) {
-            capabilities.setResources(new McpResourcesCapability());
-        }
-        if (!CollectionUtils.isEmpty(mcpPromptMapper.selectAllByServerId(serverId))) {
-            capabilities.setPrompts(new McpPromptsCapability());
-        }
-        result.setCapabilities(capabilities);
-        return result;
-    }
 
 }

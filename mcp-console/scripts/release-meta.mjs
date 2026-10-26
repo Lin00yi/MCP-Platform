@@ -2,7 +2,7 @@
 //
 // 版本号：package.json 的 major.minor + git 提交数，例如 1.1.37；
 //        可用 CONSOLE_VERSION 覆盖。
-// 更新内容：取最近若干条提交标题；可用 CONSOLE_RELEASES（JSON）覆盖。
+// 更新内容：只取最近一条提交标题（每次发版一条说明）；可用 CONSOLE_RELEASES（JSON）覆盖。
 //
 // 用法：
 //   node scripts/release-meta.mjs --field version
@@ -58,7 +58,9 @@ function currentCommit() {
 }
 
 function highlights() {
-  const raw = git("log -n 12 --pretty=format:%s", "");
+  // 更新说明只取「最近一条」可用的提交标题：跳过 Merge / chore(release) 等无意义提交，
+  // 过滤后只保留第一条，保证默认每次版本更新说明只有一条。
+  const raw = git("log -n 20 --pretty=format:%s", "");
   if (!raw) {
     return [`构建 ${currentCommit() || "local"}`];
   }
@@ -70,8 +72,8 @@ function highlights() {
     .filter((line) => !/^chore\(release\)/i.test(line))
     .map((line) => line.replace(/^\w+(\([^)]*\))?:\s*/, ""))
     .filter(Boolean);
-  const unique = [...new Set(lines)].slice(0, 8);
-  return unique.length > 0 ? unique : [`构建 ${currentCommit() || "local"}`];
+  const latest = lines[0];
+  return latest ? [latest] : [`构建 ${currentCommit() || "local"}`];
 }
 
 /** 解析外部传入的 releases（兼容数组和 {releases:[...]}） */

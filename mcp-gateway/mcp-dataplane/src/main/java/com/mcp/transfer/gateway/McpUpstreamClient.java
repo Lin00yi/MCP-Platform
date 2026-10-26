@@ -3,16 +3,18 @@ package com.mcp.transfer.gateway;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.mcp.transfer.config.security.UrlSecurityValidator;
-import com.mcp.transfer.dto.mcp.req.McpRequest;
-import com.mcp.transfer.dto.mcp.res.McpResponse;
-import com.mcp.transfer.entity.McpServer;
+import com.mcp.transfer.shared.config.security.UrlSecurityValidator;
+import com.mcp.transfer.shared.dto.mcp.req.McpRequest;
+import com.mcp.transfer.shared.dto.mcp.res.McpResponse;
+import com.mcp.transfer.shared.entity.McpServer;
 import com.mcp.transfer.gateway.session.UpstreamSessionStore;
 import com.mcp.transfer.health.UpstreamCircuitBreaker;
+import com.mcp.transfer.identity.IdentityAssertionResolver;
 import com.mcp.transfer.identity.IdentityProperties;
-import com.mcp.transfer.identity.InternalIdentityTokenService;
+import com.mcp.transfer.identity.IdentityRequiredException;
 import com.mcp.transfer.identity.McpIdentityContext;
 import com.mcp.transfer.identity.ResolvedIdentity;
+import com.mcp.transfer.upstream.UpstreamDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +24,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import jakarta.annotation.PreDestroy;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 /**
  * MCP 上游客户端（数据面第二跳）：作为 MCP client 连接下游真实 MCP server（Streamable HTTP）。
@@ -53,6 +64,19 @@ public class McpUpstreamClient {
 
     private static final Duration UPSTREAM_TIMEOUT = Duration.ofSeconds(30);
 
+    /** 聚合列表的统一总超时：超过后放弃未完成的上游，用已完成结果继续合并 */
+    private static final long AGGREGATE_LIST_TIMEOUT_MS = 5000L;
+
+    /** 聚合列表并行拉取线程池（守护线程，固定 8；上游通常 < 10 个） */
+    private final ExecutorService aggregateExecutor = Executors.newFixedThreadPool(8, r -> {
+        Thread thread = new Thread(r, "mcp-aggregate-list");
+        thread.setDaemon(true);
+        return thread;
+    });
+
+    /** ensureSession 单飞锁：key = 网关会话 + 上游名，避免并发首包重复 initialize */
+    private final Map<String, Object> sessionInitLocks = new ConcurrentHashMap<>();
+
     /** 上游会话映射：单副本走内存，多副本走 Redis */
     @Autowired
     private UpstreamSessionStore upstreamSessions;
@@ -65,8 +89,8 @@ public class McpUpstreamClient {
     @Autowired(required = false)
     private IdentityProperties identityProperties;
 
-    @Autowired(required = false)
-    private InternalIdentityTokenService identityTokenService;
+    @Autowired
+    private IdentityAssertionResolver identityAssertionResolver;
 
     @Autowired
     private UpstreamCircuitBreaker circuitBreaker;
@@ -75,12 +99,6 @@ public class McpUpstreamClient {
         this.webClient = WebClient.builder()
                 .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(20 * 1024 * 1024))
                 .build();
-    }
-
-    /** 聚合上游定义（upstream_url 为 JSON 数组 [{name, url}]） */
-    public static class UpstreamDef {
-        public String name;
-        public String url;
     }
 
     /**
@@ -98,6 +116,11 @@ public class McpUpstreamClient {
             McpResponse response = proxyInternal(server, request, gatewaySessionId, type, method);
             circuitBreaker.recordSuccess(server.getId());
             return response;
+        } catch (IdentityRequiredException e) {
+            circuitBreaker.recordFailure(server.getId());
+            logger.warn("MCP 上游身份断言失败, server={}, method={}: {}",
+                    server.getName(), method, e.getMessage());
+            return errorResponse(request, -32003, e.getMessage());
         } catch (Exception e) {
             circuitBreaker.recordFailure(server.getId());
             logger.error("MCP 上游代理失败, server={}, type={}, method={}", server.getName(), type, method, e);
@@ -107,9 +130,9 @@ public class McpUpstreamClient {
 
     private McpResponse proxyInternal(McpServer server, McpRequest request, String gatewaySessionId,
                                       String type, String method) {
-        String identityJwt = identityToken(server);
+        String identityJwt = identityAssertionResolver.resolve(server);
         if ("AGGREGATE".equalsIgnoreCase(type)) {
-            return aggregate(server, request, gatewaySessionId, identityJwt);
+            return aggregate(server, request, gatewaySessionId);
         }
         // 单代理
         String url = server.getUpstreamUrl();
@@ -194,33 +217,37 @@ public class McpUpstreamClient {
 
     // ============ 聚合代理（多下游合并） ============
 
-    private McpResponse aggregate(McpServer server, McpRequest request, String gatewaySessionId, String identityJwt) {
-        List<UpstreamDef> upstreams = parseUpstreams(server.getUpstreamUrl());
+    private McpResponse aggregate(McpServer server, McpRequest request, String gatewaySessionId) {
+        List<UpstreamDef> upstreams = UpstreamDef.parseList(server.getUpstreamUrl());
         if (upstreams.isEmpty()) {
             return errorResponse(request, "聚合 server 未配置上游 MCP 地址");
         }
         for (UpstreamDef u : upstreams) {
-            urlSecurityValidator.validate(u.url);
+            urlSecurityValidator.validate(u.getUrl());
         }
+
+        // 每个上游可以有自己的 audience / 公钥 / 模式；未配置时回退聚合 Server
+        Function<UpstreamDef, String> auth = u -> identityAssertionResolver.resolve(
+                server, u.getIdentityMode(), u.getAudience(), u.getIdentityPublicKey());
 
         String method = request.getMethod();
         switch (method == null ? "" : method) {
             case "initialize":
-                return aggregateInitialize(server, request, gatewaySessionId, upstreams, identityJwt);
+                return aggregateInitialize(server, request, gatewaySessionId, upstreams, auth);
             case "tools/list":
-                return aggregateList(request, gatewaySessionId, upstreams, "tools", "tools/list", identityJwt);
+                return aggregateList(request, gatewaySessionId, upstreams, "tools", "tools/list", auth);
             case "tools/call":
-                return aggregateToolsCall(request, gatewaySessionId, upstreams, identityJwt);
+                return aggregateToolsCall(request, gatewaySessionId, upstreams, auth);
             case "prompts/list":
-                return aggregateList(request, gatewaySessionId, upstreams, "prompts", "prompts/list", identityJwt);
+                return aggregateList(request, gatewaySessionId, upstreams, "prompts", "prompts/list", auth);
             case "prompts/get":
-                return aggregateSingle(request, gatewaySessionId, upstreams, "prompts/get", identityJwt);
+                return aggregateSingle(request, gatewaySessionId, upstreams, "prompts/get", auth);
             case "resources/list":
-                return aggregateList(request, gatewaySessionId, upstreams, "resources", "resources/list", identityJwt);
+                return aggregateList(request, gatewaySessionId, upstreams, "resources", "resources/list", auth);
             case "resources/templates/list":
-                return aggregateList(request, gatewaySessionId, upstreams, "resourceTemplates", "resources/templates/list", identityJwt);
+                return aggregateList(request, gatewaySessionId, upstreams, "resourceTemplates", "resources/templates/list", auth);
             case "resources/read":
-                return aggregateSingle(request, gatewaySessionId, upstreams, "resources/read", identityJwt);
+                return aggregateSingle(request, gatewaySessionId, upstreams, "resources/read", auth);
             case "ping":
                 return ok(request, new JSONObject());
             case "notifications/initialized":
@@ -228,8 +255,9 @@ public class McpUpstreamClient {
             default:
                 // 其它方法透传给第一个上游
                 UpstreamDef first = upstreams.get(0);
-                String sid = ensureSession(gatewaySessionId, first, identityJwt);
-                return wrap(request, forwardRaw(first.url, sid, (JSONObject) JSON.toJSON(request), identityJwt));
+                String token = auth.apply(first);
+                String sid = ensureSession(gatewaySessionId, first, token);
+                return wrap(request, forwardRaw(first.getUrl(), sid, (JSONObject) JSON.toJSON(request), token));
         }
     }
 
@@ -238,7 +266,8 @@ public class McpUpstreamClient {
      * 找不到时回退第一个上游。
      */
     private McpResponse aggregateSingle(McpRequest request, String gatewaySessionId,
-                                        List<UpstreamDef> upstreams, String method, String identityJwt) {
+                                        List<UpstreamDef> upstreams, String method,
+                                        Function<UpstreamDef, String> auth) {
         UpstreamDef target = upstreams.get(0);
         String fullName = request.getParams() == null ? null : request.getParams().getName();
         String uri = request.getParams() == null ? null : request.getParams().getUri();
@@ -246,7 +275,7 @@ public class McpUpstreamClient {
         if (StringUtils.hasText(key) && key.contains("__")) {
             String prefix = key.substring(0, key.indexOf("__"));
             for (UpstreamDef u : upstreams) {
-                if (prefix.equals(u.name)) {
+                if (prefix.equals(u.getName())) {
                     target = u;
                     break;
                 }
@@ -261,17 +290,21 @@ public class McpUpstreamClient {
                     params.put("uri", uri.substring(uri.indexOf("__") + 2));
                 }
             }
-            String sid = ensureSession(gatewaySessionId, target, identityJwt);
-            return wrap(request, forwardRaw(target.url, sid, req, identityJwt));
+            String token = auth.apply(target);
+            String sid = ensureSession(gatewaySessionId, target, token);
+            return wrap(request, forwardRaw(target.getUrl(), sid, req, token));
         }
-        String sid = ensureSession(gatewaySessionId, target, identityJwt);
-        return wrap(request, forwardRaw(target.url, sid, (JSONObject) JSON.toJSON(request), identityJwt));
+        String token = auth.apply(target);
+        String sid = ensureSession(gatewaySessionId, target, token);
+        return wrap(request, forwardRaw(target.getUrl(), sid, (JSONObject) JSON.toJSON(request), token));
     }
 
-    private McpResponse aggregateInitialize(McpServer server, McpRequest request, String gatewaySessionId, List<UpstreamDef> upstreams, String identityJwt) {
+    private McpResponse aggregateInitialize(McpServer server, McpRequest request, String gatewaySessionId,
+                                            List<UpstreamDef> upstreams, Function<UpstreamDef, String> auth) {
         boolean hasTools = false, hasPrompts = false, hasResources = false;
         for (UpstreamDef u : upstreams) {
-            String sid = ensureSession(gatewaySessionId, u, identityJwt);
+            String token = auth.apply(u);
+            String sid = ensureSession(gatewaySessionId, u, token);
             JSONObject init = new JSONObject();
             init.put("jsonrpc", "2.0");
             init.put("id", request.getId());
@@ -284,7 +317,7 @@ public class McpUpstreamClient {
             clientInfo.put("version", "1.0.0");
             params.put("clientInfo", clientInfo);
             init.put("params", params);
-            JSONObject initResp = forwardRaw(u.url, sid, init, identityJwt);
+            JSONObject initResp = forwardRaw(u.getUrl(), sid, init, token);
             JSONObject caps = initResp.getJSONObject("result") != null ? initResp.getJSONObject("result").getJSONObject("capabilities") : null;
             if (caps != null) {
                 if (caps.getJSONObject("tools") != null) hasTools = true;
@@ -311,25 +344,60 @@ public class McpUpstreamClient {
         return ok(request, result);
     }
 
+    /**
+     * 聚合列表：各上游并行拉取（原先串行，N 个上游时延 = Σ RTT）。
+     *
+     * <p>身份断言（{@code auth.apply}）必须在请求线程解析（复用 ThreadLocal 身份）；
+     * worker 线程里临时恢复身份上下文，保证「用户 token 透传」等行为不变。
+     * 总超时 5s，超时/失败的上游直接跳过，不拖垮整次 tools/list。
+     */
     private McpResponse aggregateList(McpRequest request, String gatewaySessionId, List<UpstreamDef> upstreams,
-                                      String resultKey, String upstreamMethod, String identityJwt) {
-        JSONArray merged = new JSONArray();
+                                      String resultKey, String upstreamMethod,
+                                      Function<UpstreamDef, String> auth) {
+        ResolvedIdentity identity = McpIdentityContext.get();
+        String userToken = McpIdentityContext.getUserToken();
+        List<CompletableFuture<List<JSONObject>>> futures = new ArrayList<>(upstreams.size());
         for (UpstreamDef u : upstreams) {
-            String sid = ensureSession(gatewaySessionId, u, identityJwt);
-            JSONObject req = new JSONObject();
-            req.put("jsonrpc", "2.0");
-            req.put("id", request.getId());
-            req.put("method", upstreamMethod);
-            JSONObject resp = forwardRaw(u.url, sid, req, identityJwt);
-            JSONArray items = resp.getJSONObject("result") != null ? resp.getJSONObject("result").getJSONArray(resultKey) : null;
-            if (items == null) continue;
-            for (int i = 0; i < items.size(); i++) {
-                JSONObject item = items.getJSONObject(i);
+            // 身份断言在这里解析：依赖请求线程的 ThreadLocal 身份
+            final String token = auth.apply(u);
+            futures.add(CompletableFuture.supplyAsync(
+                    () -> listUpstreamItems(gatewaySessionId, u, request.getId(), upstreamMethod, resultKey,
+                            token, identity, userToken),
+                    aggregateExecutor));
+        }
+        try {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .get(AGGREGATE_LIST_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            logger.warn("[AGGREGATE] 上游列表拉取超时（{}ms），使用已完成的部分结果：{}",
+                    AGGREGATE_LIST_TIMEOUT_MS, upstreams.size());
+            futures.forEach(f -> f.cancel(true));
+        } catch (Exception e) {
+            logger.warn("[AGGREGATE] 上游列表拉取失败，使用已完成的部分结果: {}", e.getMessage());
+        }
+
+        JSONArray merged = new JSONArray();
+        for (int i = 0; i < futures.size(); i++) {
+            CompletableFuture<List<JSONObject>> future = futures.get(i);
+            if (!future.isDone() || future.isCompletedExceptionally() || future.isCancelled()) {
+                continue;
+            }
+            List<JSONObject> items;
+            try {
+                items = future.join();
+            } catch (Exception e) {
+                continue;
+            }
+            if (items == null) {
+                continue;
+            }
+            String upstreamName = upstreams.get(i).getName();
+            for (JSONObject item : items) {
                 if (StringUtils.hasText(item.getString("name"))) {
-                    item.put("name", u.name + "__" + item.getString("name"));
+                    item.put("name", upstreamName + "__" + item.getString("name"));
                 }
                 if (StringUtils.hasText(item.getString("uri"))) {
-                    item.put("uri", u.name + "__" + item.getString("uri"));
+                    item.put("uri", upstreamName + "__" + item.getString("uri"));
                 }
                 merged.add(item);
             }
@@ -339,7 +407,43 @@ public class McpUpstreamClient {
         return ok(request, result);
     }
 
-    private McpResponse aggregateToolsCall(McpRequest request, String gatewaySessionId, List<UpstreamDef> upstreams, String identityJwt) {
+    /** 单个上游的列表拉取（在聚合线程池执行，需恢复身份上下文） */
+    private List<JSONObject> listUpstreamItems(String gatewaySessionId, UpstreamDef upstream, Object requestId,
+                                               String upstreamMethod, String resultKey, String token,
+                                               ResolvedIdentity identity, String userToken) {
+        McpIdentityContext.set(identity);
+        McpIdentityContext.setUserToken(userToken);
+        try {
+            String sid = ensureSession(gatewaySessionId, upstream, token);
+            JSONObject req = new JSONObject();
+            req.put("jsonrpc", "2.0");
+            req.put("id", requestId);
+            req.put("method", upstreamMethod);
+            JSONObject resp = forwardRaw(upstream.getUrl(), sid, req, token);
+            JSONArray items = resp.getJSONObject("result") != null
+                    ? resp.getJSONObject("result").getJSONArray(resultKey) : null;
+            if (items == null || items.isEmpty()) {
+                return java.util.Collections.emptyList();
+            }
+            List<JSONObject> list = new ArrayList<>(items.size());
+            for (int i = 0; i < items.size(); i++) {
+                JSONObject item = items.getJSONObject(i);
+                if (item != null) {
+                    list.add(item);
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            logger.warn("[AGGREGATE] 上游 {} 列表拉取失败: {}", upstream.getName(), e.getMessage());
+            return java.util.Collections.emptyList();
+        } finally {
+            McpIdentityContext.clear();
+        }
+    }
+
+    private McpResponse aggregateToolsCall(McpRequest request, String gatewaySessionId,
+                                           List<UpstreamDef> upstreams,
+                                           Function<UpstreamDef, String> auth) {
         String fullName = request.getParams() != null ? request.getParams().getName() : null;
         if (!StringUtils.hasText(fullName) || !fullName.contains("__")) {
             return errorResponse(request, "聚合模式下工具名需带命名空间前缀：{upstreamName}__{toolName}");
@@ -350,7 +454,7 @@ public class McpUpstreamClient {
 
         UpstreamDef target = null;
         for (UpstreamDef u : upstreams) {
-            if (upstreamName.equals(u.name)) {
+            if (upstreamName.equals(u.getName())) {
                 target = u;
                 break;
             }
@@ -359,42 +463,44 @@ public class McpUpstreamClient {
             return errorResponse(request, "未找到上游：" + upstreamName);
         }
 
-        String sid = ensureSession(gatewaySessionId, target, identityJwt);
+        String token = auth.apply(target);
+        String sid = ensureSession(gatewaySessionId, target, token);
         JSONObject req = (JSONObject) JSON.toJSON(request);
         req.getJSONObject("params").put("name", toolName);
-        return wrap(request, forwardRaw(target.url, sid, req, identityJwt));
+        return wrap(request, forwardRaw(target.getUrl(), sid, req, token));
     }
 
     // ============ 通用辅助 ============
 
-    private List<UpstreamDef> parseUpstreams(String upstreamUrl) {
-        List<UpstreamDef> list = new ArrayList<>();
-        if (!StringUtils.hasText(upstreamUrl)) {
-            return list;
-        }
-        try {
-            List<UpstreamDef> parsed = JSON.parseArray(upstreamUrl, UpstreamDef.class);
-            if (parsed != null) {
-                for (UpstreamDef u : parsed) {
-                    if (StringUtils.hasText(u.name) && StringUtils.hasText(u.url)) {
-                        list.add(u);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.warn("解析聚合上游定义失败: {}", upstreamUrl, e);
-        }
-        return list;
-    }
-
-    /** 惰性初始化单个上游并返回其会话 id */
+    /**
+     * 惰性初始化单个上游并返回其会话 id。
+     *
+     * <p>并发首包会同时 miss 缓存，原先会各自 initialize 一次；这里按
+     * 「网关会话 + 上游名」做单飞，只有一个线程真正 initialize，其余复用结果。
+     */
     private String ensureSession(String gatewaySessionId, UpstreamDef upstream, String identityJwt) {
-        String key = gatewaySessionId == null ? "anonymous-" + upstream.name : gatewaySessionId;
-        String cached = upstreamSessions.get(key, upstream.name);
+        String key = gatewaySessionId == null ? "anonymous-" + upstream.getName() : gatewaySessionId;
+        String cached = upstreamSessions.get(key, upstream.getName());
         if (cached != null) {
             return cached;
         }
+        String lockKey = key + "|" + upstream.getName();
+        Object lock = sessionInitLocks.computeIfAbsent(lockKey, k -> new Object());
+        try {
+            synchronized (lock) {
+                cached = upstreamSessions.get(key, upstream.getName());
+                if (cached != null) {
+                    return cached;
+                }
+                return initializeSession(key, upstream, identityJwt);
+            }
+        } finally {
+            sessionInitLocks.remove(lockKey, lock);
+        }
+    }
 
+    /** 真正执行 initialize 并写入会话映射；调用方需持有单飞锁 */
+    private String initializeSession(String key, UpstreamDef upstream, String identityJwt) {
         JSONObject init = new JSONObject();
         init.put("jsonrpc", "2.0");
         init.put("id", 1);
@@ -410,7 +516,7 @@ public class McpUpstreamClient {
 
         try {
             WebClient.RequestBodySpec spec = webClient.post()
-                    .uri(upstream.url)
+                    .uri(upstream.getUrl())
                     .contentType(MediaType.APPLICATION_JSON);
             applyUpstreamAuth(spec, identityJwt);
             ResponseEntity<String> resp = spec
@@ -420,11 +526,11 @@ public class McpUpstreamClient {
                     .block(UPSTREAM_TIMEOUT);
             String newSid = resp != null ? resp.getHeaders().getFirst(MCP_SESSION_ID_HEADER) : null;
             if (StringUtils.hasText(newSid)) {
-                upstreamSessions.put(key, upstream.name, newSid, SESSION_TTL_MS);
+                upstreamSessions.put(key, upstream.getName(), newSid, SESSION_TTL_MS);
             }
             return newSid;
         } catch (Exception e) {
-            logger.warn("上游 {} 初始化失败: {}", upstream.name, e.getMessage());
+            logger.warn("上游 {} 初始化失败: {}", upstream.getName(), e.getMessage());
             return null;
         }
     }
@@ -514,10 +620,14 @@ public class McpUpstreamClient {
     }
 
     private McpResponse errorResponse(McpRequest request, String message) {
+        return errorResponse(request, -32603, message);
+    }
+
+    private McpResponse errorResponse(McpRequest request, int code, String message) {
         McpResponse resp = new McpResponse();
         resp.setId(request.getId());
         JSONObject error = new JSONObject();
-        error.put("code", -32603);
+        error.put("code", code);
         error.put("message", message);
         resp.setError(error);
         return resp;
@@ -534,20 +644,6 @@ public class McpUpstreamClient {
                 spec.header(identityProperties.getUserTokenHeader(), userToken);
             }
         }
-    }
-
-    /** 生成下游内部身份断言；未启用身份下传或无当前身份时返回 null */
-    private String identityToken(McpServer server) {
-        if (identityProperties == null || !identityProperties.isEnabled() || identityTokenService == null) {
-            return null;
-        }
-        ResolvedIdentity identity = McpIdentityContext.get();
-        if (identity == null) {
-            return null;
-        }
-        String audience = StringUtils.hasText(server.getAudience())
-                ? server.getAudience() : "server-" + server.getId();
-        return identityTokenService.issue(identity, audience, server.getIdentityPublicKey());
     }
 
     // ============ 会话映射 ============
@@ -568,5 +664,10 @@ public class McpUpstreamClient {
         if (gatewaySessionId != null) {
             upstreamSessions.remove(gatewaySessionId);
         }
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        aggregateExecutor.shutdownNow();
     }
 }

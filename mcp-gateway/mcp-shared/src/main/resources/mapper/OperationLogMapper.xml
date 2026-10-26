@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.OperationLogMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.OperationLog">
+<mapper namespace="com.mcp.transfer.shared.mapper.OperationLogMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.OperationLog">
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="username" jdbcType="VARCHAR" property="username" />
     <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
@@ -28,13 +28,13 @@
     </choose>
   </sql>
 
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.OperationLog" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.OperationLog" useGeneratedKeys="true">
     insert into operation_log (username, tenant_id, action, resource_type, resource_id, detail, create_time)
     values (#{username,jdbcType=VARCHAR}, #{tenantId,jdbcType=INTEGER}, #{action,jdbcType=VARCHAR},
       #{resourceType,jdbcType=VARCHAR}, #{resourceId,jdbcType=VARCHAR}, #{detail,jdbcType=LONGVARCHAR},
       #{createTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.OperationLog" useGeneratedKeys="true">
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.OperationLog" useGeneratedKeys="true">
     insert into operation_log
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="username != null">username,</if>

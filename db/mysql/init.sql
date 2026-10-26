@@ -1,7 +1,7 @@
 -- ============================================================
--- MCP Gateway 本地开发库初始化脚本（Docker MySQL）
+-- MCP Gateway 数据库初始化脚本（MySQL 8，手工执行：mysql -uroot -p < db/mysql/init.sql）
 -- 多租户模型：业务方 tenant → MCP Server(s) → tool/prompt/resource
--- 由 mysql 镜像 docker-entrypoint-initdb.d 自动执行
+-- 新装环境执行本脚本；存量环境执行 docs/sql/migration.sql + db/mysql/migrations/*.sql
 --
 -- 说明：本脚本只建表 + 初始化后台管理员账号。
 -- 业务方 / MCP Server / 工具 / 应用授权等运行时数据，请通过控制台配置。
@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS mcp_server (
   upstream_url VARCHAR(500) COMMENT '下游 MCP server 的 Streamable HTTP 地址（upstream_type=MCP 时）',
   audience VARCHAR(128) COMMENT '内部 JWT aud，默认 server-{id}',
   identity_public_key LONGTEXT COMMENT '下游 JWE 公钥（PEM/JWK）',
+  identity_mode VARCHAR(16) NOT NULL DEFAULT 'INHERIT' COMMENT '身份下传覆盖：INHERIT/OFF/OPTIONAL/REQUIRED',
   tool_access_mode VARCHAR(16) NOT NULL DEFAULT 'ALL' COMMENT 'Tool 访问模式：ALL=全部启用 Tool（WHITELIST 已废弃）',
   prompt_access_mode VARCHAR(16) NOT NULL DEFAULT 'ALL' COMMENT 'Prompt 访问模式：ALL（WHITELIST 已废弃）',
   resource_access_mode VARCHAR(16) NOT NULL DEFAULT 'ALL' COMMENT 'Resource 访问模式：ALL（WHITELIST 已废弃）',
@@ -204,7 +205,7 @@ CREATE TABLE IF NOT EXISTS approval_request (
   tenant_id INT COMMENT '归属业务方（租户隔离用）',
   action VARCHAR(48) NOT NULL COMMENT '审批动作（ApprovalAction）',
   status VARCHAR(16) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/APPROVED/REJECTED/CANCELLED',
-  app_id VARCHAR(128) NULL COMMENT '目标应用',
+  app_id VARCHAR(128) NULL COMMENT '历史字段（应用授权已移除，仅存量数据）',
   server_id INT NULL COMMENT '目标 server',
   tool_id INT NULL COMMENT '目标工具',
   prompt_id INT NULL COMMENT '目标 prompt',
@@ -217,7 +218,6 @@ CREATE TABLE IF NOT EXISTS approval_request (
   approver VARCHAR(64) COMMENT '审批人',
   approver_role VARCHAR(32) COMMENT '审批人角色',
   comment VARCHAR(500) COMMENT '审批意见',
-  result_secret TEXT COMMENT '审批通过后生成的一次性凭证密文',
   create_time DATETIME,
   update_time DATETIME,
   PRIMARY KEY (id),
@@ -258,6 +258,7 @@ CREATE TABLE IF NOT EXISTS admin_user_tenant (
 -- ---------- Namespace / Endpoint 访问拓扑 ----------
 CREATE TABLE IF NOT EXISTS mcp_namespace (
   id INT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  tenant_id INT NULL COMMENT '归属业务方；NULL=平台级（可跨租户聚合）',
   name VARCHAR(64) NOT NULL COMMENT '展示名',
   prefix VARCHAR(32) NOT NULL COMMENT '工具名前缀（创建后不可变）',
   description VARCHAR(255) DEFAULT NULL,
@@ -265,7 +266,8 @@ CREATE TABLE IF NOT EXISTS mcp_namespace (
   create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY uk_ns_prefix (prefix)
+  UNIQUE KEY uk_ns_prefix (prefix),
+  KEY idx_namespace_tenant (tenant_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='MCP 命名空间';
 
 CREATE TABLE IF NOT EXISTS mcp_namespace_server (
@@ -281,6 +283,7 @@ CREATE TABLE IF NOT EXISTS mcp_namespace_server (
 
 CREATE TABLE IF NOT EXISTS mcp_endpoint (
   id INT NOT NULL AUTO_INCREMENT,
+  tenant_id INT NULL COMMENT '归属业务方；NULL=平台级（可跨租户聚合）',
   endpoint_key VARCHAR(64) NOT NULL COMMENT '对外路径 /mcp/e/{key}',
   name VARCHAR(64) NOT NULL,
   description VARCHAR(255) DEFAULT NULL,
@@ -288,7 +291,8 @@ CREATE TABLE IF NOT EXISTS mcp_endpoint (
   create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY uk_ep_key (endpoint_key)
+  UNIQUE KEY uk_ep_key (endpoint_key),
+  KEY idx_endpoint_tenant (tenant_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='MCP 对外接入点';
 
 CREATE TABLE IF NOT EXISTS mcp_endpoint_namespace (

@@ -2,9 +2,9 @@ package com.mcp.transfer.exposure;
 
 import com.mcp.transfer.cache.PromptListCache;
 import com.mcp.transfer.cache.ResourceListCache;
-import com.mcp.transfer.entity.McpPrompt;
-import com.mcp.transfer.entity.McpResource;
-import com.mcp.transfer.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpPrompt;
+import com.mcp.transfer.shared.entity.McpResource;
+import com.mcp.transfer.shared.entity.McpServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;

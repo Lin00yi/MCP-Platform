@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.McpServerMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpServer">
+<mapper namespace="com.mcp.transfer.shared.mapper.McpServerMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.McpServer">
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
     <result column="name" jdbcType="VARCHAR" property="name" />
@@ -13,6 +13,7 @@
     <result column="upstream_url" jdbcType="VARCHAR" property="upstreamUrl" />
     <result column="audience" jdbcType="VARCHAR" property="audience" />
     <result column="identity_public_key" jdbcType="LONGVARCHAR" property="identityPublicKey" />
+    <result column="identity_mode" jdbcType="VARCHAR" property="identityMode" />
     <result column="tool_access_mode" jdbcType="VARCHAR" property="toolAccessMode" />
     <result column="tool_exposure_mode" jdbcType="VARCHAR" property="toolExposureMode" />
     <result column="prompt_access_mode" jdbcType="VARCHAR" property="promptAccessMode" />
@@ -25,7 +26,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     id, tenant_id, `name`, server_key, `path`, `status`, capabilities_json, upstream_type, upstream_url,
-    audience, identity_public_key, tool_access_mode, tool_exposure_mode, prompt_access_mode, resource_access_mode, hot_tool_codes,
+    audience, identity_public_key, identity_mode, tool_access_mode, tool_exposure_mode, prompt_access_mode, resource_access_mode, hot_tool_codes,
     tool_warn_threshold, tool_max_threshold, create_time, update_time
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
@@ -37,21 +38,21 @@
     delete from mcp_server
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpServer" useGeneratedKeys="true">
-    insert into mcp_server (tenant_id, `name`, server_key, `path`, `status`, capabilities_json, upstream_type, upstream_url, audience, identity_public_key,
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.McpServer" useGeneratedKeys="true">
+    insert into mcp_server (tenant_id, `name`, server_key, `path`, `status`, capabilities_json, upstream_type, upstream_url, audience, identity_public_key, identity_mode,
       tool_access_mode, tool_exposure_mode, prompt_access_mode, resource_access_mode,
       hot_tool_codes, tool_warn_threshold, tool_max_threshold, create_time, update_time)
     values (#{tenantId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{serverKey,jdbcType=VARCHAR}, #{path,jdbcType=VARCHAR},
       #{status,jdbcType=INTEGER}, #{capabilitiesJson,jdbcType=LONGVARCHAR},
       #{upstreamType,jdbcType=VARCHAR}, #{upstreamUrl,jdbcType=VARCHAR},
-      #{audience,jdbcType=VARCHAR}, #{identityPublicKey,jdbcType=LONGVARCHAR},
+      #{audience,jdbcType=VARCHAR}, #{identityPublicKey,jdbcType=LONGVARCHAR}, #{identityMode,jdbcType=VARCHAR},
       #{toolAccessMode,jdbcType=VARCHAR}, #{toolExposureMode,jdbcType=VARCHAR},
       #{promptAccessMode,jdbcType=VARCHAR}, #{resourceAccessMode,jdbcType=VARCHAR},
       #{hotToolCodes,jdbcType=LONGVARCHAR},
       #{toolWarnThreshold,jdbcType=INTEGER}, #{toolMaxThreshold,jdbcType=INTEGER},
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.McpServer" useGeneratedKeys="true">
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.McpServer" useGeneratedKeys="true">
     insert into mcp_server
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="tenantId != null">tenant_id,</if>
@@ -64,6 +65,7 @@
       <if test="upstreamUrl != null and upstreamUrl != ''">upstream_url,</if>
       <if test="audience != null and audience != ''">audience,</if>
       <if test="identityPublicKey != null and identityPublicKey != ''">identity_public_key,</if>
+      <if test="identityMode != null and identityMode != ''">identity_mode,</if>
       <if test="toolAccessMode != null and toolAccessMode != ''">tool_access_mode,</if>
       <if test="toolExposureMode != null and toolExposureMode != ''">tool_exposure_mode,</if>
       <if test="promptAccessMode != null and promptAccessMode != ''">prompt_access_mode,</if>
@@ -85,6 +87,7 @@
       <if test="upstreamUrl != null and upstreamUrl != ''">#{upstreamUrl,jdbcType=VARCHAR},</if>
       <if test="audience != null and audience != ''">#{audience,jdbcType=VARCHAR},</if>
       <if test="identityPublicKey != null and identityPublicKey != ''">#{identityPublicKey,jdbcType=LONGVARCHAR},</if>
+      <if test="identityMode != null and identityMode != ''">#{identityMode,jdbcType=VARCHAR},</if>
       <if test="toolAccessMode != null and toolAccessMode != ''">#{toolAccessMode,jdbcType=VARCHAR},</if>
       <if test="toolExposureMode != null and toolExposureMode != ''">#{toolExposureMode,jdbcType=VARCHAR},</if>
       <if test="promptAccessMode != null and promptAccessMode != ''">#{promptAccessMode,jdbcType=VARCHAR},</if>
@@ -96,7 +99,7 @@
       <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.entity.McpServer">
+  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.shared.entity.McpServer">
     update mcp_server
     <set>
       <if test="tenantId != null">tenant_id = #{tenantId,jdbcType=INTEGER},</if>
@@ -106,8 +109,9 @@
       <if test="capabilitiesJson != null and capabilitiesJson != ''">capabilities_json = #{capabilitiesJson,jdbcType=LONGVARCHAR},</if>
       <if test="upstreamType != null and upstreamType != ''">upstream_type = #{upstreamType,jdbcType=VARCHAR},</if>
       <if test="upstreamUrl != null and upstreamUrl != ''">upstream_url = #{upstreamUrl,jdbcType=VARCHAR},</if>
-      <if test="audience != null and audience != ''">audience = #{audience,jdbcType=VARCHAR},</if>
-      <if test="identityPublicKey != null and identityPublicKey != ''">identity_public_key = #{identityPublicKey,jdbcType=LONGVARCHAR},</if>
+      <if test="audience != null">audience = #{audience,jdbcType=VARCHAR},</if>
+      <if test="identityPublicKey != null">identity_public_key = #{identityPublicKey,jdbcType=LONGVARCHAR},</if>
+      <if test="identityMode != null">identity_mode = #{identityMode,jdbcType=VARCHAR},</if>
       <if test="toolAccessMode != null and toolAccessMode != ''">tool_access_mode = #{toolAccessMode,jdbcType=VARCHAR},</if>
       <if test="toolExposureMode != null and toolExposureMode != ''">tool_exposure_mode = #{toolExposureMode,jdbcType=VARCHAR},</if>
       <if test="promptAccessMode != null and promptAccessMode != ''">prompt_access_mode = #{promptAccessMode,jdbcType=VARCHAR},</if>
@@ -119,7 +123,7 @@
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.entity.McpServer">
+  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.shared.entity.McpServer">
     update mcp_server
     set tenant_id = #{tenantId,jdbcType=INTEGER},
       `name` = #{name,jdbcType=VARCHAR},
@@ -131,6 +135,7 @@
       upstream_url = #{upstreamUrl,jdbcType=VARCHAR},
       audience = #{audience,jdbcType=VARCHAR},
       identity_public_key = #{identityPublicKey,jdbcType=LONGVARCHAR},
+      identity_mode = #{identityMode,jdbcType=VARCHAR},
       tool_access_mode = #{toolAccessMode,jdbcType=VARCHAR},
       tool_exposure_mode = #{toolExposureMode,jdbcType=VARCHAR},
       hot_tool_codes = #{hotToolCodes,jdbcType=LONGVARCHAR},

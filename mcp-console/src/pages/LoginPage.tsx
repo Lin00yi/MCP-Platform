@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Terminal } from "lucide-react";
 import { api } from "@/lib/api";
@@ -9,8 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+/** 登录后回跳地址：只允许站内绝对路径，防止开放重定向与回跳登录页 */
+function safeRedirectPath(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/login")) {
+    return "/dashboard";
+  }
+  return raw;
+}
+
 export function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,7 +36,7 @@ export function LoginPage() {
       setToken(result.token);
       setUser(result.user);
       toast.success(`欢迎，${result.user.name || result.user.username}`);
-      navigate("/dashboard", { replace: true });
+      navigate(safeRedirectPath(searchParams.get("from")), { replace: true });
     } catch (err) {
       toast.error("登录失败", { description: (err as Error).message });
     } finally {

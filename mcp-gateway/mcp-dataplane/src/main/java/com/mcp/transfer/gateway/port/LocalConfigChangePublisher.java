@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 /**
  * {@link ConfigChangePublisher} 的数据面实现：把变更事件投递到集群总线。
  *
- * <p>不直接操作缓存/SSE/路由 —— 这些由 {@code ConfigChangeApplier} 在收到事件后处理，
+ * <p>不直接操作缓存/SSE —— 这些由 {@code ConfigChangeApplier} 在收到事件后处理，
  * 这样单副本（进程内总线）与多副本（Redis 总线）走同一条代码路径。
  */
 @Component
@@ -39,7 +39,7 @@ public class LocalConfigChangePublisher implements ConfigChangePublisher {
     }
 
     @Override
-    public void routesChanged() {
-        eventBus.publish(ClusterEvent.of(ClusterEvent.Type.ROUTES, null));
+    public void serverChanged(Integer serverId) {
+        eventBus.publish(ClusterEvent.of(ClusterEvent.Type.SERVER, serverId));
     }
 }

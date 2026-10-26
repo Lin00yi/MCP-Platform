@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.McpEndpointMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.McpEndpoint">
+<mapper namespace="com.mcp.transfer.shared.mapper.McpEndpointMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.McpEndpoint">
     <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="tenant_id" jdbcType="INTEGER" property="tenantId" />
     <result column="endpoint_key" jdbcType="VARCHAR" property="endpointKey" />
     <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="description" jdbcType="VARCHAR" property="description" />
@@ -11,7 +12,7 @@
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
   </resultMap>
 
-  <sql id="Base_Column_List">id, endpoint_key, name, description, status, create_time, update_time</sql>
+  <sql id="Base_Column_List">id, tenant_id, endpoint_key, name, description, status, create_time, update_time</sql>
 
   <select id="selectAll" resultMap="BaseResultMap">
     select <include refid="Base_Column_List" /> from mcp_endpoint order by id asc
@@ -25,9 +26,10 @@
     select <include refid="Base_Column_List" /> from mcp_endpoint where endpoint_key = #{endpointKey,jdbcType=VARCHAR}
   </select>
 
-  <insert id="insertSelective" parameterType="com.mcp.transfer.entity.McpEndpoint" useGeneratedKeys="true" keyProperty="id">
+  <insert id="insertSelective" parameterType="com.mcp.transfer.shared.entity.McpEndpoint" useGeneratedKeys="true" keyProperty="id">
     insert into mcp_endpoint
     <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="tenantId != null">tenant_id,</if>
       <if test="endpointKey != null">endpoint_key,</if>
       <if test="name != null">name,</if>
       <if test="description != null">description,</if>
@@ -36,6 +38,7 @@
       <if test="updateTime != null">update_time,</if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="tenantId != null">#{tenantId,jdbcType=INTEGER},</if>
       <if test="endpointKey != null">#{endpointKey,jdbcType=VARCHAR},</if>
       <if test="name != null">#{name,jdbcType=VARCHAR},</if>
       <if test="description != null">#{description,jdbcType=VARCHAR},</if>
@@ -45,7 +48,7 @@
     </trim>
   </insert>
 
-  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.entity.McpEndpoint">
+  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.shared.entity.McpEndpoint">
     update mcp_endpoint
     <set>
       <if test="name != null">name = #{name,jdbcType=VARCHAR},</if>

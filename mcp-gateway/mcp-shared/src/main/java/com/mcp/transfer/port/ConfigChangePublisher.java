@@ -4,7 +4,7 @@ package com.mcp.transfer.port;
  * 配置变更发布端口（控制面 → 数据面）。
  *
  * <p>控制面（S2）在写入 Server / Tool / Prompt / Resource / 拓扑后调用本端口，
- * 由数据面（S1）负责失效本地缓存、刷新动态路由、并向已连接的 SSE 客户端广播
+ * 由数据面（S1）负责失效本地缓存，并向已连接的 SSE 客户端广播
  * {@code notifications/tools|prompts|resources/list_changed}。
  *
  * <p>同进程部署时由 {@code LocalConfigChangePublisher} 实现（见 {@code gateway.port}）；
@@ -32,6 +32,6 @@ public interface ConfigChangePublisher {
     /** Resource 变更 */
     void resourceChanged(Integer serverId);
 
-    /** Server 路由变更：重新注册 / 清理动态端点 */
-    void routesChanged();
+    /** Server 配置变更（名称 / 上游 / 暴露策略 / 身份断言）：失效该 Server 的资产缓存并广播 */
+    void serverChanged(Integer serverId);
 }

@@ -4,19 +4,20 @@ import com.mcp.transfer.cache.PromptListCache;
 import com.mcp.transfer.cache.ResourceListCache;
 import com.mcp.transfer.cache.ToolListCache;
 import com.mcp.transfer.config.session.SseEmitterRegistry;
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.entity.McpTool;
 import com.mcp.transfer.exposure.ToolEmbeddingService;
-import com.mcp.transfer.gateway.route.McpServerDynamicControllerManager;
-import com.mcp.transfer.mapper.McpToolMapper;
+import com.mcp.transfer.gateway.aggregate.McpAggregateService;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
+import com.mcp.transfer.topology.EndpointScopeReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 /**
- * 集群变更事件的应用端：失效本地缓存、刷新动态路由、向本机 SSE 连接广播。
+ * 集群变更事件的应用端：失效本地缓存、向本机 SSE 连接广播。
  *
  * <p>每个数据面副本都会收到同一批事件（本地总线或 Redis 频道），
  * 各副本只处理自己的进程内状态，因此天然幂等。
@@ -42,7 +43,7 @@ public class ConfigChangeApplier {
     private SseEmitterRegistry sseEmitterRegistry;
 
     @Autowired
-    private McpServerDynamicControllerManager routeManager;
+    private McpAggregateService aggregateService;
 
     /** 向量索引由数据面维护；embedding 未配置时内部自动 no-op */
     @Autowired(required = false)
@@ -50,6 +51,10 @@ public class ConfigChangeApplier {
 
     @Autowired
     private McpToolMapper mcpToolMapper;
+
+    /** 拓扑解析缓存（Namespace/Endpoint → Server 前缀）；变更后立即失效，正常最长 10s TTL 兜底 */
+    @Autowired(required = false)
+    private EndpointScopeReader endpointScopeReader;
 
     @PostConstruct
     public void subscribe() {
@@ -63,9 +68,14 @@ public class ConfigChangeApplier {
         }
         Integer serverId = event.getServerId();
         logger.info("[EVENT] 收到变更 type={}, serverId={}", event.getType(), serverId);
+        // 任何资产/Server 变更都可能影响 Endpoint 拓扑解析结果，先失效再处理
+        if (endpointScopeReader != null) {
+            endpointScopeReader.invalidateAll();
+        }
         switch (event.getType()) {
             case TOOL:
                 toolListCache.invalidate(serverId);
+                aggregateService.invalidateProxyCache(serverId);
                 broadcast("notifications/tools/list_changed", serverId);
                 maintainEmbedding(event);
                 break;
@@ -77,14 +87,20 @@ public class ConfigChangeApplier {
                 resourceListCache.invalidate(serverId);
                 broadcast("notifications/resources/list_changed", serverId);
                 break;
-            case ROUTES:
-                refreshRoutes();
+            case SERVER:
+                toolListCache.invalidate(serverId);
+                promptListCache.invalidate(serverId);
+                resourceListCache.invalidate(serverId);
+                aggregateService.invalidateProxyCache(serverId);
+                broadcast("notifications/tools/list_changed", serverId);
+                broadcast("notifications/prompts/list_changed", serverId);
+                broadcast("notifications/resources/list_changed", serverId);
                 break;
             case ALL:
                 toolListCache.clear();
                 promptListCache.clear();
                 resourceListCache.clear();
-                refreshRoutes();
+                aggregateService.invalidateProxyCache(null);
                 broadcast("notifications/tools/list_changed", null);
                 broadcast("notifications/prompts/list_changed", null);
                 broadcast("notifications/resources/list_changed", null);
@@ -136,15 +152,6 @@ public class ConfigChangeApplier {
             sseEmitterRegistry.broadcastToAggregate(message);
         } catch (Exception e) {
             logger.warn("[EVENT] SSE 广播 {} 失败, serverId={}: {}", method, serverId, e.getMessage());
-        }
-    }
-
-    private void refreshRoutes() {
-        try {
-            String result = routeManager.refreshAllServerController();
-            logger.info("[EVENT] 路由已刷新：{}", result);
-        } catch (Exception e) {
-            logger.error("[EVENT] 刷新动态路由失败", e);
         }
     }
 }

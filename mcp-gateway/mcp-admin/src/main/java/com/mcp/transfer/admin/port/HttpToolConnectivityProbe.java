@@ -1,6 +1,6 @@
 package com.mcp.transfer.admin.port;
 
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.entity.McpTool;
 import com.mcp.transfer.port.ToolConnectivityProbe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

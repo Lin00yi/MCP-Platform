@@ -1,6 +1,6 @@
 package com.mcp.transfer.exposure;
 
-import com.mcp.transfer.entity.McpPrompt;
+import com.mcp.transfer.shared.entity.McpPrompt;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;

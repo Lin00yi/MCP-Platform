@@ -4,13 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mcp.transfer.config.session.McpSessionCache;
-import com.mcp.transfer.dto.mcp.req.McpRequest;
-import com.mcp.transfer.dto.mcp.req.Params;
-import com.mcp.transfer.dto.mcp.res.McpResponse;
-import com.mcp.transfer.dto.mcp.result.data.McpResData;
-import com.mcp.transfer.dto.mcp.result.tools.McpToolsListResult;
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.entity.McpTool;
+import com.mcp.transfer.shared.dto.mcp.req.McpRequest;
+import com.mcp.transfer.shared.dto.mcp.req.Params;
+import com.mcp.transfer.shared.dto.mcp.res.McpResponse;
+import com.mcp.transfer.shared.dto.mcp.result.data.McpResData;
+import com.mcp.transfer.shared.dto.mcp.result.tools.McpToolsListResult;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpTool;
 import com.mcp.transfer.exposure.TokenEstimator;
 import com.mcp.transfer.exposure.ToolAccessPolicy;
 import com.mcp.transfer.exposure.ToolBudgetAlerter;
@@ -19,10 +19,10 @@ import com.mcp.transfer.exposure.ToolResultService;
 import com.mcp.transfer.exposure.ToolSearchService;
 import com.mcp.transfer.gateway.McpUpstreamClient;
 import com.mcp.transfer.gateway.service.McpService;
-import com.mcp.transfer.mapper.McpPromptMapper;
-import com.mcp.transfer.mapper.McpResourceMapper;
-import com.mcp.transfer.mapper.McpServerMapper;
-import com.mcp.transfer.mapper.McpToolMapper;
+import com.mcp.transfer.shared.mapper.McpPromptMapper;
+import com.mcp.transfer.shared.mapper.McpResourceMapper;
+import com.mcp.transfer.shared.mapper.McpServerMapper;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -92,8 +92,8 @@ class McpAggregateServiceTest {
         ReflectionTestUtils.setField(toolSearchService, "properties", toolExposureProperties);
         lenient().when(mcpService.toToolDto(any(), any())).thenAnswer(invocation -> {
             McpTool tool = invocation.getArgument(1);
-            com.mcp.transfer.dto.mcp.result.tools.McpTool dto =
-                    new com.mcp.transfer.dto.mcp.result.tools.McpTool();
+            com.mcp.transfer.shared.dto.mcp.result.tools.McpTool dto =
+                    new com.mcp.transfer.shared.dto.mcp.result.tools.McpTool();
             dto.setName(tool.getCode());
             dto.setDescription("desc-" + tool.getCode());
             dto.setInputSchema(JSON.parseObject(
@@ -412,7 +412,7 @@ class McpAggregateServiceTest {
 
     private List<String> names(McpToolsListResult result) {
         List<String> names = new ArrayList<>();
-        for (com.mcp.transfer.dto.mcp.result.tools.McpTool tool : result.getTools()) {
+        for (com.mcp.transfer.shared.dto.mcp.result.tools.McpTool tool : result.getTools()) {
             names.add(tool.getName());
         }
         return names;

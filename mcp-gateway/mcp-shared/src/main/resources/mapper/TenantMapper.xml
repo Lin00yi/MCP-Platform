@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mcp.transfer.mapper.TenantMapper">
-  <resultMap id="BaseResultMap" type="com.mcp.transfer.entity.Tenant">
+<mapper namespace="com.mcp.transfer.shared.mapper.TenantMapper">
+  <resultMap id="BaseResultMap" type="com.mcp.transfer.shared.entity.Tenant">
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="status" jdbcType="INTEGER" property="status" />
@@ -20,11 +20,11 @@
     delete from tenant
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.Tenant" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.Tenant" useGeneratedKeys="true">
     insert into tenant (`name`, `status`, create_time, update_time)
     values (#{name,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.entity.Tenant" useGeneratedKeys="true">
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.mcp.transfer.shared.entity.Tenant" useGeneratedKeys="true">
     insert into tenant
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="name != null and name != ''">`name`,</if>
@@ -39,7 +39,7 @@
       <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.entity.Tenant">
+  <update id="updateByPrimaryKeySelective" parameterType="com.mcp.transfer.shared.entity.Tenant">
     update tenant
     <set>
       <if test="name != null and name != ''">`name` = #{name,jdbcType=VARCHAR},</if>
@@ -48,7 +48,7 @@
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.entity.Tenant">
+  <update id="updateByPrimaryKey" parameterType="com.mcp.transfer.shared.entity.Tenant">
     update tenant
     set `name` = #{name,jdbcType=VARCHAR},
       `status` = #{status,jdbcType=INTEGER},

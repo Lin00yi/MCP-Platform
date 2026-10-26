@@ -1,7 +1,8 @@
 package com.mcp.transfer.topology;
 
-import com.mcp.transfer.entity.McpEndpoint;
+import com.mcp.transfer.shared.entity.McpEndpoint;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,6 +11,9 @@ import java.util.Set;
  *
  * <p>由 {@link EndpointScopeReader#resolveScope} 产出，数据面据此收窄可见工具，
  * 不包含任何写操作，可安全跨模块/跨服务传递。
+ *
+ * <p>该对象可能被 {@link EndpointScopeReader} 的进程内缓存复用，因此内部集合一律不可变，
+ * 调用方只读即可。
  */
 public final class EndpointScope {
 
@@ -19,7 +23,9 @@ public final class EndpointScope {
 
     public EndpointScope(McpEndpoint endpoint, Map<Integer, String> prefixByServer) {
         this.endpoint = endpoint;
-        this.prefixByServer = prefixByServer;
+        this.prefixByServer = prefixByServer == null
+                ? Collections.emptyMap()
+                : Collections.unmodifiableMap(prefixByServer);
         this.path = EndpointPaths.of(endpoint.getEndpointKey());
     }
 

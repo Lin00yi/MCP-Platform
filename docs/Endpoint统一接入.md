@@ -16,15 +16,14 @@ Endpoint  /mcp/e/{endpointKey}
   - 前缀创建后**不可修改**，改名只能改显示名；
   - 同一 Namespace 内 Tool code 不允许重复（保存成员时校验）。
 - **Endpoint**：对外接入点，`endpoint_key` 创建后不可修改；可绑定多个 Namespace。
-- **授权**：应用通过 `app_endpoint_rel` 获得 Endpoint 准入；工具可见性再按该应用已有的
-  Server / Tool 授权收窄（交集，fail-closed）。
+- **可见性**：应用授权已移除；Endpoint 启用后，绑定 Namespace 内的全部启用 Server/Tool 对已认证用户可见。
 
 ## 2. 管理入口
 
 控制台：
 
 - **资产 → Namespaces**：新建/编辑、成员 Server、删除；
-- **权限与治理 → Endpoints**：新建/编辑、绑定 Namespace、授权应用、删除。
+- **权限与治理 → Endpoints**：新建/编辑、绑定 Namespace、删除。
 
 接口：
 
@@ -39,7 +38,6 @@ GET    /mcp/admin/endpoints
 POST   /mcp/admin/endpoints                     {"endpointKey":"team-pcb","name":"PCB"}
 PUT    /mcp/admin/endpoints/{id}
 PUT    /mcp/admin/endpoints/{id}/namespaces     {"namespaceIds":[1]}
-PUT    /mcp/admin/endpoints/{id}/apps           {"appIds":["dsh-pcb"]}
 DELETE /mcp/admin/endpoints/{id}
 ```
 
@@ -51,8 +49,8 @@ DELETE /mcp/admin/endpoints/{id}
 POST /mcp/e/{endpointKey}
 ```
 
-- 鉴权：`access-token` → appId → `app_endpoint_rel`（未授权返回 403）；
-- 可见 Server = Endpoint 绑定的 Namespace 成员 ∩ 应用已授权的 Server；
+- 鉴权：`x-dsh-auth-token`（`dsh_`/PAT）；缺失/无效 401，Endpoint 不存在/停用 403；
+- 可见 Server = Endpoint 绑定的 Namespace 成员（应用授权已移除）；
 - 工具名：`{namespacePrefix}__{toolCode}`；超过 64 字符时截断并追加短哈希（调用时自动反查真实工具）；
 - **暴露模式在聚合层合并**：DIRECT Server 全量直出；META Server 只出热工具；只要有 META Server，
   就额外提供一套端点级 `search_tools / get_tool_schema / call_tool / read_result_chunk`（覆盖整个 Endpoint，不带前缀）；
@@ -63,39 +61,39 @@ POST /mcp/e/{endpointKey}
 示例：
 
 ```bash
-curl -X POST http://gateway:8081/mcp/e/team-pcb \
-  -H 'access-token: <JWT>' -H 'Content-Type: application/json' \
+curl -X POST http://127.0.0.1:8081/mcp/e/team-pcb \
+  -H 'x-dsh-auth-token: <dsh_/PAT>' -H 'Content-Type: application/json' \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
 # → pcb__orders_get 等
 ```
 
 ## 4. 发现接口
 
-`GET /mcp/discovery/servers`（客户端视角）只返回**已获授权的 Endpoint 目录**：
+`GET /mcp/discovery/servers`（客户端视角）只返回**当前用户可见的 Endpoint 目录**：
 
 ```json
 [{"serverKey":"team-pcb","path":"/mcp/e/team-pcb",
-  "url":"http://gateway:8081/mcp/e/team-pcb",
+  "url":"http://127.0.0.1:8081/mcp/e/team-pcb",
   "upstreamType":"ENDPOINT","toolCount":24,"exposedToolCount":8,
   "exposureMode":"META","estimatedVisibleTokens":7200,"serverCount":1,
   "servers":[{"id":1,"serverKey":"pcb-server","namespace":"pcb","toolCount":24}]}]
 ```
 
-没有 Endpoint 授权时返回空数组；管理台预览（admin JWT）仍按真实 Server 展示。
+没有启用 Endpoint 时返回空数组；管理台预览（admin JWT）仍按真实 Server 展示。
 
 ## 5. 数据库
 
 迁移：
 
 ```bash
-mysql -u<user> -p mcp_gateway < docker/mysql/migrations/20261021_namespace_endpoint.sql
-mysql -u<user> -p mcp_gateway < docker/mysql/migrations/20261021_remove_client_access_mode.sql
+mysql -u<user> -p mcp_gateway < db/mysql/migrations/20261021_namespace_endpoint.sql
+mysql -u<user> -p mcp_gateway < db/mysql/migrations/20261021_remove_client_access_mode.sql
 ```
 
-新增表：`mcp_namespace`、`mcp_namespace_server`、`mcp_endpoint`、`mcp_endpoint_namespace`、`app_endpoint_rel`。
+新增表：`mcp_namespace`、`mcp_namespace_server`、`mcp_endpoint`、`mcp_endpoint_namespace`；`app_endpoint_rel` 已随应用维度删除。
 
 ## 6. 兼容与边界
 
-- `/mcp/v1/aggregate` 已删除；`client.access.mode` 已删除（`mcp_system_setting` 一并下线）。
-- 底层 per-server 路径 `/mcp/{serverKey}/v1` 仍注册，可用于排障/直连，但不再出现在发现结果中。
-- Endpoint 数据面暂未接入身份下传（`mcp.identity.enabled` 默认关闭）。
+- `/mcp/v1/aggregate` 与 `/mcp/v1/{serverPath}` 均已删除；`client.access.mode` 已删除。
+- 唯一对外数据面路径是 `/mcp/e/{endpointKey}`；未注册路径返回 404。
+- Endpoint 数据面已接入身份下传：按 Server 的 `identity_mode` 或全局 `MCP_IDENTITY_MODE` 决定 OFF/OPTIONAL/REQUIRED。

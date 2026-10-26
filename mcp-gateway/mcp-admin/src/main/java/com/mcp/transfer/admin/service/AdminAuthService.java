@@ -1,11 +1,11 @@
 package com.mcp.transfer.admin.service;
 
 import com.mcp.transfer.admin.security.AdminAuthContext;
-import com.mcp.transfer.dto.AdminUserRequest;
-import com.mcp.transfer.dto.AdminUserVO;
-import com.mcp.transfer.dto.LoginRequest;
-import com.mcp.transfer.dto.LoginResult;
-import com.mcp.transfer.dto.Result;
+import com.mcp.transfer.shared.dto.AdminUserRequest;
+import com.mcp.transfer.shared.dto.AdminUserVO;
+import com.mcp.transfer.shared.dto.LoginRequest;
+import com.mcp.transfer.shared.dto.LoginResult;
+import com.mcp.transfer.shared.dto.Result;
 
 import java.util.List;
 

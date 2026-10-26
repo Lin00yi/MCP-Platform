@@ -1,5 +1,8 @@
 # Prompt / Resource 治理（2026-10）
 
+> **历史说明**：应用维度与访问模式（`WHITELIST`）已于 2026-10-21 移除；当前访问模式固定 `ALL`，可见性 = 已认证用户可见全部启用资产。
+> 文中 `WHITELIST` / `app_*_rel` 相关描述仅作历史参考。
+
 Prompt / Resource 不照搬 Tool 的 META、热工具、Embedding，而是按它们的真实成本做**轻量治理**：
 
 - Tool 贵在每轮注入的 Schema；

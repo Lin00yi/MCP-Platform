@@ -28,6 +28,8 @@ export const runningVersion: ConsoleVersionInfo = {
 
 /** 版本探测间隔：部署完成后最多 1 分钟内自动发现新版本 */
 const VERSION_POLL_INTERVAL = 60_000;
+/** 聚焦/可见性触发的探测去抖窗口（毫秒） */
+const VERSION_REFRESH_DEBOUNCE_MS = 2_000;
 const DISMISSED_KEY = "mcp_console_version_dismissed";
 /** 控制台始终部署在站点根路径（与 index.html 的绝对资源路径一致） */
 const VERSION_URL = "/version.json";
@@ -68,13 +70,16 @@ function normalizeVersionInfo(raw: unknown): ConsoleVersionInfo {
   };
 }
 
-/** 服务端构建是否比当前运行页面更新 */
+/**
+ * 服务端是否部署了与当前页面不同的构建。
+ *
+ * 以 buildId 为唯一权威（每次构建唯一）：只要不一致就提示刷新。
+ * buildTime 仅用于展示，不参与判断 —— 构建时间来自构建机时钟，
+ * 回滚、多构建机时钟偏差、复用旧镜像重发等场景下做时间比较会漏报更新。
+ */
 export function isNewerDeployment(deployed: ConsoleVersionInfo | null): deployed is ConsoleVersionInfo {
-  if (!deployed || deployed.buildId === runningVersion.buildId) return false;
-  const deployedAt = Date.parse(deployed.buildTime);
-  const runningAt = Date.parse(runningVersion.buildTime);
-  if (!Number.isFinite(deployedAt) || !Number.isFinite(runningAt)) return true;
-  return deployedAt >= runningAt;
+  if (!deployed) return false;
+  return deployed.buildId !== runningVersion.buildId;
 }
 
 /** 取指定版本的更新内容；没有记录时返回 undefined */
@@ -115,13 +120,21 @@ export function formatBuildTime(value?: string): string {
   }).format(date);
 }
 
-/** 轮询服务端版本：首屏拉取 + 每 60s + 页面重新可见/获得焦点时 */
+/**
+ * 轮询服务端版本：首屏拉取 + 每 60s + 页面重新可见/获得焦点时。
+ *
+ * 可见性与聚焦是同一类信号，合并到一个入口并做 2 秒去抖，
+ * 避免用户快速切换窗口时连续打 `/version.json`。
+ */
 export function useDeployedVersion(): ConsoleVersionInfo | null {
   const [info, setInfo] = useState<ConsoleVersionInfo | null>(null);
 
   useEffect(() => {
     let alive = true;
+    let lastLoadedAt = 0;
+
     const load = async () => {
+      lastLoadedAt = Date.now();
       try {
         const next = await fetchDeployedVersion();
         if (alive) setInfo(next);
@@ -129,18 +142,25 @@ export function useDeployedVersion(): ConsoleVersionInfo | null {
         // 版本探测失败不阻塞控制台使用，下一轮/下次聚焦时重试
       }
     };
+
     void load();
-    const timer = window.setInterval(load, VERSION_POLL_INTERVAL);
-    const onVisible = () => {
-      if (document.visibilityState === "visible") void load();
+    const timer = window.setInterval(() => {
+      void load();
+    }, VERSION_POLL_INTERVAL);
+
+    const trigger = () => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastLoadedAt < VERSION_REFRESH_DEBOUNCE_MS) return;
+      void load();
     };
-    document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", onVisible);
+
+    document.addEventListener("visibilitychange", trigger);
+    window.addEventListener("focus", trigger);
     return () => {
       alive = false;
       window.clearInterval(timer);
-      document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("focus", onVisible);
+      document.removeEventListener("visibilitychange", trigger);
+      window.removeEventListener("focus", trigger);
     };
   }, []);
 

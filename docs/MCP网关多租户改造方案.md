@@ -1,5 +1,9 @@
 # MCP 网关多租户架构改造方案
 
+> **历史基线说明**：§1「现状与问题」描述的是改造前的旧模型（`tenant_api` / `method_def` / `enn_app_info`），仅作历史参考；
+> 当前模型见 `db/mysql/init.sql` 与控制台。文中应用授权（`appId`）相关设计已随应用维度下线，现行多租户拓扑以
+> Namespace / Endpoint 的 `tenant_id` 归属为准（见 [`配置说明.md`](配置说明.md) 4.3.1）。
+
 > 目标：把「业务方」和「MCP Server」从当前的 1:1 强耦合中拆开，形成 **业务方 → MCP Server(s) → tool/prompt/resource** 三层模型，并把应用授权从「应用 × 工具」升级为「应用 × Server」为主、可选「应用 × 工具」为辅。
 
 ---
@@ -298,7 +302,7 @@ CREATE TABLE app_tool_rel (
 
 ## 8. 数据迁移方案（seed → 新模型）
 
-以 `docker/mysql/init.sql` 当前种子数据为例：
+以 `db/mysql/init.sql` 当前种子数据为例：
 
 ### 8.1 tenant_api → tenant + mcp_server（1:1 拆分）
 

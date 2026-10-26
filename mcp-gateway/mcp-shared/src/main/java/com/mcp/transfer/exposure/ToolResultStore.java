@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -46,7 +46,7 @@ public class ToolResultStore {
     @Value("${mcp.tools.chunk-store:memory}")
     private String chunkStore = "memory";
 
-    @Value("${mcp.tools.redis-uri:redis://127.0.0.1:6379/0}")
+    @Value("${mcp.tools.redis-uri:${mcp.redis.uri:redis://127.0.0.1:6379/0}}")
     private String redisUri = "redis://127.0.0.1:6379/0";
 
     private final LinkedHashMap<String, Entry> cache = new LinkedHashMap<String, Entry>(16, 0.75f, true) {

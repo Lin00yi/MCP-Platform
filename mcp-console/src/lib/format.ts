@@ -20,6 +20,3 @@ export const AUTH_TYPE_LABEL: Record<string, string> = {
 };
 
 export const statusLabel = (v?: number | null) => (v === 1 ? "启用" : "禁用");
-
-/** 访问模式归一：仅 WHITELIST / ALL，历史 LEGACY 或空值按 WHITELIST（fail-closed） */
-export const accessMode = (v?: string | null): "WHITELIST" | "ALL" => (v === "ALL" ? "ALL" : "WHITELIST");

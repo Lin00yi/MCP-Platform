@@ -29,7 +29,7 @@ spring:
 
 logging:
   level:
-    com.mcp.transfer.mapper: DEBUG
+    com.mcp.transfer.shared.mapper: DEBUG
     org.apache.ibatis: DEBUG
 
 # 本地开放接口文档，便于调试

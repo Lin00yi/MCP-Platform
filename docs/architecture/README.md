@@ -1,5 +1,10 @@
 # MCP Gateway · 架构与流程设计总览
 
+> **⚠️ 历史基线说明**：本文与配套图册基于 2026-10-17 基线（`79d49ea`）生成，早于服务拆分、应用维度下线与 `/mcp/v1` 下线。
+> 其中入口（`/mcp/v1`）、认证（app JWT / `access-token`）、数据模型（应用授权表）等内容**仅作历史参考**；
+> 当前实现请以仓库根 `README.md`、`docs/配置说明.md` 与代码为准。
+> 图册 HTML / PNG / PDF 为本地产物（`.gitignore` 忽略），仓库仅提交 `docs/architecture/*.svg`。
+
 > 本文是 [`index.html`](index.html) 图册的**文本版**：用 Mermaid 保存可 diff、可评审的结构，用表格沉淀事实。
 > 完整视觉图（12 张矢量 SVG + 1.6x PNG）见 [`index.html`](index.html) 与 [`png/`](png/)。
 >
@@ -387,7 +392,7 @@ flowchart LR
 | MySQL 端口 | `127.0.0.1:3307 → 3306`（仅本机） |
 | 数据卷 | `mcp-gateway-mysql-data`（固定卷名） |
 | 运行用户 | UID 10001（非 root） |
-| 初始化 | `docker/mysql/init.sql`；存量升级 `docs/sql/migration.sql` |
+| 初始化 | `db/mysql/init.sql`；存量升级 `docs/sql/migration.sql` |
 | 启动顺序 | MySQL healthcheck → backend |
 | Swagger | 默认关闭，`MCP_SWAGGER_ENABLED=true` 才开放 |
 

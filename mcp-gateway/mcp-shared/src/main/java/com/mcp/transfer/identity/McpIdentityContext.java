@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 网关侧当前请求的身份上下文（ThreadLocal）。
- * 由 McpAuthInterceptor 写入，McpUpstreamClient / McpServiceImpl 读取，请求结束清理。
+ * 由数据面入口（Endpoint / 发现）写入，McpUpstreamClient 读取，请求结束清理。
  */
 @Component
 public class McpIdentityContext {

@@ -1,9 +1,9 @@
 package com.mcp.transfer.exposure;
 
 import com.mcp.transfer.cache.ToolListCache;
-import com.mcp.transfer.entity.McpServer;
-import com.mcp.transfer.entity.McpTool;
-import com.mcp.transfer.mapper.McpToolMapper;
+import com.mcp.transfer.shared.entity.McpServer;
+import com.mcp.transfer.shared.entity.McpTool;
+import com.mcp.transfer.shared.mapper.McpToolMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,8 +43,9 @@ class ToolAccessPolicyTest {
     }
 
     @Test
-    void allEnabledToolsVisibleWithoutAppGrant() {
-        server.setToolAccessMode(ToolExposureModes.ACCESS_WHITELIST);
+    void allEnabledToolsVisibleEvenWithLegacyWhitelistFlag() {
+        // 旧数据的 WHITELIST 已废弃，必须按 ALL 处理
+        server.setToolAccessMode("WHITELIST");
         when(mcpToolMapper.selectAllByServerId(10)).thenReturn(tools);
 
         List<McpTool> visible = policy.visibleTools(server, "app1", false);
@@ -67,8 +68,7 @@ class ToolAccessPolicyTest {
 
     @Test
     void budgetFlagsOverWarnAndOverMax() {
-        server.setToolAccessMode(ToolExposureModes.ACCESS_ALL)
-                .setToolWarnThreshold(1)
+        server.setToolWarnThreshold(1)
                 .setToolMaxThreshold(1);
         when(mcpToolMapper.selectAllByServerId(10)).thenReturn(tools);
 

@@ -1,6 +1,6 @@
 package com.mcp.transfer.admin.security;
 
-import com.mcp.transfer.enums.RoleEnum;
+import com.mcp.transfer.shared.enums.RoleEnum;
 import lombok.Data;
 
 import java.util.List;

@@ -40,9 +40,9 @@ export function TenantsPage() {
   const [form, setForm] = useState(emptyForm);
   const [deleteTarget, setDeleteTarget] = useState<Tenant | null>(null);
 
-  const { data: tenants, isLoading, isError, error } = useQuery({
+  const { data: tenants, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["tenants"],
-    queryFn: api.listTenants,
+    queryFn: ({ signal }) => api.listTenants(signal),
   });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["tenants"] });
@@ -86,7 +86,7 @@ export function TenantsPage() {
   };
 
   if (isLoading) return <LoadingState label="加载租户…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-4">

@@ -18,14 +18,14 @@ export function ServerDetailPage() {
   const navigate = useNavigate();
   const serverId = Number(id);
 
-  const { data: servers, isLoading, isError, error } = useQuery({
+  const { data: servers, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["servers"],
-    queryFn: api.listServers,
+    queryFn: ({ signal }) => api.listServers(signal),
   });
   const server = useMemo(() => servers?.find((s) => s.id === serverId), [servers, serverId]);
 
   if (isLoading) return <LoadingState label="加载 Server…" />;
-  if (isError) return <ErrorState message={(error as Error)?.message} />;
+  if (isError) return <ErrorState message={(error as Error)?.message} onRetry={() => void refetch()} />;
   if (!server) return <ErrorState message={`Server #${serverId} 不存在`} />;
 
   return (

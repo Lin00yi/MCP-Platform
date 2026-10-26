@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * <p>与数据面（{@code com.mcp.transfer.McpTransferApplication}）共用 {@code mcp-shared} 内核，
  * 但两者不互相依赖：控制面通过 {@code port} 包下的端口（HTTP 适配器）访问数据面能力。
  */
-@MapperScan("com.mcp.transfer.mapper")
+@MapperScan("com.mcp.transfer.shared.mapper")
 @SpringBootApplication(scanBasePackages = "com.mcp.transfer")
 @EnableScheduling
 public class AdminApplication {
