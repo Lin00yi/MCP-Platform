@@ -1,7 +1,8 @@
 # MCP Gateway · 架构与流程设计总览
 
 > **当前基线（2026-10-26）**：本文是 `docs/architecture/` 图册的**文本版**（用 Mermaid 与表格沉淀可 diff、可评审的结构），内容已对齐当前实现。
-> 图册中标注「历史」的图（01–06、08、09、11–17 及 `auth/` 下 4 张）画的是旧基线（`/mcp/v1`、应用 JWT、应用授权/WHITELIST、容器编排等），**仅用于回溯，不代表现状**；13–16 号图虽由 `tools/gen-tool-architecture.py` 生成，但生成器仍基于应用授权/WHITELIST 旧模型，重绘前同样按历史处理。
+> **现行图**：01/02/05/08/09 由 `tools/gen-architecture-atlas.py` 生成，13–16 由 `tools/gen-tool-architecture.py` 生成，均已对齐当前实现；07（OpenAPI 导入流程）与 10（五态健康）为早期图但主线仍成立，索引中标为现行。
+> **历史图**：03–04、06、11–12、17 及 `auth/` 下 4 张画的是旧基线（`/mcp/v1`、应用 JWT、应用授权/WHITELIST、容器编排等），**仅用于回溯，不代表现状**。
 > 图册的 HTML / 位图 / PDF 导出物为本地生成物，未纳入版本库，本索引只收录 `.svg` / `.mmd` 源文件；事实来源为 `mcp-gateway/` 三模块与 `db/mysql/init.sql`，启动方式以仓库根 [README](../../README.md) 为准。
 
 ---
@@ -289,34 +290,35 @@ flowchart LR
 
 ## 8. 图册索引
 
-> 状态口径：`现行` = 与当前实现一致；`历史（仍含 /mcp/v1 等旧内容）` = 旧基线图，**仅作历史参考**（含应用授权 / `WHITELIST` / 容器编排等已移除设计）。
-> 02/04/06 虽未出现字面 `/mcp/v1`，但分别残留单进程/容器、按 `path` 路由、应用审批等旧设计，同样归为历史。
+> 状态口径：`现行` = 由生成脚本按当前实现产出（01/02/05/08/09/13–16）或主线仍成立（07/10）；`历史` = 旧基线图，**仅作历史参考**（含应用授权 / `WHITELIST` / 容器编排等已移除设计）。
+> 生成脚本：`tools/gen-architecture-atlas.py`（01/02/05/08/09）与 `tools/gen-tool-architecture.py`（13–16）；03/04/06/11/12/17 与 `auth/` 系列暂无生成器。
 
 | # | 主题 | 文件 | 状态 | 说明 |
 |---|---|---|---|---|
-| 01 | 系统全景架构 | [01-system-architecture.svg](01-system-architecture.svg) | 历史（仍含 /mcp/v1 等旧内容） | `/mcp/v1`、容器编排、JDK 8、18 张表 |
-| 02 | 代码模块与分层 | [02-module-map.svg](02-module-map.svg) | 历史（仍含 /mcp/v1 等旧内容） | 单工程单进程、MySQL 3307、`McpController` |
+| 01 | 系统架构总览 | [01-system-architecture.svg](01-system-architecture.svg) | 现行 | 客户端 → 反向代理 → 数据面/控制面；共享内核；17 张表；无容器编排 |
+| 02 | 代码模块与依赖边界 | [02-module-map.svg](02-module-map.svg) | 现行 | Maven 三模块包结构、编译期强制边界、非 Maven 模块 |
 | 03 | 数据面主链路时序 | [03-data-plane-sequence.svg](03-data-plane-sequence.svg) | 历史（仍含 /mcp/v1 等旧内容） | `/mcp/v1`、`appId` / `app_secret`、应用授权过滤 |
 | 04 | tools/call 执行流程 | [04-tools-call-flow.svg](04-tools-call-flow.svg) | 历史（仍含 /mcp/v1 等旧内容） | 按 `path` 解析 Server、`X-MCP-App-Id` 等旧头 |
-| 05 | 鉴权流水线 | [05-auth-pipeline.svg](05-auth-pipeline.svg) | 历史（仍含 /mcp/v1 等旧内容） | `/mcp/v1`、`access-token`、应用 JWT |
+| 05 | 认证与身份链路 | [05-auth-pipeline.svg](05-auth-pipeline.svg) | 现行 | 用户 token 链路（401/403/503）、身份下传（OFF/OPTIONAL/REQUIRED）、后台 JWT |
 | 06 | 审批流与 RBAC | [06-approval-flow.svg](06-approval-flow.svg) | 历史（仍含 /mcp/v1 等旧内容） | 含应用建删/重置、`GRANT_*` 等已移除动作 |
 | 07 | OpenAPI 批量导入 | [07-openapi-import.svg](07-openapi-import.svg) | 现行（局部文案旧） | 预览 → 勾选 → 导入流程与当前一致；图中缓存失效组件已由 `ClusterEventBus` 承担 |
-| 08 | 数据模型 | [08-data-model.svg](08-data-model.svg) | 历史（仍含 /mcp/v1 等旧内容） | 18 张表、应用授权表、`app_secret` |
-| 09 | 部署拓扑 | [09-deployment.svg](09-deployment.svg) | 历史（仍含 /mcp/v1 等旧内容） | 容器编排、MySQL 3307、单进程 8081 |
+| 08 | 数据模型 | [08-data-model.svg](08-data-model.svg) | 现行 | 17 张表分域、拓扑租户归属、关键字段 |
+| 09 | 部署拓扑 | [09-deployment.svg](09-deployment.svg) | 现行 | 手工 MySQL + 两个 jar + 反向代理 + 可选 Redis；部署步骤与自检 |
 | 10 | 健康度判定（五态） | [10-health-states.svg](10-health-states.svg) | 现行 | 五态判定与探活方式未变 |
 | 11 | 三平面目标架构 | [11-target-architecture.svg](11-target-architecture.svg) | 历史（仍含 /mcp/v1 等旧内容） | 目标架构图仍标 `/mcp/v1` 入口 |
 | 12 | DSH 客户端接入 | [12-dsh-sync-sequence.svg](12-dsh-sync-sequence.svg) | 历史（仍含 /mcp/v1 等旧内容） | `/mcp/v1`、`appId` |
-| 13 | 工具链路优化全景 | [13-tool-chain-optimized.svg](13-tool-chain-optimized.svg) | 历史（仍含应用授权 / WHITELIST 旧模型） | `WHITELIST`、`app_server_rel` / `app_tool_rel`、`ToolChangeNotifier` |
-| 14 | 五层治理设计 | [14-tool-governance-design.svg](14-tool-governance-design.svg) | 历史（仍含应用授权 / WHITELIST 旧模型） | `WHITELIST`、`app_server_rel` / `app_tool_rel` |
-| 15 | 工具治理架构 | [15-tool-architecture.svg](15-tool-architecture.svg) | 历史（仍含应用授权 / WHITELIST 旧模型） | 入口文案已刷新为 `/mcp/e`，但仍含 `McpController` / `Spring Boot 2.7` / 应用授权旧组件 |
-| 16 | 工具链路流程图 | [16-tool-chain-flow.svg](16-tool-chain-flow.svg) | 历史（仍含应用授权 / WHITELIST 旧模型） | `WHITELIST`、`app_server_rel` / `app_tool_rel` |
+| 13 | 工具链路全貌 | [13-tool-chain-optimized.svg](13-tool-chain-optimized.svg) | 现行 | 接入 → 定义/缓存 → 可见性 → 暴露面 → 检索 → 调用 → 运营闭环 |
+| 14 | 五层治理设计 | [14-tool-governance-design.svg](14-tool-governance-design.svg) | 现行 | 可见性 / 暴露面 / 检索 / 预算传输 / 运行闭环五层 |
+| 15 | 工具治理架构 | [15-tool-architecture.svg](15-tool-architecture.svg) | 现行 | 两进程 + 共享内核、横切能力、17 表、上游/旁路服务 |
+| 16 | 工具链路流程图 | [16-tool-chain-flow.svg](16-tool-chain-flow.svg) | 现行 | 八阶段流程：启用即可见、按需暴露、失败可降级 |
 | 17 | 会话到工具调用流程 | [17-session-to-toolcall-flow.svg](17-session-to-toolcall-flow.svg) | 历史（仍含 /mcp/v1 等旧内容） | `/mcp/v1` |
 | auth 17 | 鉴权端到端时序 | [auth/17-auth-e2e-sequence.svg](auth/17-auth-e2e-sequence.svg) · [mmd](auth/17-auth-e2e-sequence.mmd) | 历史（仍含 /mcp/v1 等旧内容） | 应用 JWT、`app_server_rel`、`/mcp/v1` |
 | auth 17b | 鉴权调用精简版 | [auth/17b-auth-call-compact.svg](auth/17b-auth-call-compact.svg) · [mmd](auth/17b-auth-call-compact.mmd) | 历史（仍含 /mcp/v1 等旧内容） | 应用 JWT、`/internal/userinfo` |
 | auth 18 | 鉴权判定流程 | [auth/18-auth-decision.svg](auth/18-auth-decision.svg) · [mmd](auth/18-auth-decision.mmd) | 历史（仍含 /mcp/v1 等旧内容） | `/mcp/v1`、应用 JWT |
 | auth 19 | 鉴权架构 | [auth/19-auth-architecture.svg](auth/19-auth-architecture.svg) · [mmd](auth/19-auth-architecture.mmd) | 历史（仍含 /mcp/v1 等旧内容） | `McpAuthInterceptor`、双凭据（应用 JWT + 用户 token） |
 
-维护约定：**当前没有任何 SVG 与现状完全一致**（07 仅局部文案旧，10 为五态判定）。`tools/gen-tool-architecture.py` 的文案仍停留在「应用授权 + WHITELIST」模型（`app_server_rel` / `app_tool_rel` / `WHITELIST` / `McpController` / `Spring Boot 2.7`），重新生成 13–16 仍是旧模型，**重绘前请勿把 13–16 标成现行**；01–12、17 与 `auth/` 系列没有生成脚本，需手工改图。改动架构后请同步本文件对应章节与相关方案文档。
+维护约定：01/02/05/08/09 用 `python3 tools/gen-architecture-atlas.py` 重新生成，13–16 用 `python3 tools/gen-tool-architecture.py` 重新生成（两脚本只输出 SVG，不修改本文件）。
+尚未重绘：03（数据面主链路时序）、04（tools/call 执行流程）、06（审批流与 RBAC）、11（目标架构）、12（DSH 接入）、17（会话到工具调用）与 `auth/` 系列 —— 没有生成脚本，需手工重绘或先补生成器；在重绘前保持「历史」标注。改动架构后请同步本文件对应章节与相关方案文档。
 
 ---
 
