@@ -46,6 +46,35 @@ class ConfigSanityCheckerTest {
     }
 
     @Test
+    void redisEnabledWithExplicitUrlPasses() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("spring.profiles.active", "prod")
+                .withProperty("mcp.redis.enabled", "true")
+                .withProperty("MCP_REDIS_URL", "redis://127.0.0.1:6379/0");
+
+        assertDoesNotThrow(() -> new ConfigSanityChecker(env).run(null));
+    }
+
+    @Test
+    void devRedisWithoutExplicitUrlOnlyWarns() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("spring.profiles.active", "dev")
+                .withProperty("mcp.redis.enabled", "true");
+
+        assertDoesNotThrow(() -> new ConfigSanityChecker(env).run(null));
+    }
+
+    @Test
+    void toolProfilePropertyIsValidated() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("mcp.tools.profile", "huge");
+
+        IllegalStateException error = assertThrows(IllegalStateException.class,
+                () -> new ConfigSanityChecker(env).run(null));
+        assertTrue(error.getMessage().contains("MCP_TOOLS_PROFILE"));
+    }
+
+    @Test
     void devAllowsStaticTokensForE2E() {
         MockEnvironment env = new MockEnvironment()
                 .withProperty("spring.profiles.active", "dev")

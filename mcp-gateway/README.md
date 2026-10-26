@@ -100,7 +100,7 @@ MCP_REDIS_ENABLED=true MCP_REDIS_URL=redis://127.0.0.1:6379/0 ./run-local.sh dat
 ## 4. 构建与测试
 
 ```bash
-mvn test                    # 三模块单元测试（shared 156 / dataplane 63 / admin 38）
+mvn test                    # 三模块单元测试（shared 159 / dataplane 63 / admin 38）
 mvn -DskipTests package     # 产出 mcp-dataplane/target/mcp-dataplane.jar、mcp-admin/target/mcp-admin.jar
 ```
 

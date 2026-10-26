@@ -7,6 +7,7 @@
 --       app_server_rel/app_tool_rel），并补齐默认种子数据。
 -- 幂等：所有建表带 IF NOT EXISTS，所有写入用 INSERT IGNORE / 条件插入，可重复执行。
 -- 注意：不会删除旧表、不会动 enn_app_info / mcp_request_log / tool_call_record / admin_user 等既有数据。
+--       上述表名为历史系统表名；你的环境若没有该表，可忽略对应段落（脚本不会新建/依赖它们）。
 -- ============================================================
 
 SET NAMES utf8mb4;

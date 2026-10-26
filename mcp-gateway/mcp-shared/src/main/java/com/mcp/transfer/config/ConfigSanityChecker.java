@@ -20,7 +20,7 @@ import java.util.Locale;
  * <ul>
  *   <li>生产禁用静态 token；</li>
  *   <li>生产 REQUIRED 身份下传必须配置签名私钥；</li>
- *   <li>Redis / 分片 Redis 开启时必须有地址；</li>
+ *   <li>开启 Redis 但未显式配置地址时拦截（避免多副本误连 localhost 默认值）；</li>
  *   <li>生产透传用户 token、放开内网 SSRF 时给出安全告警；</li>
  *   <li>工具档位只允许 default/compact/large。</li>
  * </ul>
@@ -57,12 +57,24 @@ public class ConfigSanityChecker implements ApplicationRunner {
         }
 
         boolean redisEnabled = Boolean.parseBoolean(environment.getProperty("mcp.redis.enabled", "false"));
-        String redisUri = environment.getProperty("mcp.redis.uri", "");
-        if (redisEnabled && !StringUtils.hasText(redisUri)) {
-            fatal.add("MCP_REDIS_ENABLED=true 时必须配置 MCP_REDIS_URL");
+        if (redisEnabled && !hasExplicitRedisUrl(args)) {
+            String effectiveUri = environment.getProperty("mcp.redis.uri", "");
+            String message = "MCP_REDIS_ENABLED=true 但未显式配置 MCP_REDIS_URL（当前将使用默认值 "
+                    + effectiveUri + "）";
+            if (prod) {
+                fatal.add(message);
+            } else {
+                logger.warn("[CONFIG] {}", message);
+            }
         }
 
-        String toolProfile = environment.getProperty("MCP_TOOLS_PROFILE", "default");
+        String toolProfile = environment.getProperty("MCP_TOOLS_PROFILE");
+        if (!StringUtils.hasText(toolProfile)) {
+            toolProfile = environment.getProperty("mcp.tools.profile");
+        }
+        if (!StringUtils.hasText(toolProfile)) {
+            toolProfile = "default";
+        }
         if (!isKnownToolProfile(toolProfile)) {
             fatal.add("MCP_TOOLS_PROFILE 仅支持 default / compact / large，当前：" + toolProfile);
         }
@@ -83,6 +95,18 @@ public class ConfigSanityChecker implements ApplicationRunner {
         logger.info("[CONFIG] 配置自检通过（profile={}, identity={}/{}, redis={}）",
                 prod ? "prod" : "non-prod", identityEnabled, identityMode.toUpperCase(Locale.ROOT),
                 redisEnabled);
+    }
+
+    /**
+     * 是否显式配置了 Redis 地址：环境变量 {@code MCP_REDIS_URL}（或兼容的 {@code MCP_REDIS_URI}），
+     * 或启动参数 {@code --mcp.redis.uri}。YAML 里的默认值不算显式配置。
+     */
+    private boolean hasExplicitRedisUrl(ApplicationArguments args) {
+        if (StringUtils.hasText(environment.getProperty("MCP_REDIS_URL"))
+                || StringUtils.hasText(environment.getProperty("MCP_REDIS_URI"))) {
+            return true;
+        }
+        return args != null && args.containsOption("mcp.redis.uri");
     }
 
     private boolean isKnownIdentityMode(String mode) {
